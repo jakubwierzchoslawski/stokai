@@ -1,0 +1,9 @@
+# PLAN-N-008 TASK-004 — provider swap fixture (AC-003 verification)
+# Change only the 'class' line below to swap the provider; zero source changes.
+# Original: StubPriceProviderA | Swapped: provider_config_stub_swapped.yaml
+
+provider_config:
+  price_provider:
+    interface: PriceProvider
+    market: US
+    class: StubPriceProviderB

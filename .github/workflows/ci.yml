@@ -1,0 +1,169 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "feat/**", "fix/**"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  PYTHON_VERSION: "3.12"
+  TEST_DATABASE_URL: "postgresql+asyncpg://stokai:stokai@localhost:5432/stokai_test"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Unit test stage — no external services required
+  # ---------------------------------------------------------------------------
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install -e ".[test]"
+
+      - name: Run unit tests
+        run: |
+          pytest tests/unit/ \
+            -m "not integration and not performance" \
+            --tb=short \
+            -v \
+            --cov=src \
+            --cov-report=term-missing
+
+  # ---------------------------------------------------------------------------
+  # Integration test stage — requires PostgreSQL + Redis
+  # ---------------------------------------------------------------------------
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    needs: unit
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: stokai
+          POSTGRES_PASSWORD: stokai
+          POSTGRES_DB: stokai_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U stokai -d stokai_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+
+    env:
+      TEST_DATABASE_URL: "postgresql+asyncpg://stokai:stokai@localhost:5432/stokai_test"
+      DATABASE_URL: "postgresql://stokai:stokai@localhost:5432/stokai_test"
+      REDIS_URL: "redis://localhost:6379/0"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install -e ".[test]"
+
+      - name: Run Alembic migrations
+        run: python -m alembic upgrade head
+
+      - name: Run integration tests
+        run: |
+          pytest tests/integration/ \
+            -m "integration and not performance" \
+            --tb=short \
+            -v
+
+  # ---------------------------------------------------------------------------
+  # Performance gate — blocking CI stage (PLAN-N-001)
+  # Runs after unit and integration stages.
+  # Fails the build on any SLA breach.
+  # Merge to main is not permitted if this stage fails.
+  # ---------------------------------------------------------------------------
+  performance-gate:
+    name: Performance gate (Mode A latency SLA)
+    runs-on: ubuntu-latest
+    needs: [unit, integration]
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: stokai
+          POSTGRES_PASSWORD: stokai
+          POSTGRES_DB: stokai_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U stokai -d stokai_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+
+    env:
+      TEST_DATABASE_URL: "postgresql+asyncpg://stokai:stokai@localhost:5432/stokai_test"
+      DATABASE_URL: "postgresql://stokai:stokai@localhost:5432/stokai_test"
+      REDIS_URL: "redis://localhost:6379/0"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install -e ".[test]"
+
+      - name: Run Alembic migrations
+        run: python -m alembic upgrade head
+
+      - name: Run Mode A latency SLA assertions
+        run: |
+          pytest tests/performance/ \
+            -m performance \
+            --tb=short \
+            -v
+        # Non-zero exit code fails the build — blocking gate.
+        # Merge to main is not permitted if any SLA assertion fails.
+
+      - name: Upload performance results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results
+          path: .pytest_cache/
+          retention-days: 30

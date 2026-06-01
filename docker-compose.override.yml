@@ -1,0 +1,30 @@
+---
+# docker-compose.override.yml — Local development ergonomics
+# Automatically merged with docker-compose.yml by Docker Compose.
+# Adds bind-mounts for hot code reload without a full image rebuild.
+# Exposes debugger (5678) and Celery Flower (5555) ports for dev use.
+
+version: "3.9"
+
+services:
+
+  stokai-app:
+    volumes:
+      # Bind-mount source so code changes are visible without rebuild.
+      - ./src:/app/src
+      - ./agents:/app/agents
+    ports:
+      - "5678:5678"    # debugpy remote debugger
+    environment: {}    # placeholder; do not add values here — use .env
+
+  stokai-worker:
+    volumes:
+      - ./src:/app/src
+      - ./agents:/app/agents
+    ports:
+      - "5555:5555"    # Celery Flower monitoring UI (start flower separately if needed)
+
+  stokai-scheduler:
+    volumes:
+      - ./src:/app/src
+      - ./agents:/app/agents

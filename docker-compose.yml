@@ -1,0 +1,205 @@
+---
+# StokAI — Docker Compose (production / CI)
+# Decision D6: Docker Compose is the primary MVP runtime target.
+# Architecture §15: eight services defined here.
+# All config injected via env_file — no inline environment values (P-06, 12-factor).
+# Run: docker compose up -d --build
+# See also: docker-compose.override.yml for local development ergonomics.
+
+version: "3.9"
+
+networks:
+  stokai-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  langfuse-db-data:    # LANGFUSE — populated by PLAN-F-013
+  clickhouse-data:     # LANGFUSE — populated by PLAN-F-013
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # stokai-app — FastAPI application (src/ monolith)
+  # ---------------------------------------------------------------------------
+
+  stokai-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: stokai-app:latest
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      langfuse-server:
+        condition: service_healthy
+    networks:
+      - stokai-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # stokai-worker — Celery worker; same image as stokai-app, command override
+  # ---------------------------------------------------------------------------
+
+  stokai-worker:
+    image: stokai-app:latest
+    command: ["celery", "-A", "src.celery_app", "worker", "--loglevel=info"]
+    env_file:
+      - .env
+    depends_on:
+      stokai-app:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - stokai-net
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A src.celery_app inspect ping -d celery@$$HOSTNAME || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # stokai-scheduler — Celery beat scheduler; same image as stokai-app, command override
+  # ---------------------------------------------------------------------------
+
+  stokai-scheduler:
+    image: stokai-app:latest
+    command: ["celery", "-A", "src.celery_app", "beat", "--loglevel=info"]
+    env_file:
+      - .env
+    depends_on:
+      stokai-app:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - stokai-net
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A src.celery_app inspect ping -d celery@$$HOSTNAME || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # postgres — PostgreSQL 16 + TimescaleDB + pgvector (architecture §5)
+  # timescale/timescaledb-ha:pg16 bundles both extensions.
+  # Startup SQL creates required extensions (see docker/postgres/init.sql).
+  # ---------------------------------------------------------------------------
+
+  postgres:
+    image: timescale/timescaledb-ha:pg16
+    env_file:
+      - .env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - stokai-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-stokai} -d $${POSTGRES_DB:-stokai}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # redis — Redis 7 hot cache (architecture §5)
+  # ---------------------------------------------------------------------------
+
+  redis:
+    image: redis:7-alpine
+    env_file:
+      - .env
+    volumes:
+      - redis-data:/data
+    networks:
+      - stokai-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Langfuse Observability Stack — architecture §12
+  # Fields below marked "# LANGFUSE — populated by PLAN-F-013" will be
+  # filled in when PLAN-F-013 executes. Do NOT add duplicate service entries.
+  # The markers are the merge contract between this plan and PLAN-F-013.
+  # ---------------------------------------------------------------------------
+
+  langfuse-server:
+    image: langfuse/langfuse:3          # LANGFUSE — populated by PLAN-F-013
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"                     # LANGFUSE — populated by PLAN-F-013
+    depends_on:
+      langfuse-db:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    networks:
+      - stokai-net
+    healthcheck:
+      # LANGFUSE — populated by PLAN-F-013 (exact health endpoint confirmed by F-013)
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/public/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  langfuse-db:
+    image: postgres:16-alpine           # LANGFUSE — populated by PLAN-F-013
+    env_file:
+      - .env
+    volumes:
+      - langfuse-db-data:/var/lib/postgresql/data  # LANGFUSE — populated by PLAN-F-013
+    networks:
+      - stokai-net
+    healthcheck:
+      # LANGFUSE — populated by PLAN-F-013
+      test: ["CMD-SHELL", "pg_isready -U $${LANGFUSE_DB_USER:-langfuse} -d $${LANGFUSE_DB_NAME:-langfuse}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24-alpine  # LANGFUSE — populated by PLAN-F-013
+    env_file:
+      - .env
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse          # LANGFUSE — populated by PLAN-F-013
+    networks:
+      - stokai-net
+    healthcheck:
+      # LANGFUSE — populated by PLAN-F-013
+      test: ["CMD-SHELL", "clickhouse-client --query 'SELECT 1'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped

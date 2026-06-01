@@ -1,0 +1,12 @@
+# classify_event.yaml — agent configuration for the Mode A classification step.
+# Architecture: C-005 (Anthropic-only, multi-provider YAML), C-001 (~$0.01/classify).
+role_id: classify_event
+model:
+  provider: anthropic
+  model_id: claude-haiku-4-5
+timeout_seconds: 10
+max_retries: 2
+cost_ceiling_usd: 0.02
+output_schema:
+  category: str   # must be one of EventCategory enum values
+  intensity: int  # must be 1–5

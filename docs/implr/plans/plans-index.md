@@ -7,9 +7,9 @@
 | Metric | Count |
 |--------|-------|
 | Total plans | 47 |
-| Ready | 17 |
+| Ready | 0 |
 | In progress | 0 |
-| Done | 30 |
+| Done | 47 |
 | Blocked | 0 |
 
 ## Functional Plans

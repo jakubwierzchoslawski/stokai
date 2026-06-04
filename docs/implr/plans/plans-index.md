@@ -7,9 +7,9 @@
 | Metric | Count |
 |--------|-------|
 | Total plans | 47 |
-| Ready | 22 |
+| Ready | 21 |
 | In progress | 0 |
-| Done | 25 |
+| Done | 26 |
 | Blocked | 0 |
 
 ## Functional Plans
@@ -28,7 +28,7 @@
 | PLAN-F-011 | Agent Registry and Definitions | REQ-F-011 | L | true | done | functional/PLAN-F-011-agent-registry-and-definitions.md |
 | PLAN-F-012 | Agent Tool Library | REQ-F-012 | L | true | done | functional/PLAN-F-012-tool-library.md |
 | PLAN-F-013 | Human-in-the-Loop Review Queue | REQ-F-013 | L | true | done | functional/PLAN-F-013-hil-review-queue.md |
-| PLAN-F-014 | Prompt Management Pipeline | REQ-F-014 | L | true | ready | functional/PLAN-F-014-prompt-management-pipeline.md |
+| PLAN-F-014 | Prompt Management Pipeline | REQ-F-014 | L | true | done | functional/PLAN-F-014-prompt-management-pipeline.md |
 | PLAN-F-015 | Four-Layer Memory Subsystem | REQ-F-015 | L | true | done | functional/PLAN-F-015-four-layer-memory-subsystem.md |
 | PLAN-F-016 | Three-Tier Evaluation Framework | REQ-F-016 | L | true | done | functional/PLAN-F-016-evaluation-framework.md |
 | PLAN-F-017 | Scoring Engine and Indicator Builder | REQ-F-017 | L | true | done | functional/PLAN-F-017-scoring-engine-and-indicator-builder.md |

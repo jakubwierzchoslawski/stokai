@@ -4,7 +4,7 @@ slug: prompt-management-pipeline
 title: Prompt Management Pipeline
 linked_requirement: REQ-F-014
 type: functional
-status: ready
+status: done
 blocked_reason:
 complexity: L
 tdd_required: true
@@ -12,7 +12,7 @@ linked_nfrs:
   - { id: REQ-N-009, reason: "Tier 2 regression gate is enforced as a hard CI block before any prompt is eligible for promotion to canary or production" }
 dependencies:
   - { id: PLAN-F-016, reason: "Tier 2 golden dataset regression gates prompt promotion; ITier2Runner and RegressionReport contracts must exist before the CI gate runner can call them" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-02T00:00:00Z

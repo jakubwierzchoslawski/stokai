@@ -36,12 +36,24 @@ def _make_session() -> MagicMock:
 
 
 def _make_execute_result(rows: list[dict]) -> MagicMock:
-    """Return a mock result that behaves like SQLAlchemy's MappingResult."""
+    """Return a mock result that behaves like SQLAlchemy's MappingResult.
+
+    The mappings() call returns a mock that:
+      - .first() → first row or None
+      - .all()   → all rows
+      - iteration (for row in mappings()) → iterates rows
+    """
     result = MagicMock()
-    mappings = MagicMock()
-    mappings.first = MagicMock(return_value=rows[0] if rows else None)
-    mappings.all = MagicMock(return_value=rows)
-    result.mappings = MagicMock(return_value=mappings)
+
+    def make_mappings():
+        m = MagicMock()
+        m.first = MagicMock(return_value=rows[0] if rows else None)
+        m.all = MagicMock(return_value=rows)
+        # Make the mappings object itself iterable
+        m.__iter__ = MagicMock(return_value=iter(rows))
+        return m
+
+    result.mappings = MagicMock(side_effect=make_mappings)
     return result
 
 

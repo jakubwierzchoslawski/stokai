@@ -4,7 +4,7 @@ slug: progressive-disclosure-ui
 title: Progressive Disclosure UI (Popup, Side Panel, Deep Dive)
 linked_requirement: REQ-F-020
 type: functional
-status: ready
+status: done
 blocked_reason:
 complexity: L
 tdd_required: true
@@ -13,7 +13,7 @@ linked_nfrs:
 dependencies:
   - { id: PLAN-F-019, reason: "IntelligenceMap provides the onExpandEvent injectable prop and the EventPulse payload that seeds the popup" }
   - { id: PLAN-F-016, reason: "Audit trail view reads agent_invocation rows and Langfuse trace links produced by the evaluation framework" }
-executed_at:
+executed_at: 2026-06-05T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-03T00:00:00Z

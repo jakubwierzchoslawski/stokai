@@ -153,3 +153,36 @@ export const BRIEFS_ROUTE_PATHS = {
 //   />
 //
 export const ADMIN_AI_AUDIT_ROUTE_PATH = '/admin/ai-audit' as const;
+
+// ── Progressive Disclosure routes (PLAN-F-020 TASK-012) ─────────────────────
+//
+// The root "/" route element must be wrapped with <ProgressiveDisclosureProvider>
+// so that popup/side-panel state is co-located with the map route.
+// The onExpandEvent callback is passed to <IntelligenceMap> via the provider's
+// context (or directly as a prop from the parent that reads useDisclosure()).
+//
+// Example React Router v6 wiring:
+//
+//   import { ProgressiveDisclosureProvider } from
+//     '../features/progressive-disclosure/ProgressiveDisclosureProvider';
+//   import { DeepDivePage } from
+//     '../features/progressive-disclosure/components/DeepDivePage';
+//   import { IntelligenceMap } from
+//     '../features/intelligence-map/IntelligenceMap';
+//
+//   <Route
+//     path="/"
+//     element={
+//       <ProtectedRoute>
+//         <ProgressiveDisclosureProvider>
+//           <IntelligenceMap onExpandEvent={...} />
+//         </ProgressiveDisclosureProvider>
+//       </ProtectedRoute>
+//     }
+//   />
+//   <Route
+//     path={DEEP_DIVE_ROUTE_PATH}
+//     element={<ProtectedRoute><DeepDivePage /></ProtectedRoute>}
+//   />
+//
+export const DEEP_DIVE_ROUTE_PATH = '/events/:eventId/deep-dive' as const;

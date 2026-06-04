@@ -23,6 +23,26 @@ from src.storage.repositories.ingestion_job_repo import IIngestionJobRepository
 logger = logging.getLogger(__name__)
 
 
+def _make_celery_proxy():
+    """Return a lazy proxy for the Celery current_app.
+
+    Importing ``celery`` at module level would cause an ImportError in test
+    environments where Celery is not installed.  This proxy only resolves the
+    real ``current_app`` on first *call* so tests can patch
+    ``src.ingestion.job_registry.celery_app`` with a MagicMock.
+    """
+    class _CeleryProxy:
+        def send_task(self, *args, **kwargs):
+            from celery import current_app
+            return current_app.send_task(*args, **kwargs)
+
+    return _CeleryProxy()
+
+
+# Module-level name — patchable by ``patch("src.ingestion.job_registry.celery_app")``
+celery_app = _make_celery_proxy()
+
+
 class JobNotFoundError(Exception):
     """Raised when a job_id is not registered in the JobRegistry."""
 
@@ -107,8 +127,6 @@ class JobRegistry:
             raise JobNotFoundError(f"Job {job_id!r} not found in database")
 
         # Send Celery task
-        from celery import current_app as celery_app  # lazy import
-
         result = celery_app.send_task(task_name)
         task_id = result.id
 

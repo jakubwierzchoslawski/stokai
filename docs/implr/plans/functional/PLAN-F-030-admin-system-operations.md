@@ -4,7 +4,7 @@ slug: admin-system-operations
 title: Admin System Operations Panel
 linked_requirement: REQ-F-030
 type: functional
-status: ready
+status: done
 blocked_reason:
 complexity: L
 tdd_required: true
@@ -15,7 +15,7 @@ linked_nfrs:
 dependencies:
   - { id: PLAN-F-028, reason: "Admin router scaffolding (src/admin/), require_admin() dependency, and health-counter Redis patterns are established here; this plan extends the same package" }
   - { id: PLAN-F-013, reason: "HIL queue management is surfaced on the System Operations panel; hil_queue_item table and HILQueueRepository must exist" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-02T00:00:00Z

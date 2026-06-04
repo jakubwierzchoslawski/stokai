@@ -4,10 +4,11 @@ slug: intelligence-map
 title: Intelligence Map (Primary Interface)
 linked_requirement: REQ-F-019
 type: functional
-status: ready
+status: done
 blocked_reason:
 complexity: XL
 tdd_required: true
+executed_at: 2026-06-04T00:00:00Z
 linked_nfrs:
   - { id: REQ-N-001, reason: "Initial map render must complete within 3 seconds on a 10,000-event dataset; Supercluster index must be built off the main thread" }
 dependencies:

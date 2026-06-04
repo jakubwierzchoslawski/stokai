@@ -33,7 +33,7 @@
 | PLAN-F-016 | Three-Tier Evaluation Framework | REQ-F-016 | L | true | done | functional/PLAN-F-016-evaluation-framework.md |
 | PLAN-F-017 | Scoring Engine and Indicator Builder | REQ-F-017 | L | true | done | functional/PLAN-F-017-scoring-engine-and-indicator-builder.md |
 | PLAN-F-018 | Portfolio Scoring and Real-Time Geo-Modifier | REQ-F-018 | M | true | done | functional/PLAN-F-018-portfolio-scoring-and-geo-modifier.md |
-| PLAN-F-019 | Intelligence Map (Primary Interface) | REQ-F-019 | XL | true | ready | functional/PLAN-F-019-intelligence-map.md |
+| PLAN-F-019 | Intelligence Map (Primary Interface) | REQ-F-019 | XL | true | done | functional/PLAN-F-019-intelligence-map.md |
 | PLAN-F-020 | Progressive Disclosure UI (Popup, Side Panel, Deep Dive) | REQ-F-020 | L | true | ready | functional/PLAN-F-020-progressive-disclosure-ui.md |
 | PLAN-F-021 | Map Live, Historical, and Playback Modes | REQ-F-021 | L | true | ready | functional/PLAN-F-021-map-live-historical-playback-modes.md |
 | PLAN-F-022 | Screener | REQ-F-022 | M | true | done | functional/PLAN-F-022-screener.md |
@@ -63,7 +63,7 @@
 | PLAN-N-009 | Prompt Regression Safety Gate | REQ-N-009 | M | true | done | non-functional/PLAN-N-009-prompt-regression-safety.md |
 | PLAN-N-010 | AI Recommendation Accuracy Calibration | REQ-N-010 | M | true | done | non-functional/PLAN-N-010-ai-accuracy-calibration.md |
 | PLAN-N-011 | Data Freshness and TTL Integrity | REQ-N-011 | M | true | done | non-functional/PLAN-N-011-data-freshness.md |
-| PLAN-N-012 | AI Compliance and Auditability | REQ-N-012 | M | true | ready | non-functional/PLAN-N-012-compliance-auditability.md |
+| PLAN-N-012 | AI Compliance and Auditability | REQ-N-012 | M | true | done | non-functional/PLAN-N-012-compliance-auditability.md |
 | PLAN-N-014 | Responsive Design | REQ-N-014 | M | true | draft | non-functional/PLAN-N-014-responsive-design.md |
 | PLAN-N-015 | Scalability via Cache | REQ-N-015 | M | true | done | non-functional/PLAN-N-015-scalability-cache.md |
 

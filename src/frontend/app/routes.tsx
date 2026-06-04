@@ -7,8 +7,33 @@
  *
  * PLAN-F-024 TASK-009
  * PLAN-F-026 TASK-008 — /briefs and /briefs/:brief_id routes added.
+ * PLAN-F-019 TASK-011 — root route "/" wired to IntelligenceMap.
+ *
+ * Root route usage (React Router v6):
+ *
+ *   import { IntelligenceMap } from '../features/intelligence-map/IntelligenceMap';
+ *
+ *   <Route path="/" element={<IntelligenceMap />} />
+ *
+ * The root route renders IntelligenceMap directly with no intermediate landing page
+ * or dashboard redirect (AC-001).
  */
 import React, { useEffect, useState } from 'react';
+
+// ── Root route path ───────────────────────────────────────────────────────────
+
+/**
+ * The root route path that renders <IntelligenceMap />.
+ * Import this constant in the application router to keep the path a single source
+ * of truth. No intermediate dashboard — IntelligenceMap is the application root.
+ *
+ * Example:
+ *   import { ROOT_ROUTE_PATH } from './routes';
+ *   import { IntelligenceMap } from '../features/intelligence-map/IntelligenceMap';
+ *
+ *   <Route path={ROOT_ROUTE_PATH} element={<IntelligenceMap />} />
+ */
+export const ROOT_ROUTE_PATH = '/' as const;
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 

@@ -61,6 +61,11 @@ class WorkflowRun(WorkflowBase):
     )
     final_state: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
     langfuse_trace_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Added by PLAN-N-002 (latency enforcement)
+    timeout_at: Mapped[datetime | None] = mapped_column(TIMESTAMPTZ, nullable=True)
+    partial_result: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("FALSE")
+    )
 
     def __repr__(self) -> str:
         return (

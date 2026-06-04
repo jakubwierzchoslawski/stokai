@@ -10,7 +10,7 @@ from enum import Enum
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 
 
 class WorkflowType(str, Enum):
@@ -73,3 +73,7 @@ class WorkflowState(BaseModel):
 
     # Observability (REQ-N-008)
     langfuse_trace_id: str | None = None
+
+    # Latency enforcement (PLAN-N-002)
+    timeout_at: datetime | None = None
+    partial_result: bool = False

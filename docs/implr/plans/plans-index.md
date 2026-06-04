@@ -7,9 +7,9 @@
 | Metric | Count |
 |--------|-------|
 | Total plans | 47 |
-| Ready | 19 |
+| Ready | 18 |
 | In progress | 0 |
-| Done | 28 |
+| Done | 29 |
 | Blocked | 0 |
 
 ## Functional Plans
@@ -53,7 +53,7 @@
 | ID | Title | Requirement | Complexity | TDD | Status | File |
 |----|-------|-------------|-----------|-----|--------|------|
 | PLAN-N-001 | Mode A Pipeline Latency Enforcement | REQ-N-001 | M | true | done | non-functional/PLAN-N-001-mode-a-latency.md |
-| PLAN-N-002 | Mode B Workflow Latency | REQ-N-002 | M | true | ready | non-functional/PLAN-N-002-mode-b-latency.md |
+| PLAN-N-002 | Mode B Workflow Latency | REQ-N-002 | M | true | done | non-functional/PLAN-N-002-mode-b-latency.md |
 | PLAN-N-003 | Mode A Per-Event Cost Ceiling | REQ-N-003 | M | true | done | non-functional/PLAN-N-003-mode-a-cost.md |
 | PLAN-N-004 | Mode B Per-Report Cost Ceiling and User Budget | REQ-N-004 | M | true | done | non-functional/PLAN-N-004-mode-b-cost.md |
 | PLAN-N-005 | MVP Infrastructure and AI Total Budget | REQ-N-005 | S | false | ready | non-functional/PLAN-N-005-infrastructure-budget.md |

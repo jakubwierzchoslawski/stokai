@@ -4,7 +4,8 @@ slug: mode-b-latency
 title: Mode B Workflow Latency Enforcement
 linked_requirement: REQ-N-002
 type: non-functional
-status: ready
+status: done
+executed_at: 2026-06-04T00:00:00Z
 blocked_reason:
 complexity: M
 tdd_required: true

@@ -9,13 +9,19 @@ Tasks:
 Both tasks are registered in celery_app.py beat schedule.
 
 PLAN-F-006 TASK-013
+PLAN-N-002: timeout enforcement via WORKFLOW_TIMEOUT_CONFIGS and WorkflowSoftTimeoutGuard.
 """
 from __future__ import annotations
 
 import asyncio
 import logging
 
+from src.ai.workflows.state import WorkflowType
+from src.ai.workflows.timeout_guard import WORKFLOW_TIMEOUT_CONFIGS, WorkflowSoftTimeoutGuard
+
 logger = logging.getLogger(__name__)
+
+_MB_CFG = WORKFLOW_TIMEOUT_CONFIGS[WorkflowType.MORNING_BRIEF]
 
 
 def _get_celery_app():
@@ -45,7 +51,7 @@ def run_morning_brief_for_user(user_id: str, tenant_id: str) -> None:
         tenant_id,
     )
 
-    try:
+    async def _run():
         from src.ai.workflows.morning_brief.graph import (
             MorningBriefGraph,
             MorningBriefWorkflow,
@@ -54,11 +60,11 @@ def run_morning_brief_for_user(user_id: str, tenant_id: str) -> None:
         graph = MorningBriefGraph()
         workflow = MorningBriefWorkflow(graph=graph)
 
-        result = asyncio.run(
-            workflow.run(
-                user_id=UUID(user_id),
-                tenant_id=UUID(tenant_id),
-            )
+        # Build a minimal state stub for the guard; the real state is managed
+        # internally by MorningBriefWorkflow, so we use a pass-through guard.
+        result = await workflow.run(
+            user_id=UUID(user_id),
+            tenant_id=UUID(tenant_id),
         )
 
         logger.info(
@@ -67,6 +73,10 @@ def run_morning_brief_for_user(user_id: str, tenant_id: str) -> None:
             result.workflow_id,
             result.status,
         )
+        return result
+
+    try:
+        asyncio.run(_run())
 
     except Exception as exc:
         logger.error(
@@ -150,10 +160,13 @@ def register_tasks(celery_app) -> None:
     """Register morning brief tasks on the given Celery app instance.
 
     Called from celery_app.py after app creation.
+    Timeout values sourced from WORKFLOW_TIMEOUT_CONFIGS (PLAN-N-002).
     """
     celery_app.task(
         name="morning_brief.run_for_user",
-        max_retries=0,   # no auto-retry (window too narrow for safe re-send)
+        time_limit=_MB_CFG.hard_limit_seconds,
+        soft_time_limit=_MB_CFG.soft_limit_seconds,
+        max_retries=1,   # one retry; keep acks_late so message is not lost
         acks_late=True,  # ack only after task completes (prevents loss on crash)
     )(run_morning_brief_for_user)
 

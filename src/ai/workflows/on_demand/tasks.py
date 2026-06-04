@@ -28,8 +28,11 @@ from celery.exceptions import SoftTimeLimitExceeded
 
 from src.ai.workflows.on_demand.graph import build_on_demand_graph
 from src.ai.workflows.state import WorkflowState, WorkflowStatus, WorkflowType
+from src.ai.workflows.timeout_guard import WORKFLOW_TIMEOUT_CONFIGS, WorkflowSoftTimeoutGuard
 from src.ai.workflows.tracer import LangfuseWorkflowTracer
 from src.storage.repositories.workflow_run_repository import WorkflowRunRepository
+
+_OD_CFG = WORKFLOW_TIMEOUT_CONFIGS[WorkflowType.ON_DEMAND]
 
 logger = logging.getLogger(__name__)
 
@@ -156,22 +159,24 @@ async def _run_on_demand_analysis(
             repo = WorkflowRunRepository(session)
             await repo.create(state)
 
+        final_state: WorkflowState = state
         try:
-            result_state_dict = await graph.ainvoke(state)
+            async with _get_db_session() as guard_session:
+                guard_repo = WorkflowRunRepository(guard_session)
+                guard = WorkflowSoftTimeoutGuard(state, guard_repo, langfuse_client)
+                async with guard:
+                    result_state_dict = await graph.ainvoke(state)
+
             # ainvoke may return a WorkflowState or a dict
-            if isinstance(result_state_dict, WorkflowState):
+            if guard._final_state.status == WorkflowStatus.TIMEOUT:
+                # Guard handled SoftTimeLimitExceeded and persisted partial state
+                final_state = guard._final_state
+            elif isinstance(result_state_dict, WorkflowState):
                 final_state = result_state_dict
             else:
                 final_state = state.model_copy(
                     update={"status": WorkflowStatus.COMPLETED}
                 )
-
-        except SoftTimeLimitExceeded:
-            logger.warning(
-                "on_demand_analysis_task soft time limit exceeded for workflow=%s",
-                workflow_id,
-            )
-            final_state = state.model_copy(update={"status": WorkflowStatus.TIMEOUT})
 
         except Exception as exc:
             logger.exception(
@@ -203,8 +208,8 @@ async def _run_on_demand_analysis(
 @shared_task(
     name="ai.on_demand_analysis",
     bind=True,
-    time_limit=360,
-    soft_time_limit=300,
+    time_limit=_OD_CFG.hard_limit_seconds,
+    soft_time_limit=_OD_CFG.soft_limit_seconds,
     max_retries=0,
 )
 def on_demand_analysis_task(

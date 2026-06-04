@@ -10,6 +10,7 @@ Interfaces defined here:
 """
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Protocol, runtime_checkable
 from uuid import UUID
 
@@ -44,6 +45,22 @@ class IWorkflowRunRepository(Protocol):
         self, workflow_id: UUID, final_state: WorkflowState
     ) -> None:
         """Persist the final WorkflowState as JSONB into final_state column."""
+        ...
+
+    async def save_timeout(
+        self,
+        workflow_id: UUID,
+        partial_state: WorkflowState,
+        timeout_at: datetime,
+    ) -> None:
+        """Persist partial state with status=TIMEOUT when SoftTimeLimitExceeded fires.
+
+        Sets: status='TIMEOUT', partial_result=True, timeout_at=timeout_at,
+              final_state=partial_state.model_dump(), completed_at=timeout_at.
+
+        Raises:
+            WorkflowRunNotFoundError: If no row exists for workflow_id.
+        """
         ...
 
 

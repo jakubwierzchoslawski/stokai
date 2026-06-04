@@ -67,3 +67,15 @@ class EvaluateQualityError(Exception):
     def __init__(self, reason: str) -> None:
         super().__init__(f"evaluate_quality failed: {reason}")
         self.reason = reason
+
+
+class WorkflowRunNotFoundError(Exception):
+    """Raised by WorkflowRunRepository when a workflow_run row does not exist.
+
+    Used by save_timeout() to surface missing-row failures rather than
+    silently swallowing them (PLAN-N-002 TASK-003).
+    """
+
+    def __init__(self, workflow_id: UUID) -> None:
+        super().__init__(f"WorkflowRun not found: workflow_id={workflow_id}")
+        self.workflow_id = workflow_id

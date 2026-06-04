@@ -5,9 +5,10 @@ Tasks:
   detect_t1_earnings_task: Beat task (17:30 daily) — queries portfolio companies
     with T+1 earnings and dispatches earnings_brief_task (idempotency guard).
   earnings_brief_task: Executes the full EarningsBriefWorkflow for a single
-    company. time_limit=600 (10 min hard), soft_time_limit=240 (4 min soft).
+    company. time_limit and soft_time_limit sourced from WORKFLOW_TIMEOUT_CONFIGS.
 
 PLAN-F-009 TASK-003, TASK-009
+PLAN-N-002 TASK-005 (timeout enforcement via WORKFLOW_TIMEOUT_CONFIGS)
 """
 from __future__ import annotations
 
@@ -17,6 +18,11 @@ from contextlib import asynccontextmanager
 from datetime import date, datetime, timezone
 from typing import Any, AsyncGenerator
 from uuid import UUID, uuid4
+
+from src.ai.workflows.state import WorkflowType
+from src.ai.workflows.timeout_guard import WORKFLOW_TIMEOUT_CONFIGS, WorkflowSoftTimeoutGuard
+
+_EB_CFG = WORKFLOW_TIMEOUT_CONFIGS[WorkflowType.EARNINGS_BRIEF]
 
 logger = logging.getLogger(__name__)
 
@@ -239,9 +245,36 @@ async def _run_earnings_brief_async(
         cost_ceiling_usd=cost_ceiling,
     )
 
+    # Lazy import langfuse client
+    def _get_langfuse():
+        try:
+            from src.config.settings import get_settings
+            s = get_settings()
+            if not getattr(s, "LANGFUSE_HOST", None):
+                return None
+            from langfuse import Langfuse
+            return Langfuse(
+                secret_key=s.LANGFUSE_SECRET_KEY,
+                public_key=s.LANGFUSE_PUBLIC_KEY,
+                host=s.LANGFUSE_HOST,
+            )
+        except Exception:
+            return None
+
+    from src.storage.repositories.workflow_run_repository import WorkflowRunRepository
+
+    langfuse_client = _get_langfuse()
     final_state = state
     try:
-        final_state = await workflow.ainvoke(state)
+        async with _get_db_session() as guard_session:
+            guard_repo = WorkflowRunRepository(guard_session)
+            guard = WorkflowSoftTimeoutGuard(state, guard_repo, langfuse_client)
+            async with guard:
+                final_state = await workflow.ainvoke(state)
+
+        if guard._final_state.status == WorkflowStatus.TIMEOUT:
+            final_state = guard._final_state
+
         run_status = final_state.status.value if hasattr(final_state.status, "value") else str(final_state.status)
         confidence = final_state.overall_confidence
         cost_usd = final_state.cost_usd
@@ -249,18 +282,6 @@ async def _run_earnings_brief_async(
             final_state.scenario_tree.model_dump()
             if final_state.scenario_tree
             else None
-        )
-
-    except SoftTimeLimitExceeded:
-        logger.warning(
-            "earnings_brief_task soft time limit: workflow_id=%s", workflow_id
-        )
-        run_status = WorkflowStatus.TIMEOUT.value
-        confidence = None
-        cost_usd = state.cost_usd
-        scenario_tree_dict = None
-        final_state = state.model_copy(
-            update={"status": WorkflowStatus.TIMEOUT, "error_detail": "Soft time limit exceeded"}
         )
 
     except Exception as exc:
@@ -320,9 +341,10 @@ async def _run_earnings_brief_async(
 @shared_task(
     name="ai.earnings_brief",
     bind=True,
-    time_limit=600,
-    soft_time_limit=240,
-    max_retries=0,
+    time_limit=_EB_CFG.hard_limit_seconds,
+    soft_time_limit=_EB_CFG.soft_limit_seconds,
+    max_retries=1,
+    acks_late=True,
 )
 def earnings_brief_task(
     self,

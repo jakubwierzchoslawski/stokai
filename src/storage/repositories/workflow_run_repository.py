@@ -1,10 +1,12 @@
 """
 storage.repositories.workflow_run_repository — WorkflowRunRepository.
 
-Provides create / get / update_status / save_final_state operations over the
-workflow_run table.  Every query is scoped by tenant_id to prevent IDOR leakage.
+Provides create / get / update_status / save_final_state / save_timeout operations
+over the workflow_run table.  Every query is scoped by tenant_id to prevent IDOR
+leakage.
 
 PLAN-F-010 will later extend this repository with additional query methods.
+PLAN-N-002 adds save_timeout().
 """
 from __future__ import annotations
 
@@ -16,6 +18,7 @@ from uuid import UUID
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.ai.workflows.errors import WorkflowRunNotFoundError
 from src.ai.workflows.state import WorkflowState, WorkflowStatus
 from src.storage.models.workflow_run import WorkflowRun
 
@@ -146,6 +149,53 @@ class WorkflowRunRepository:
         )
         await self._session.execute(stmt)
         await self._session.flush()
+
+    async def save_timeout(
+        self,
+        workflow_id: UUID,
+        partial_state: WorkflowState,
+        timeout_at: datetime,
+    ) -> None:
+        """Persist partial state with status=TIMEOUT when SoftTimeLimitExceeded fires.
+
+        Uses an UPDATE ... WHERE workflow_id = ? AND tenant_id = ? approach so a
+        missing row does not silently swallow the failure — rowcount is checked and
+        WorkflowRunNotFoundError is raised if zero rows were updated.
+
+        Sets: status='TIMEOUT', partial_result=True, timeout_at=timeout_at,
+              final_state=partial_state.model_dump(), completed_at=timeout_at.
+
+        Enforces tenant_id scoping from partial_state.tenant_id (§12.3).
+
+        Args:
+            workflow_id:    UUID of the workflow run to update.
+            partial_state:  Partially-completed WorkflowState at timeout.
+            timeout_at:     UTC timestamp when SoftTimeLimitExceeded fired.
+
+        Raises:
+            WorkflowRunNotFoundError: If no row matches (workflow_id, tenant_id).
+        """
+        stmt = (
+            update(WorkflowRun)
+            .where(
+                WorkflowRun.workflow_id == workflow_id,
+                WorkflowRun.tenant_id == partial_state.tenant_id,
+            )
+            .values(
+                status=WorkflowStatus.TIMEOUT.value,
+                partial_result=True,
+                timeout_at=timeout_at,
+                completed_at=timeout_at,
+                final_state=json.loads(partial_state.model_dump_json()),
+                cost_usd=partial_state.cost_usd,
+            )
+            .execution_options(synchronize_session=False)
+        )
+        result = await self._session.execute(stmt)
+        await self._session.flush()
+
+        if result.rowcount == 0:
+            raise WorkflowRunNotFoundError(workflow_id)
 
     # ── Additional query helpers ──────────────────────────────────────────────
 

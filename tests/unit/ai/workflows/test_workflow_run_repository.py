@@ -116,3 +116,134 @@ class TestWorkflowRunRepositoryCreateAndGet:
         assert fetched.status == "COMPLETED"
         assert fetched.cost_usd == pytest.approx(0.42)
         assert fetched.final_state is not None
+
+
+class TestWorkflowRunRepositorySaveTimeoutMock:
+    """Mock-based tests for save_timeout() — PLAN-N-002 TASK-003.
+
+    Uses mocked sessions because the SQLite in-memory DB does not support
+    PostgreSQL-specific types (JSONB, TIMESTAMPTZ, UUID).
+    """
+
+    def _make_mock_session(self, rowcount: int = 1):
+        from unittest.mock import AsyncMock, MagicMock
+
+        mock_result = MagicMock()
+        mock_result.rowcount = rowcount
+
+        session = AsyncMock()
+        session.execute = AsyncMock(return_value=mock_result)
+        session.flush = AsyncMock()
+        return session
+
+    @pytest.mark.asyncio
+    async def test_save_timeout_sets_status_to_timeout(self):
+        state = _make_state()
+        session = self._make_mock_session(rowcount=1)
+        repo = WorkflowRunRepository(session)
+        timeout_at = datetime.now(tz=timezone.utc)
+
+        await repo.save_timeout(
+            workflow_id=state.workflow_id,
+            partial_state=state,
+            timeout_at=timeout_at,
+        )
+
+        call_args = session.execute.call_args
+        stmt = call_args[0][0]
+        compiled_params = stmt.compile().params
+        assert compiled_params.get("status") == "TIMEOUT"
+
+    @pytest.mark.asyncio
+    async def test_save_timeout_sets_partial_result_true(self):
+        state = _make_state()
+        session = self._make_mock_session(rowcount=1)
+        repo = WorkflowRunRepository(session)
+        timeout_at = datetime.now(tz=timezone.utc)
+
+        await repo.save_timeout(
+            workflow_id=state.workflow_id,
+            partial_state=state,
+            timeout_at=timeout_at,
+        )
+
+        call_args = session.execute.call_args
+        stmt = call_args[0][0]
+        compiled_params = stmt.compile().params
+        assert compiled_params.get("partial_result") is True
+
+    @pytest.mark.asyncio
+    async def test_save_timeout_sets_timeout_at(self):
+        state = _make_state()
+        session = self._make_mock_session(rowcount=1)
+        repo = WorkflowRunRepository(session)
+        timeout_at = datetime.now(tz=timezone.utc)
+
+        await repo.save_timeout(
+            workflow_id=state.workflow_id,
+            partial_state=state,
+            timeout_at=timeout_at,
+        )
+
+        call_args = session.execute.call_args
+        stmt = call_args[0][0]
+        compiled_params = stmt.compile().params
+        assert compiled_params.get("timeout_at") == timeout_at
+
+    @pytest.mark.asyncio
+    async def test_save_timeout_persists_final_state(self):
+        state = _make_state()
+        partial = state.model_copy(update={"cost_usd": 1.23, "tokens_consumed": {"input": 500}})
+        session = self._make_mock_session(rowcount=1)
+        repo = WorkflowRunRepository(session)
+        timeout_at = datetime.now(tz=timezone.utc)
+
+        await repo.save_timeout(
+            workflow_id=state.workflow_id,
+            partial_state=partial,
+            timeout_at=timeout_at,
+        )
+
+        call_args = session.execute.call_args
+        stmt = call_args[0][0]
+        compiled_params = stmt.compile().params
+        final_state = compiled_params.get("final_state")
+        assert final_state is not None
+        assert final_state["cost_usd"] == pytest.approx(1.23)
+        assert final_state["tokens_consumed"]["input"] == 500
+
+    @pytest.mark.asyncio
+    async def test_save_timeout_scoped_to_tenant(self):
+        """save_timeout UPDATE WHERE clause includes tenant_id."""
+        state = _make_state()
+        session = self._make_mock_session(rowcount=1)
+        repo = WorkflowRunRepository(session)
+        timeout_at = datetime.now(tz=timezone.utc)
+
+        await repo.save_timeout(
+            workflow_id=state.workflow_id,
+            partial_state=state,
+            timeout_at=timeout_at,
+        )
+
+        call_args = session.execute.call_args
+        stmt = call_args[0][0]
+        where_str = str(stmt.whereclause.compile())
+        assert "tenant_id" in where_str
+
+    @pytest.mark.asyncio
+    async def test_save_timeout_on_missing_workflow_run_raises(self):
+        """Calling save_timeout with a non-existent workflow_id raises WorkflowRunNotFoundError."""
+        from src.ai.workflows.errors import WorkflowRunNotFoundError
+
+        state = _make_state()
+        session = self._make_mock_session(rowcount=0)  # zero rows = not found
+        repo = WorkflowRunRepository(session)
+        timeout_at = datetime.now(tz=timezone.utc)
+
+        with pytest.raises(WorkflowRunNotFoundError):
+            await repo.save_timeout(
+                workflow_id=state.workflow_id,
+                partial_state=state,
+                timeout_at=timeout_at,
+            )

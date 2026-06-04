@@ -37,6 +37,145 @@ _MONITOR_NAME: str = "pipeline-p95-sla-warning"
 # ---------------------------------------------------------------------------
 
 
+def register_mode_b_latency_alerts(langfuse_client: Any) -> None:
+    """Upsert Langfuse score monitors for Mode B workflow p95 latency.
+
+    Creates or updates one monitor per Mode B workflow type. Each monitor:
+      - Reads the p95 of ``{workflow_type}_duration_ms`` over a 24-hour window.
+      - Alerts when p95 exceeds the threshold for that workflow.
+      - Notifies via LANGFUSE_ALERT_EMAIL env var (optional).
+
+    Alert thresholds (p95 targets converted to milliseconds):
+      morning_brief     240 000 ms  (4 min)
+      on_demand         180 000 ms  (3 min)
+      watchlist_scan    120 000 ms  (2 min)
+      earnings_brief    180 000 ms  (3 min)
+      event_deep_dive   360 000 ms  (6 min)
+
+    This function is **idempotent** — safe to call at every startup.
+    Called alongside ``register_latency_alerts()`` from the application
+    startup hook.
+
+    Args:
+        langfuse_client: Initialised Langfuse client object.  Must not be None.
+
+    Side effects:
+        - Upserts five Langfuse score monitors (one per workflow type).
+        - Logs outcomes at INFO or WARNING level.
+        - Never raises; failures are logged and swallowed so they do not
+          prevent application startup.
+    """
+    alert_email: Optional[str] = os.environ.get("LANGFUSE_ALERT_EMAIL")
+
+    _MODE_B_MONITORS = [
+        {
+            "name": "mode-b-morning-brief-p95-latency",
+            "scoreName": "morning_brief_duration_ms",
+            "percentile": 95,
+            "windowHours": 24,
+            "threshold": 240_000,
+            "condition": "greaterThan",
+        },
+        {
+            "name": "mode-b-on-demand-p95-latency",
+            "scoreName": "on_demand_duration_ms",
+            "percentile": 95,
+            "windowHours": 24,
+            "threshold": 180_000,
+            "condition": "greaterThan",
+        },
+        {
+            "name": "mode-b-watchlist-scan-p95-latency",
+            "scoreName": "watchlist_scan_duration_ms",
+            "percentile": 95,
+            "windowHours": 24,
+            "threshold": 120_000,
+            "condition": "greaterThan",
+        },
+        {
+            "name": "mode-b-earnings-brief-p95-latency",
+            "scoreName": "earnings_brief_duration_ms",
+            "percentile": 95,
+            "windowHours": 24,
+            "threshold": 180_000,
+            "condition": "greaterThan",
+        },
+        {
+            "name": "mode-b-event-deep-dive-p95-latency",
+            "scoreName": "event_deep_dive_duration_ms",
+            "percentile": 95,
+            "windowHours": 24,
+            "threshold": 360_000,
+            "condition": "greaterThan",
+        },
+    ]
+
+    for monitor_cfg in _MODE_B_MONITORS:
+        payload: dict[str, Any] = dict(monitor_cfg)
+        if alert_email:
+            payload["notificationChannels"] = [
+                {"type": "email", "address": alert_email}
+            ]
+        try:
+            _upsert_via_sdk(langfuse_client, alert_email=None)
+            # Re-call with specific payload
+            if hasattr(langfuse_client, "monitors"):
+                langfuse_client.monitors.upsert(**payload)
+            elif hasattr(langfuse_client, "create_score_monitor"):
+                langfuse_client.create_score_monitor(**payload)
+            else:
+                _upsert_mode_b_monitor_via_rest(payload)
+            logger.info(
+                "Langfuse Mode B latency monitor '%s' registered",
+                monitor_cfg["name"],
+            )
+        except AttributeError:
+            try:
+                _upsert_mode_b_monitor_via_rest(payload)
+                logger.info(
+                    "Langfuse Mode B latency monitor '%s' registered via REST",
+                    monitor_cfg["name"],
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Failed to register Mode B latency monitor '%s' via REST: %s",
+                    monitor_cfg["name"],
+                    exc,
+                )
+        except Exception as exc:
+            logger.warning(
+                "Failed to register Mode B latency monitor '%s': %s",
+                monitor_cfg["name"],
+                exc,
+            )
+
+
+def _upsert_mode_b_monitor_via_rest(payload: dict[str, Any]) -> None:
+    """Upsert a single Mode B monitor via the Langfuse REST API."""
+    import httpx
+
+    host = os.environ.get("LANGFUSE_HOST", "https://cloud.langfuse.com").rstrip("/")
+    public_key = os.environ.get("LANGFUSE_PUBLIC_KEY", "")
+    secret_key = os.environ.get("LANGFUSE_SECRET_KEY", "")
+
+    if not public_key or not secret_key:
+        raise RuntimeError(
+            "LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY must be set to register "
+            "Mode B latency alerts via REST"
+        )
+
+    url = f"{host}/api/public/score-monitors"
+    with httpx.Client(timeout=10.0) as client:
+        response = client.post(
+            url,
+            json=payload,
+            auth=(public_key, secret_key),
+            headers={"Content-Type": "application/json"},
+        )
+        if response.status_code not in (200, 201, 409):
+            response.raise_for_status()
+
+
 def register_latency_alerts(langfuse_client: Any) -> None:
     """Upsert a Langfuse score monitor for pipeline p95 latency.
 

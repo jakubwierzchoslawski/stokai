@@ -89,6 +89,7 @@ async def list_watchlist(
 @watchlist_router.delete(
     "/{company_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
     summary="Remove a company from the watchlist",
 )
 @portfolio_write_limit

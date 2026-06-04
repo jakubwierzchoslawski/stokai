@@ -15,8 +15,6 @@ Security: JWT auth required on all endpoints (get_current_user).
 Rate limiting: write endpoints via portfolio_write_limit.
 tenant_id: extracted from JWT claims only — never from request body.
 """
-from __future__ import annotations
-
 import uuid
 from typing import Annotated
 from uuid import UUID
@@ -141,6 +139,7 @@ async def get_portfolio(
 @portfolio_router.delete(
     "/{portfolio_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
     summary="Delete a portfolio",
 )
 @portfolio_write_limit
@@ -214,6 +213,7 @@ async def list_positions(
 @portfolio_router.delete(
     "/{portfolio_id}/positions/{position_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
     summary="Delete a position",
 )
 @portfolio_write_limit
@@ -237,6 +237,7 @@ async def delete_position(
 @portfolio_router.post(
     "/import",
     status_code=status.HTTP_200_OK,
+    response_model=None,
     summary="Import positions from CSV file",
 )
 @portfolio_write_limit

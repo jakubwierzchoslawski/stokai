@@ -29,4 +29,5 @@ module.exports = {
     "\\.(css|less|scss|sass)$": "<rootDir>/tests/frontend/__mocks__/styleMock.js",
   },
   setupFilesAfterFramework: ["@testing-library/jest-dom/extend-expect"],
+  setupFilesAfterEnv: ["<rootDir>/tests/frontend/setupTests.ts"],
 };

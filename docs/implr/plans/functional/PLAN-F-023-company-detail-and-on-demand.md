@@ -4,7 +4,7 @@ slug: company-detail-and-on-demand
 title: Company Detail Screen and On-Demand Analysis Trigger
 linked_requirement: REQ-F-023
 type: functional
-status: ready
+status: done
 blocked_reason:
 complexity: M
 tdd_required: true
@@ -12,11 +12,11 @@ linked_nfrs: []
 dependencies:
   - { id: PLAN-F-007, reason: "on-demand-analysis-workflow: POST /api/v1/companies/{company_id}/analysis endpoint and WorkflowNotifier must exist before the Analyze Now button can trigger and receive results" }
   - { id: PLAN-F-017, reason: "scoring-engine-and-indicator-builder: ICompanyScoreRepository.get_history and IScoringProfileRepository must exist; score breakdown data served by scoring service" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-02T00:00:00Z
-updated_at: 2026-06-02T00:00:00Z
+updated_at: 2026-06-04T00:00:00Z
 ---
 
 # PLAN-F-023 — Company Detail Screen and On-Demand Analysis Trigger

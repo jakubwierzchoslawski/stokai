@@ -37,7 +37,7 @@
 | PLAN-F-020 | Progressive Disclosure UI (Popup, Side Panel, Deep Dive) | REQ-F-020 | L | true | ready | functional/PLAN-F-020-progressive-disclosure-ui.md |
 | PLAN-F-021 | Map Live, Historical, and Playback Modes | REQ-F-021 | L | true | ready | functional/PLAN-F-021-map-live-historical-playback-modes.md |
 | PLAN-F-022 | Screener | REQ-F-022 | M | true | done | functional/PLAN-F-022-screener.md |
-| PLAN-F-023 | Company Detail Screen and On-Demand Analysis | REQ-F-023 | M | true | ready | functional/PLAN-F-023-company-detail-and-on-demand.md |
+| PLAN-F-023 | Company Detail Screen and On-Demand Analysis | REQ-F-023 | M | true | done | functional/PLAN-F-023-company-detail-and-on-demand.md |
 | PLAN-F-024 | Portfolio and Watchlist Management | REQ-F-024 | M | true | done | functional/PLAN-F-024-portfolio-and-watchlist-management.md |
 | PLAN-F-025 | Alerts Center | REQ-F-025 | M | true | ready | functional/PLAN-F-025-alerts-center.md |
 | PLAN-F-026 | Briefs and Reports Reader | REQ-F-026 | M | true | ready | functional/PLAN-F-026-briefs-reader.md |

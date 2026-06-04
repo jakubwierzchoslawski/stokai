@@ -224,7 +224,12 @@ async def upsert_binding(
     return JSONResponse(status_code=status.HTTP_200_OK, content=_ok(resp.model_dump()))
 
 
-@admin_router.delete("/bindings", status_code=status.HTTP_204_NO_CONTENT, summary="Delete a binding")
+@admin_router.delete(
+    "/bindings",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
+    summary="Delete a binding",
+)
 async def delete_binding(
     body: BindingDeleteRequest,
     current_user: User = Depends(require_admin),

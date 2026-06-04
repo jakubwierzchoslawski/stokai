@@ -218,6 +218,7 @@ async def approve_golden_dataset_item(
 @evaluation_router.delete(
     "/golden-dataset/{item_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
     summary="Deactivate a golden dataset item (admin only)",
 )
 async def delete_golden_dataset_item(

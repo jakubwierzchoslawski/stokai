@@ -40,8 +40,8 @@
 | PLAN-F-023 | Company Detail Screen and On-Demand Analysis | REQ-F-023 | M | true | done | functional/PLAN-F-023-company-detail-and-on-demand.md |
 | PLAN-F-024 | Portfolio and Watchlist Management | REQ-F-024 | M | true | done | functional/PLAN-F-024-portfolio-and-watchlist-management.md |
 | PLAN-F-025 | Alerts Center | REQ-F-025 | M | true | done | functional/PLAN-F-025-alerts-center.md |
-| PLAN-F-026 | Briefs and Reports Reader | REQ-F-026 | M | true | ready | functional/PLAN-F-026-briefs-reader.md |
-| PLAN-F-027 | Q&A Chat Interface | REQ-F-027 | M | true | ready | functional/PLAN-F-027-qa-chat-interface.md |
+| PLAN-F-026 | Briefs and Reports Reader | REQ-F-026 | M | true | done | functional/PLAN-F-026-briefs-reader.md |
+| PLAN-F-027 | Q&A Chat Interface | REQ-F-027 | M | true | done | functional/PLAN-F-027-qa-chat-interface.md |
 | PLAN-F-028 | Admin Data Source Management | REQ-F-028 | L | true | ready | functional/PLAN-F-028-admin-data-source-management.md |
 | PLAN-F-029 | Admin AI Audit Console | REQ-F-029 | L | true | ready | functional/PLAN-F-029-admin-ai-audit-console.md |
 | PLAN-F-030 | Admin System Operations Panel | REQ-F-030 | L | true | ready | functional/PLAN-F-030-admin-system-operations.md |

@@ -4,7 +4,7 @@ slug: briefs-reader
 title: Briefs and Reports Reader
 linked_requirement: REQ-F-026
 type: functional
-status: ready
+status: done
 blocked_reason:
 complexity: M
 tdd_required: true
@@ -14,7 +14,7 @@ linked_nfrs:
 dependencies:
   - { id: PLAN-F-006, reason: "workflow_run rows for morning_brief type are the source records rendered by this reader" }
   - { id: PLAN-F-015, reason: "Layer 4 IFeedbackRepository.append_feedback() is the write path for all user feedback captured here" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-02T00:00:00Z

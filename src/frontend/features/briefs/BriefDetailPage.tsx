@@ -8,7 +8,14 @@
  *
  * SafeHtmlRenderer sanitizes content_html via DOMPurify.
  *
+ * Mobile-first responsive constraints (PLAN-N-014 TASK-008):
+ *  - Root article: max-w-full overflow-x-hidden break-words
+ *  - All prose containers: max-w-full overflow-x-hidden
+ *  - Typography: text-base (16px) line-height leading-relaxed
+ *  - Images: max-w-full h-auto (via SafeHtmlRenderer CSS)
+ *
  * PLAN-F-026 TASK-006
+ * PLAN-N-014 TASK-008
  */
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -53,10 +60,31 @@ export function BriefDetailPage(): React.ReactElement {
   const confidencePct = `${Math.round(brief.confidence * 100)}%`;
 
   return (
-    <article className="brief-detail" data-testid="brief-detail">
+    // Root article: max-w-full overflow-x-hidden break-words — no horizontal scroll
+    // at 375px (AC-002). Font size text-base (16px) to avoid iOS auto-zoom.
+    <article
+      className="brief-detail"
+      data-testid="brief-detail"
+      style={{
+        maxWidth: '100%',
+        overflowX: 'hidden',
+        wordBreak: 'break-word',
+        fontSize: 16,
+        lineHeight: 1.6,
+      }}
+    >
       {/* Header block — confidence must appear here prominently (AC-001) */}
-      <header className="brief-detail__header" role="heading" aria-level={1}>
-        <div className="brief-detail__meta">
+      {/* Single column stacking at base; md:flex-row optional (PLAN-N-014 TASK-008) */}
+      <header
+        className="brief-detail__header"
+        role="heading"
+        aria-level={1}
+        style={{ maxWidth: '100%' }}
+      >
+        <div
+          className="brief-detail__meta"
+          style={{ display: 'flex', flexDirection: 'column', gap: 4, maxWidth: '100%' }}
+        >
           <span className="brief-detail__type-label" data-testid="brief-type-label">
             {BRIEF_TYPE_LABELS[brief.type]}
           </span>
@@ -68,7 +96,11 @@ export function BriefDetailPage(): React.ReactElement {
           </span>
         </div>
 
-        <h1 className="brief-detail__headline" data-testid="brief-headline">
+        <h1
+          className="brief-detail__headline"
+          data-testid="brief-headline"
+          style={{ maxWidth: '100%', overflowWrap: 'break-word' }}
+        >
           {brief.headline}
         </h1>
 
@@ -83,8 +115,12 @@ export function BriefDetailPage(): React.ReactElement {
         </div>
       </header>
 
-      {/* Content body */}
-      <section className="brief-detail__body" data-testid="brief-body">
+      {/* Content body — overflow-x-hidden max-w-full (PLAN-N-014 TASK-008) */}
+      <section
+        className="brief-detail__body"
+        data-testid="brief-body"
+        style={{ maxWidth: '100%', overflowX: 'hidden' }}
+      >
         {/* Low sample disclaimer — inline before content, not in footer (AC-004) */}
         {brief.low_sample && (
           <div
@@ -96,6 +132,8 @@ export function BriefDetailPage(): React.ReactElement {
           </div>
         )}
 
+        {/* SafeHtmlRenderer: content_html may contain tables; they must be wrapped
+            in overflow-x-auto to scroll horizontally within the content, not the page */}
         <SafeHtmlRenderer
           html={brief.content_html}
           className="brief-detail__content"

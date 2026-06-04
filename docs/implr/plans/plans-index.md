@@ -64,7 +64,7 @@
 | PLAN-N-010 | AI Recommendation Accuracy Calibration | REQ-N-010 | M | true | done | non-functional/PLAN-N-010-ai-accuracy-calibration.md |
 | PLAN-N-011 | Data Freshness and TTL Integrity | REQ-N-011 | M | true | done | non-functional/PLAN-N-011-data-freshness.md |
 | PLAN-N-012 | AI Compliance and Auditability | REQ-N-012 | M | true | done | non-functional/PLAN-N-012-compliance-auditability.md |
-| PLAN-N-014 | Responsive Design | REQ-N-014 | M | true | draft | non-functional/PLAN-N-014-responsive-design.md |
+| PLAN-N-014 | Responsive Design | REQ-N-014 | M | true | done | non-functional/PLAN-N-014-responsive-design.md |
 | PLAN-N-015 | Scalability via Cache | REQ-N-015 | M | true | done | non-functional/PLAN-N-015-scalability-cache.md |
 
 ## Execution Order

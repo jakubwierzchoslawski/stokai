@@ -4,7 +4,7 @@ slug: responsive-design
 title: Responsive Design
 linked_requirement: REQ-N-014
 type: non-functional
-status: ready
+status: done
 blocked_reason:
 complexity: M
 tdd_required: true
@@ -12,11 +12,11 @@ linked_nfrs: []
 dependencies:
   - { id: PLAN-F-019, reason: "Intelligence Map is the desktop-first surface; its layout containers, MapLibre canvas sizing, and side-panel collapse behaviour are defined there and extended here" }
   - { id: PLAN-F-025, reason: "Alerts Center is the primary mobile-first surface; its list component receives touch-target and no-scroll constraints enforced here" }
-executed_at:
+executed_at: 2026-06-05T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-03T00:00:00Z
-updated_at: 2026-06-03T00:00:00Z
+updated_at: 2026-06-05T00:00:00Z
 ---
 
 # PLAN-N-014 — Responsive Design

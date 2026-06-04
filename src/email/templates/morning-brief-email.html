@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
+  xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>StokAI Morning Brief</title>
+  <!--[if mso]>
+  <noscript>
+    <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+  </noscript>
+  <![endif]-->
+  <!--
+    Responsive email template — PLAN-N-014 TASK-009
+    Single-column layout at 375px (iPhone SE). Uses inline CSS + media query style block.
+    No external stylesheets (email client restriction per ARCHITECTURE.md §14).
+
+    Layout strategy:
+      - Outer table: width=100% — email-safe layout; no flexbox/grid (Outlook incompatible)
+      - Inner content column: max-width 600px centred — fills full width on mobile
+      - Media query at max-width: 600px collapses any two-column layout to single-column
+        (600px is the standard email collapse threshold; 375px viewports trigger it)
+      - Fallback for Outlook Desktop (no @media support): table max-width 600px
+        renders as centred single column — acceptable degradation
+  -->
+  <style type="text/css">
+    /* Base resets */
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 0; background-color: #f4f4f4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; max-width: 100%; }
+    a { color: #1a73e8; text-decoration: none; display: inline-block; padding: 8px 16px; }
+    a:hover { text-decoration: underline; }
+
+    /* Layout */
+    .email-wrapper { width: 100%; background-color: #f4f4f4; padding: 20px 0; }
+    .content-col { max-width: 600px; width: 100%; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+    /* Header */
+    .header { background-color: #0d1b2a; padding: 24px 32px; }
+    .header-title { color: #ffffff; font-size: 22px; font-weight: 700; margin: 0; }
+    .header-subtitle { color: #8aa3bc; font-size: 13px; margin: 4px 0 0 0; }
+    .header-date { color: #8aa3bc; font-size: 12px; }
+
+    /* Confidence badge */
+    .confidence-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .confidence-high { background-color: #e6f4ea; color: #1e7e34; }
+    .confidence-medium { background-color: #fff3cd; color: #856404; }
+    .confidence-low { background-color: #fce8e8; color: #c0392b; }
+
+    /* Section */
+    .section { padding: 24px 32px; border-bottom: 1px solid #e8ecf0; }
+    .section:last-child { border-bottom: none; }
+    .section-title { font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #5f6b7a; margin: 0 0 16px 0; }
+
+    /* Two-column score cards */
+    .two-col-left { display: table-cell; width: 50%; padding: 4px 8px 4px 0; vertical-align: top; }
+    .two-col-right { display: table-cell; width: 50%; padding: 4px 0 4px 8px; vertical-align: top; }
+    .score-card-inner { background-color: #f8f9fa; border: 1px solid #e8ecf0; border-radius: 6px; padding: 12px 16px; }
+    .score-card-ticker { font-size: 16px; font-weight: 700; color: #0d1b2a; }
+    .score-card-name { font-size: 12px; color: #5f6b7a; margin-top: 2px; }
+    .score-card-delta { font-size: 14px; font-weight: 600; }
+    .score-up { color: #1e7e34; }
+    .score-down { color: #c0392b; }
+    .score-neutral { color: #5f6b7a; }
+
+    /* Event summaries — body copy minimum 14px (AC-002) */
+    .event-item { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #f0f2f5; }
+    .event-item:last-child { margin-bottom: 0; border-bottom: none; }
+    .event-headline { font-size: 18px; font-weight: 600; color: #0d1b2a; margin: 0 0 4px 0; }
+    .event-summary { font-size: 14px; color: #3d4a56; line-height: 1.5; margin: 0; }
+    .event-tag { display: inline-block; background-color: #eef2ff; color: #3949ab; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-right: 6px; }
+
+    /* Recommendations table */
+    .rec-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .rec-table th { text-align: left; padding: 8px 12px; background-color: #f8f9fa; color: #5f6b7a; font-size: 12px; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid #e8ecf0; }
+    .rec-table td { padding: 10px 12px; border-bottom: 1px solid #f0f2f5; color: #0d1b2a; vertical-align: top; }
+    .rec-table tr:last-child td { border-bottom: none; }
+    .signal-hold { color: #5f6b7a; font-weight: 600; }
+    .signal-watch { color: #856404; font-weight: 600; }
+    .signal-buy { color: #1e7e34; font-weight: 600; }
+    .signal-reduce { color: #c0392b; font-weight: 600; }
+    .signal-hedge { color: #6c3483; font-weight: 600; }
+    .signal-contrarian { color: #1a5276; font-weight: 600; }
+
+    /* Narrative body — 14px minimum */
+    .narrative { font-size: 14px; line-height: 1.7; color: #2c3e50; }
+    .narrative p { margin: 0 0 14px 0; }
+    .narrative p:last-child { margin-bottom: 0; }
+
+    /* Footer */
+    .footer { background-color: #f8f9fa; padding: 20px 32px; border-top: 1px solid #e8ecf0; }
+    .footer-text { font-size: 12px; color: #8aa3bc; line-height: 1.6; }
+
+    /* Responsive: collapse to single column at ≤600px (covers 375px iPhone SE)
+       PLAN-N-014 TASK-009 — this block is load-bearing for AC-002 */
+    @media only screen and (max-width: 600px) {
+      .content-col { width: 100% !important; padding: 16px !important; border-radius: 0 !important; }
+      .two-col-left, .two-col-right { display: block !important; width: 100% !important; }
+      .header { padding: 18px 16px !important; }
+      .section { padding: 18px 16px !important; }
+      .footer { padding: 16px !important; }
+      .header-date { display: block !important; margin-top: 8px !important; }
+      .rec-table { font-size: 12px !important; }
+      .rec-table th, .rec-table td { padding: 6px 8px !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="email-wrapper">
+  <!-- Outer table: email-safe layout — no flexbox/grid (Outlook incompatible) -->
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+    <tr>
+      <td align="center" style="padding: 20px 0;">
+        <!-- Inner content column: max-width 600px centred; fills full width on mobile -->
+        <table class="content-col" width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width: 600px; margin: 0 auto;">
+
+          <!-- ── Header ──────────────────────────────────────────────────── -->
+          <tr>
+            <td class="header">
+              <p class="header-title">StokAI Morning Brief</p>
+              <p class="header-subtitle">Personalized portfolio intelligence</p>
+              <p class="header-date">{{ brief_date }}</p>
+            </td>
+          </tr>
+
+          <!-- ── Confidence indicator ─────────────────────────────────── -->
+          <tr>
+            <td class="section" style="padding: 16px 32px; background-color: #fafbfc;">
+              <span style="font-size: 13px; color: #5f6b7a; margin-right: 10px;">Brief quality:</span>
+              {% if confidence >= 0.70 %}
+              <span class="confidence-badge confidence-high">High confidence ({{ "%.0f"|format(confidence * 100) }}%)</span>
+              {% elif confidence >= 0.40 %}
+              <span class="confidence-badge confidence-medium">Medium confidence ({{ "%.0f"|format(confidence * 100) }}%)</span>
+              {% else %}
+              <span class="confidence-badge confidence-low">Low confidence ({{ "%.0f"|format(confidence * 100) }}%)</span>
+              {% endif %}
+            </td>
+          </tr>
+
+          <!-- ── Portfolio score cards (two-column, collapses at 600px) ── -->
+          {% if score_changes %}
+          <tr>
+            <td class="section">
+              <p class="section-title">Score Changes</p>
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                {% for pair in score_changes | batch(2, '') %}
+                <tr>
+                  {% for item in pair %}
+                  {% if item %}
+                  <!-- two-col-left / two-col-right collapse to block at 600px via media query -->
+                  <td class="{% if loop.first %}two-col-left{% else %}two-col-right{% endif %}">
+                    <div class="score-card-inner">
+                      <div class="score-card-ticker">{{ item.ticker | default(item.company_id) }}</div>
+                      <div class="score-card-name">{{ item.company_name | default('') }}</div>
+                      <div class="score-card-delta {% if item.delta > 0 %}score-up{% elif item.delta < 0 %}score-down{% else %}score-neutral{% endif %}">
+                        {% if item.delta > 0 %}+{% endif %}{{ "%.2f"|format(item.delta) }}
+                      </div>
+                    </div>
+                  </td>
+                  {% else %}
+                  <td class="{% if loop.first %}two-col-left{% else %}two-col-right{% endif %}"></td>
+                  {% endif %}
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+              </table>
+            </td>
+          </tr>
+          {% endif %}
+
+          <!-- ── Overnight events ──────────────────────────────────────── -->
+          {% if relevant_events %}
+          <tr>
+            <td class="section">
+              <p class="section-title">Key Overnight Events</p>
+              {% for event in relevant_events[:5] %}
+              <div class="event-item">
+                <p class="event-headline">{{ event.title | default('Event') }}</p>
+                <p class="event-summary">{{ event.summary | default(event.description) | default('') }}</p>
+                {% if event.tags %}
+                <div style="margin-top: 6px;">
+                  {% for tag in event.tags %}
+                  <span class="event-tag">{{ tag }}</span>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </td>
+          </tr>
+          {% endif %}
+
+          <!-- ── Narrative body ────────────────────────────────────────── -->
+          {% if narrative %}
+          <tr>
+            <td class="section">
+              <p class="section-title">Analysis</p>
+              <div class="narrative">
+                {{ narrative | safe }}
+              </div>
+            </td>
+          </tr>
+          {% endif %}
+
+          <!-- ── Recommendations ───────────────────────────────────────── -->
+          {% if recommendations %}
+          <tr>
+            <td class="section">
+              <p class="section-title">Recommendations</p>
+              <table class="rec-table" cellpadding="0" cellspacing="0" role="presentation">
+                <thead>
+                  <tr>
+                    <th>Company</th>
+                    <th>Signal</th>
+                    <th>Rationale</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for rec in recommendations %}
+                  <tr>
+                    <td style="font-weight: 600; font-size: 14px;">{{ rec.ticker | default(rec.company_id) }}</td>
+                    <td>
+                      <span class="signal-{{ rec.action_signal | lower | replace('_', '-') }}">
+                        {{ rec.action_signal | replace('_', ' ') }}
+                      </span>
+                    </td>
+                    <td style="color: #5f6b7a; font-size: 13px;">{{ rec.rationale | default('') | truncate(120) }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </td>
+          </tr>
+          {% endif %}
+
+          <!-- ── Footer ────────────────────────────────────────────────── -->
+          <tr>
+            <td class="footer">
+              <p class="footer-text">
+                This brief was generated by StokAI at {{ generated_at }}.
+                Confidence score: {{ "%.0f"|format(confidence * 100) }}%.
+                <br>
+                <a href="{{ why_link }}" style="color: #1a73e8; font-size: 12px;">Why did I receive this?</a>
+                &nbsp;·&nbsp;
+                <a href="{{ unsubscribe_link }}" style="color: #1a73e8; font-size: 12px;">Unsubscribe</a>
+                &nbsp;·&nbsp;
+                <a href="{{ settings_link }}" style="color: #1a73e8; font-size: 12px;">Manage preferences</a>
+              </p>
+              <p class="footer-text" style="margin-top: 8px; font-size: 11px; color: #b0bec5;">
+                Brief ID: {{ brief_id }} · Workflow: {{ workflow_id }}
+                <br>
+                StokAI — AI-powered portfolio intelligence. Not financial advice.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

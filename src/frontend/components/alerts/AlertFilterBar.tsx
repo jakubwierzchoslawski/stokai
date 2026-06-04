@@ -52,15 +52,22 @@ export function AlertFilterBar({ filters, onFilterChange }: AlertFilterBarProps)
   }
 
   return (
-    <div className="alert-filter-bar" data-testid="alert-filter-bar">
+    // Mobile-first: dropdowns use w-full at base (block on mobile) — PLAN-N-014 TASK-007
+    <div
+      className="alert-filter-bar"
+      data-testid="alert-filter-bar"
+      style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}
+    >
       <label className="alert-filter-bar__label" htmlFor="alert-filter-status">
         Status
       </label>
+      {/* w-full at base for mobile layout */}
       <select
         id="alert-filter-status"
         value={filters.status ?? ''}
         onChange={handleStatus}
         data-testid="status-filter"
+        style={{ width: '100%' }}
       >
         {STATUS_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>{o.label}</option>
@@ -75,6 +82,7 @@ export function AlertFilterBar({ filters, onFilterChange }: AlertFilterBarProps)
         value={filters.action_signal ?? ''}
         onChange={handleSignal}
         data-testid="action-signal-filter"
+        style={{ width: '100%' }}
       >
         {ACTION_SIGNAL_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>{o.label}</option>
@@ -90,6 +98,7 @@ export function AlertFilterBar({ filters, onFilterChange }: AlertFilterBarProps)
         value={filters.date_from ?? ''}
         onChange={handleDateFrom}
         data-testid="date-from-filter"
+        style={{ width: '100%' }}
       />
 
       <label className="alert-filter-bar__label" htmlFor="alert-filter-date-to">
@@ -101,6 +110,7 @@ export function AlertFilterBar({ filters, onFilterChange }: AlertFilterBarProps)
         value={filters.date_to ?? ''}
         onChange={handleDateTo}
         data-testid="date-to-filter"
+        style={{ width: '100%' }}
       />
     </div>
   );

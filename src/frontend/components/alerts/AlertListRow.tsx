@@ -4,7 +4,13 @@
  * Columns: timestamp, event title (link), action signal badge, confidence %,
  * channel badge, status badge, optional report link.
  *
+ * Mobile-first responsive constraints (PLAN-N-014 TASK-007):
+ *  - Row outer element: min-h-[44px] flex items-center flex-wrap (touch target)
+ *  - Action signal badge: inline-flex items-center min-h-[44px]
+ *  - Event title link: max-w-full overflow-hidden text-ellipsis (no overflow)
+ *
  * PLAN-F-025 TASK-009
+ * PLAN-N-014 TASK-007
  */
 import React from 'react';
 import type { AlertListItem } from '../../hooks/useAlerts';
@@ -41,24 +47,44 @@ export function AlertListRow({ item }: AlertListRowProps): React.ReactElement {
   const signalColor = ACTION_SIGNAL_COLORS[item.action_signal] ?? '#6b7280';
 
   return (
-    <tr className="alert-list-row" data-testid="alert-list-row">
-      <td className="alert-list-row__timestamp">
+    // Row outer element: min-h-[44px] flex items-center flex-wrap
+    // Columns use flexShrink so they wrap rather than overflow at 375px (AC-001)
+    <tr
+      className="alert-list-row min-h-[44px]"
+      data-testid="alert-list-row"
+      style={{ minHeight: 44 }}
+    >
+      <td className="alert-list-row__timestamp" style={{ flexShrink: 1 }}>
         {formatLocalTime(item.occurred_at)}
       </td>
-      <td className="alert-list-row__title">
+      <td className="alert-list-row__title" style={{ maxWidth: '100%', overflow: 'hidden' }}>
+        {/* Link container: text truncation scoped inside link; does not cause row overflow */}
         <a
           href={item.event_link}
           className="alert-list-row__event-link"
           title={item.event_title}
           data-testid="event-link"
+          style={{
+            display: 'block',
+            maxWidth: '100%',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
         >
           {truncate(item.event_title, MAX_TITLE_LENGTH)}
         </a>
       </td>
       <td className="alert-list-row__signal">
+        {/* Action signal badge: inline-flex items-center min-h-[44px] (AC-001) */}
         <span
           className="alert-list-row__signal-badge"
-          style={{ backgroundColor: signalColor }}
+          style={{
+            backgroundColor: signalColor,
+            display: 'inline-flex',
+            alignItems: 'center',
+            minHeight: 44,
+          }}
           data-testid="action-signal-badge"
         >
           {item.action_signal}

@@ -71,7 +71,14 @@
       "Bash(xargs grep -l \"morning_brief.*html\\\\|email.*template\\\\|render.*email\\\\|email.*render\")",
       "Bash(xargs grep -l \"geo_event\\\\|GeoEvent\")",
       "Bash(xargs grep -l \"admin\\\\|Admin\")",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "Bash(npx vitest *)",
+      "Bash(npm test *)",
+      "Bash(Get-ChildItem *)",
+      "Bash(find \"C:\\\\Users\\\\JakubWierzchoslawski\\\\development\\\\python_space\\\\stokai\" -maxdepth 2 -type f -name \"*.md\" ! -path \"*node_modules*\" ! -path \"*/\\\\.*\" ! -path \"*pytest*\")",
+      "Bash(Select-Object -ExpandProperty Name)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(grep -E \"\\\\.py$\")"
     ]
   }
 }

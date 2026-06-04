@@ -1,0 +1,1059 @@
+{
+  "info": {
+    "name": "StokAI API",
+    "description": "Complete API collection for the StokAI geopolitical intelligence platform.\n\n**Setup:**\n1. Set the `baseUrl` variable to `http://localhost:8000`\n2. Set `tenantId` to your tenant UUID\n3. Run **Auth / Login** — the collection script stores `accessToken` automatically\n4. All other requests use `{{accessToken}}` in the Bearer header\n\n**Tenant isolation:** Cross-tenant access returns 404 (not 403) by design.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",     "value": "http://localhost:8000",                        "type": "string" },
+    { "key": "tenantId",    "value": "00000000-0000-0000-0000-000000000001",         "type": "string" },
+    { "key": "accessToken", "value": "",                                              "type": "string" },
+    { "key": "companyId",   "value": "00000000-0000-0000-0000-000000000002",         "type": "string" },
+    { "key": "portfolioId", "value": "00000000-0000-0000-0000-000000000003",         "type": "string" },
+    { "key": "positionId",  "value": "00000000-0000-0000-0000-000000000004",         "type": "string" },
+    { "key": "eventId",     "value": "00000000-0000-0000-0000-000000000005",         "type": "string" },
+    { "key": "briefId",     "value": "00000000-0000-0000-0000-000000000006",         "type": "string" },
+    { "key": "ruleId",      "value": "00000000-0000-0000-0000-000000000007",         "type": "string" },
+    { "key": "sessionId",   "value": "00000000-0000-0000-0000-000000000008",         "type": "string" },
+    { "key": "runId",       "value": "00000000-0000-0000-0000-000000000009",         "type": "string" },
+    { "key": "sourceId",    "value": "00000000-0000-0000-0000-000000000010",         "type": "string" },
+    { "key": "hilItemId",   "value": "00000000-0000-0000-0000-000000000011",         "type": "string" },
+    { "key": "proposalId",  "value": "00000000-0000-0000-0000-000000000012",         "type": "string" },
+    { "key": "patternId",   "value": "00000000-0000-0000-0000-000000000013",         "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] },
+            "description": "Public endpoint. No auth required."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const json = pm.response.json();",
+                "if (json.data && json.data.access_token) {",
+                "  pm.collectionVariables.set('accessToken', json.data.access_token);",
+                "  console.log('accessToken saved');",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Tenant-ID",  "value": "{{tenantId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"changeme\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] },
+            "description": "Rate limit: 10/min. Sets HttpOnly `refresh_token` cookie. Test script saves `accessToken` to collection variable."
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const json = pm.response.json();",
+                "if (json.data && json.data.access_token) {",
+                "  pm.collectionVariables.set('accessToken', json.data.access_token);",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "X-Tenant-ID", "value": "{{tenantId}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/refresh", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","refresh"] },
+            "description": "Uses HttpOnly `refresh_token` cookie set by Login. Rate limit: 30/min."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "X-Tenant-ID", "value": "{{tenantId}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/logout", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","logout"] },
+            "description": "Clears the HttpOnly refresh_token cookie. Always returns 204."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Portfolio",
+      "item": [
+        {
+          "name": "Create Portfolio",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Portfolio\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/portfolios", "host": ["{{baseUrl}}"], "path": ["api","v1","portfolios"] }
+          }
+        },
+        {
+          "name": "List Portfolios",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/portfolios", "host": ["{{baseUrl}}"], "path": ["api","v1","portfolios"] }
+          }
+        },
+        {
+          "name": "Get Portfolio",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/portfolios/{{portfolioId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","portfolios","{{portfolioId}}"] }
+          }
+        },
+        {
+          "name": "Delete Portfolio",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/portfolios/{{portfolioId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","portfolios","{{portfolioId}}"] }
+          }
+        },
+        {
+          "name": "Add Position",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ticker\": \"AAPL\",\n  \"shares\": 100.5,\n  \"cost_basis\": 150.50,\n  \"source\": \"manual\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/portfolios/{{portfolioId}}/positions", "host": ["{{baseUrl}}"], "path": ["api","v1","portfolios","{{portfolioId}}","positions"] },
+            "description": "`source`: manual | csv | broker"
+          }
+        },
+        {
+          "name": "List Positions",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/portfolios/{{portfolioId}}/positions", "host": ["{{baseUrl}}"], "path": ["api","v1","portfolios","{{portfolioId}}","positions"] }
+          }
+        },
+        {
+          "name": "Delete Position",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/portfolios/{{portfolioId}}/positions/{{positionId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","portfolios","{{portfolioId}}","positions","{{positionId}}"] }
+          }
+        },
+        {
+          "name": "CSV Import",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "file", "type": "file", "src": "" }]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/portfolios/import?portfolio_id={{portfolioId}}",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","portfolios","import"],
+              "query": [{ "key": "portfolio_id", "value": "{{portfolioId}}" }]
+            },
+            "description": "Max file size 1 MB. Returns import statistics."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Watchlist",
+      "item": [
+        {
+          "name": "Add to Watchlist",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_id\": \"{{companyId}}\",\n  \"ticker\": \"AAPL\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/watchlist", "host": ["{{baseUrl}}"], "path": ["api","v1","watchlist"] }
+          }
+        },
+        {
+          "name": "List Watchlist",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/watchlist", "host": ["{{baseUrl}}"], "path": ["api","v1","watchlist"] }
+          }
+        },
+        {
+          "name": "Remove from Watchlist",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/watchlist/{{companyId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","watchlist","{{companyId}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Onboarding",
+      "item": [
+        {
+          "name": "Get Onboarding State",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/onboarding/state", "host": ["{{baseUrl}}"], "path": ["api","v1","onboarding","state"] }
+          }
+        },
+        {
+          "name": "Select Scoring Profile",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profile_id\": \"{{portfolioId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/onboarding/profile", "host": ["{{baseUrl}}"], "path": ["api","v1","onboarding","profile"] }
+          }
+        },
+        {
+          "name": "Skip Onboarding",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/onboarding/skip", "host": ["{{baseUrl}}"], "path": ["api","v1","onboarding","skip"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Companies",
+      "item": [
+        {
+          "name": "Get Company Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies/{{companyId}}/detail?price_interval=1d&price_from_days=90",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","companies","{{companyId}}","detail"],
+              "query": [
+                { "key": "profile_id",      "value": "",    "disabled": true, "description": "UUID, defaults to user's default profile" },
+                { "key": "price_interval",  "value": "1d",  "description": "1d | 1h | 15m" },
+                { "key": "price_from_days", "value": "90",  "description": "1-365" }
+              ]
+            },
+            "description": "Returns fundamentals, score breakdown, active events, analysis history, and track record."
+          }
+        },
+        {
+          "name": "Trigger On-Demand Analysis",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/companies/{{companyId}}/analysis", "host": ["{{baseUrl}}"], "path": ["api","v1","companies","{{companyId}}","analysis"] },
+            "description": "Returns run_id (202). Subscribe via WebSocket /ws/workflow/{run_id} for progress."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Screener",
+      "item": [
+        {
+          "name": "Screen Companies",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filters\": {},\n  \"sort_column\": \"score\",\n  \"sort_dir\": \"desc\",\n  \"page_size\": 20,\n  \"cursor\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/screener", "host": ["{{baseUrl}}"], "path": ["api","v1","screener"] },
+            "description": "POST used (not GET) to support complex filter payloads. Returns cursor-paginated results."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Events & Progressive Disclosure",
+      "item": [
+        {
+          "name": "Get Event Popup (Level 1)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/events/{{eventId}}/popup", "host": ["{{baseUrl}}"], "path": ["api","v1","events","{{eventId}}","popup"] },
+            "description": "< 300 ms for cached events."
+          }
+        },
+        {
+          "name": "Get Event Side Panel (Level 2)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/events/{{eventId}}/side-panel", "host": ["{{baseUrl}}"], "path": ["api","v1","events","{{eventId}}","side-panel"] },
+            "description": "Sparklines, historical analogies, AI rationale."
+          }
+        },
+        {
+          "name": "Get Event Audit Trail",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/events/{{eventId}}/audit-trail", "host": ["{{baseUrl}}"], "path": ["api","v1","events","{{eventId}}","audit-trail"] },
+            "description": "Prompt SHA, reasoning chain, Langfuse trace link."
+          }
+        },
+        {
+          "name": "Get Event Deep Dive (Level 3)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/events/{{eventId}}/deep-dive", "host": ["{{baseUrl}}"], "path": ["api","v1","events","{{eventId}}","deep-dive"] },
+            "description": "200 = ready, 202 = pending (poll every 5 s)."
+          }
+        },
+        {
+          "name": "Get Event Memo",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/events/{{eventId}}/memo", "host": ["{{baseUrl}}"], "path": ["api","v1","events","{{eventId}}","memo"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Briefs",
+      "item": [
+        {
+          "name": "List Briefs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/briefs?limit=20",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","briefs"],
+              "query": [
+                { "key": "type",   "value": "",    "disabled": true, "description": "earnings | watchlist_scan | morning" },
+                { "key": "cursor", "value": "",    "disabled": true },
+                { "key": "limit",  "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Brief Detail",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/briefs/{{briefId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","briefs","{{briefId}}"] }
+          }
+        },
+        {
+          "name": "Submit Brief Feedback",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"feedback_type\": \"thumbs_up\",\n  \"correction\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/briefs/{{briefId}}/feedback", "host": ["{{baseUrl}}"], "path": ["api","v1","briefs","{{briefId}}","feedback"] },
+            "description": "`feedback_type`: thumbs_up | thumbs_down | edit. `correction` required when type=edit."
+          }
+        },
+        {
+          "name": "Get Latest Watchlist Scan Brief",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/briefs/watchlist", "host": ["{{baseUrl}}"], "path": ["api","v1","briefs","watchlist"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Earnings Briefs",
+      "item": [
+        {
+          "name": "List Earnings Briefs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/earnings-briefs?limit=20",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","earnings-briefs"],
+              "query": [
+                { "key": "date",  "value": "",    "disabled": true, "description": "ISO date filter e.g. 2024-01-15" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Earnings Brief Run",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/earnings-briefs/{{runId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","earnings-briefs","{{runId}}"] },
+            "description": "Returns report + scenario_tree when status=COMPLETED."
+          }
+        },
+        {
+          "name": "Get Latest Earnings Brief for Company",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/companies/{{companyId}}/earnings-brief", "host": ["{{baseUrl}}"], "path": ["api","v1","companies","{{companyId}}","earnings-brief"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Q&A",
+      "item": [
+        {
+          "name": "Create QA Session",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const json = pm.response.json();",
+                "if (json.session_id) {",
+                "  pm.collectionVariables.set('sessionId', json.session_id);",
+                "}"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/qa/sessions", "host": ["{{baseUrl}}"], "path": ["api","v1","qa","sessions"] }
+          }
+        },
+        {
+          "name": "Ask Question (SSE Stream)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept",       "value": "text/event-stream" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"What is the geopolitical outlook for AAPL?\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/qa/sessions/{{sessionId}}/messages", "host": ["{{baseUrl}}"], "path": ["api","v1","qa","sessions","{{sessionId}}","messages"] },
+            "description": "Server-Sent Events stream. Event types: chunk (text token), done (final answer), cost_limited ($0.40 ceiling hit), error."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Alerts",
+      "item": [
+        {
+          "name": "List Alerts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alerts?page=1&page_size=20",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","alerts"],
+              "query": [
+                { "key": "page",          "value": "1" },
+                { "key": "page_size",     "value": "20" },
+                { "key": "status",        "value": "", "disabled": true },
+                { "key": "action_signal", "value": "", "disabled": true },
+                { "key": "date_from",     "value": "", "disabled": true, "description": "ISO datetime" },
+                { "key": "date_to",       "value": "", "disabled": true, "description": "ISO datetime" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Alert Rules",
+      "item": [
+        {
+          "name": "List Alert Rules",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/alert-rules", "host": ["{{baseUrl}}"], "path": ["api","v1","alert-rules"] }
+          }
+        },
+        {
+          "name": "Create Alert Rule",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Rule\",\n  \"conditions\": {}\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/alert-rules", "host": ["{{baseUrl}}"], "path": ["api","v1","alert-rules"] }
+          }
+        },
+        {
+          "name": "Update Alert Rule",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Rule Name\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/alert-rules/{{ruleId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","alert-rules","{{ruleId}}"] }
+          }
+        },
+        {
+          "name": "Delete Alert Rule",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/alert-rules/{{ruleId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","alert-rules","{{ruleId}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Anti-Fatigue Settings",
+      "item": [
+        {
+          "name": "Get Anti-Fatigue Settings",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/settings/anti-fatigue", "host": ["{{baseUrl}}"], "path": ["api","v1","settings","anti-fatigue"] }
+          }
+        },
+        {
+          "name": "Update Anti-Fatigue Settings",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"daily_push_limit\": 10,\n  \"dedup_window_minutes\": 30,\n  \"quiet_hours_start\": \"22:00\",\n  \"quiet_hours_end\": \"07:00\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/settings/anti-fatigue", "host": ["{{baseUrl}}"], "path": ["api","v1","settings","anti-fatigue"] },
+            "description": "All fields optional (PATCH). daily_push_limit >= 1, dedup_window_minutes >= 1, quiet hours must differ."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Compliance",
+      "item": [
+        {
+          "name": "Get Recommendation Track Record",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/compliance/track-record/{{companyId}}?limit=50",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","compliance","track-record","{{companyId}}"],
+              "query": [{ "key": "limit", "value": "50", "description": "1-200" }]
+            },
+            "description": "Items with sample_size < threshold will have disclaimer_required=true."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Memory",
+      "item": [
+        {
+          "name": "Submit User Feedback",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recommendation_id\": \"{{runId}}\",\n  \"rating\": \"positive\",\n  \"comment\": \"Spot on analysis\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/memory/feedback", "host": ["{{baseUrl}}"], "path": ["api","v1","memory","feedback"] }
+          }
+        },
+        {
+          "name": "List Pending Proposals (Admin)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/memory/proposals", "host": ["{{baseUrl}}"], "path": ["api","v1","memory","proposals"] },
+            "description": "Admin only."
+          }
+        },
+        {
+          "name": "Approve Proposal (Admin)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/memory/proposals/{{proposalId}}/approve", "host": ["{{baseUrl}}"], "path": ["api","v1","memory","proposals","{{proposalId}}","approve"] }
+          }
+        },
+        {
+          "name": "Reject Proposal (Admin)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/memory/proposals/{{proposalId}}/reject", "host": ["{{baseUrl}}"], "path": ["api","v1","memory","proposals","{{proposalId}}","reject"] }
+          }
+        },
+        {
+          "name": "List Pending Patterns (Admin)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/memory/patterns/pending", "host": ["{{baseUrl}}"], "path": ["api","v1","memory","patterns","pending"] }
+          }
+        },
+        {
+          "name": "Approve Pattern (Admin)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/memory/patterns/{{patternId}}/approve", "host": ["{{baseUrl}}"], "path": ["api","v1","memory","patterns","{{patternId}}","approve"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Admin — Data Sources",
+      "description": "Requires role=admin",
+      "item": [
+        {
+          "name": "List Data Sources",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/sources", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","sources"] },
+            "description": "Includes health stats per source: calls_today, errors_today, rate_limit_pct_used, estimated_cost_today."
+          }
+        },
+        {
+          "name": "Create Data Source",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"display_name\": \"Finnhub\",\n  \"interface_type\": \"price\",\n  \"credentials_ref\": \"env:FINNHUB_API_KEY\",\n  \"config\": {},\n  \"cost_tier\": \"low\",\n  \"priority\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/sources", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","sources"] },
+            "description": "credentials_ref format: `env:VAR_NAME` or `vault:PATH`. cost_tier: free | low | medium | high. New sources start disabled."
+          }
+        },
+        {
+          "name": "Get Data Source",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/sources/{{sourceId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","sources","{{sourceId}}"] }
+          }
+        },
+        {
+          "name": "Enable / Disable Source",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/sources/{{sourceId}}/enable", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","sources","{{sourceId}}","enable"] },
+            "description": "Triggers synchronous registry refresh."
+          }
+        },
+        {
+          "name": "Get Source Health Stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/sources/{{sourceId}}/health", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","sources","{{sourceId}}","health"] }
+          }
+        },
+        {
+          "name": "List Market Bindings",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/bindings", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","bindings"] }
+          }
+        },
+        {
+          "name": "Upsert Market Binding",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"market_id\": \"us_equities\",\n  \"interface_type\": \"price\",\n  \"source_id\": \"{{sourceId}}\",\n  \"role\": \"primary\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/bindings", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","bindings"] },
+            "description": "role: primary | fallback. Triggers registry refresh."
+          }
+        },
+        {
+          "name": "Delete Market Binding",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"market_id\": \"us_equities\",\n  \"interface_type\": \"price\",\n  \"source_id\": \"{{sourceId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/bindings", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","bindings"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Admin — System Ops",
+      "description": "Requires role=admin",
+      "item": [
+        {
+          "name": "List Ingestion Jobs",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/system/jobs", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","system","jobs"] }
+          }
+        },
+        {
+          "name": "Trigger Ingestion Job",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/system/jobs/{{sourceId}}/trigger", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","system","jobs","{{sourceId}}","trigger"] }
+          }
+        },
+        {
+          "name": "Get Monthly Cost Summary",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/system/cost", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","system","cost"] }
+          }
+        },
+        {
+          "name": "Update Budget Threshold",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"threshold_usd\": 100.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/system/cost/threshold", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","system","cost","threshold"] }
+          }
+        },
+        {
+          "name": "List Tracked Companies",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/system/companies?page=1&page_size=50",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","admin","system","companies"],
+              "query": [
+                { "key": "page",      "value": "1" },
+                { "key": "page_size", "value": "50", "description": "1-200" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Companies",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/system/companies/search?q=Apple&limit=20",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","admin","system","companies","search"],
+              "query": [
+                { "key": "q",     "value": "Apple" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Track Company",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/system/companies/{{companyId}}/track", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","system","companies","{{companyId}}","track"] }
+          }
+        },
+        {
+          "name": "Untrack Company",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/system/companies/{{companyId}}/track", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","system","companies","{{companyId}}","track"] }
+          }
+        },
+        {
+          "name": "Get Cache Statistics",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/system/cache", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","system","cache"] }
+          }
+        },
+        {
+          "name": "Force Refresh Cache",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data_type\": \"price\",\n  \"company_id\": \"{{companyId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/system/cache/refresh", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","system","cache","refresh"] }
+          }
+        },
+        {
+          "name": "List Feature Flags",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/system/flags", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","system","flags"] }
+          }
+        },
+        {
+          "name": "Toggle Feature Flag",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/system/flags/TWITTER_ENABLED", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","system","flags","TWITTER_ENABLED"] },
+            "description": "Replace flag_id in path. Mutable at runtime — no restart needed."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Admin — HIL Queue",
+      "description": "Requires role=admin or operator",
+      "item": [
+        {
+          "name": "List Pending HIL Items",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/hil", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","hil"] },
+            "description": "Sorted by scheduled_send_at ASC."
+          }
+        },
+        {
+          "name": "Get Pending HIL Count",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/hil/count", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","hil","count"] },
+            "description": "Poll every 30 s for badge display."
+          }
+        },
+        {
+          "name": "Get HIL Item Detail",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/hil/{{hilItemId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","hil","{{hilItemId}}"] }
+          }
+        },
+        {
+          "name": "Apply HIL Action",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"approve\",\n  \"edited_text\": null,\n  \"feedback_text\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/hil/{{hilItemId}}/action", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","hil","{{hilItemId}}","action"] },
+            "description": "action: approve | edit_approve | reject | reject_with_feedback.\nedit_approve requires edited_text.\nreject_with_feedback requires feedback_text."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Admin — Prompts",
+      "description": "Requires role=admin",
+      "item": [
+        {
+          "name": "Get Canary Metrics",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/prompts/exposure_analyst/canary-metrics", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","prompts","exposure_analyst","canary-metrics"] },
+            "description": "Replace role_id in path. Valid IDs: exposure_analyst, historical_context, anomaly_detector, recommendation_synthesizer, narrative_writer, morning_brief_analyst, watchlist_analyst, earnings_analyst, qa_analyst, recommendation_judge, factuality_judge, calibration_judge, event_classifier, ticker_extractor, sentiment_analyzer"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Evaluation",
+      "description": "Requires role=admin",
+      "item": [
+        {
+          "name": "List Evaluation Results",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/evaluation/results?limit=100",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","evaluation","results"],
+              "query": [{ "key": "limit", "value": "100", "description": "1-1000" }]
+            }
+          }
+        },
+        {
+          "name": "Insert Evaluation Result",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"run_id\": \"{{runId}}\",\n  \"metric_name\": \"factuality\",\n  \"score\": 0.92,\n  \"notes\": \"\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/evaluation/results", "host": ["{{baseUrl}}"], "path": ["api","v1","evaluation","results"] }
+          }
+        },
+        {
+          "name": "Get Results for Run",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/evaluation/results/{{runId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","evaluation","results","{{runId}}"] }
+          }
+        },
+        {
+          "name": "List Golden Dataset",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/evaluation/golden-dataset", "host": ["{{baseUrl}}"], "path": ["api","v1","evaluation","golden-dataset"] }
+          }
+        },
+        {
+          "name": "List Golden Dataset Candidates",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/evaluation/golden-dataset/candidates", "host": ["{{baseUrl}}"], "path": ["api","v1","evaluation","golden-dataset","candidates"] }
+          }
+        },
+        {
+          "name": "Create Golden Dataset Candidate",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": {},\n  \"expected_output\": {},\n  \"notes\": \"\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/evaluation/golden-dataset", "host": ["{{baseUrl}}"], "path": ["api","v1","evaluation","golden-dataset"] }
+          }
+        },
+        {
+          "name": "Approve Golden Dataset Item",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/v1/evaluation/golden-dataset/{{briefId}}/approve", "host": ["{{baseUrl}}"], "path": ["api","v1","evaluation","golden-dataset","{{briefId}}","approve"] }
+          }
+        },
+        {
+          "name": "Deactivate Golden Dataset Item",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/v1/evaluation/golden-dataset/{{briefId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","evaluation","golden-dataset","{{briefId}}"] }
+          }
+        },
+        {
+          "name": "List Calibration Results",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/evaluation/calibration?days=30",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","evaluation","calibration"],
+              "query": [
+                { "key": "days",          "value": "30", "description": "1-365" },
+                { "key": "action_signal", "value": "",   "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Calibration Summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/evaluation/calibration/summary?days=30",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","evaluation","calibration","summary"],
+              "query": [{ "key": "days", "value": "30" }]
+            },
+            "description": "Returns assessment, rolling_corr, below_threshold flags."
+          }
+        },
+        {
+          "name": "Record Calibration Review",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"corr_at_review\": 0.42,\n  \"below_threshold\": false,\n  \"action_taken\": \"no_action\",\n  \"notes\": \"Within acceptable range\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/evaluation/calibration/reviews", "host": ["{{baseUrl}}"], "path": ["api","v1","evaluation","calibration","reviews"] }
+          }
+        },
+        {
+          "name": "List Calibration Reviews",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/evaluation/calibration/reviews?limit=10",
+              "host": ["{{baseUrl}}"], "path": ["api","v1","evaluation","calibration","reviews"],
+              "query": [{ "key": "limit", "value": "10" }]
+            }
+          }
+        }
+      ]
+    }
+
+  ]
+}

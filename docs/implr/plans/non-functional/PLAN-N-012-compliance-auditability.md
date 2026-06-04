@@ -4,7 +4,7 @@ slug: compliance-auditability
 title: AI Compliance and Auditability
 linked_requirement: REQ-N-012
 type: non-functional
-status: ready
+status: done
 blocked_reason:
 complexity: M
 tdd_required: true
@@ -12,11 +12,11 @@ linked_nfrs: []
 dependencies:
   - { id: PLAN-F-015, reason: "Layer 1 episodic tables (agent_invocation, tool_call) and IEpisodicRepository are the storage substrate for reasoning chain audit" }
   - { id: PLAN-F-029, reason: "Admin AI Audit Console provides the replay step-through UI; this plan verifies and enforces the data quality and completeness feeding it" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-03T00:00:00Z
-updated_at: 2026-06-03T00:00:00Z
+updated_at: 2026-06-04T00:00:00Z
 ---
 
 # PLAN-N-012 — AI Compliance and Auditability

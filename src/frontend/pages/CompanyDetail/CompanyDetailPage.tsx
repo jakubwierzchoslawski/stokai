@@ -22,6 +22,7 @@ import { ScoreBreakdownPanel } from './ScoreBreakdownPanel';
 import { ActiveEventsPanel } from './ActiveEventsPanel';
 import { AnalysisHistoryPanel } from './AnalysisHistoryPanel';
 import { TrackRecordPanel } from './TrackRecordPanel';
+import { RecommendationTrackRecord } from './RecommendationTrackRecord';
 import { AnalyzeNowButton } from './AnalyzeNowButton';
 
 export function CompanyDetailPage(): React.ReactElement {
@@ -155,6 +156,14 @@ export function CompanyDetailPage(): React.ReactElement {
           trackRecord={detail.track_record}
           directionalAccuracyT1d={detail.directional_accuracy_t1d}
         />
+      </section>
+
+      <section
+        className="company-detail-page__recommendation-track-record"
+        aria-label="AI Recommendation Track Record"
+      >
+        {/* PLAN-N-012: Ex-post accuracy and disclaimer visibility (AC-001, AC-003) */}
+        <RecommendationTrackRecord companyId={companyId} />
       </section>
     </main>
   );

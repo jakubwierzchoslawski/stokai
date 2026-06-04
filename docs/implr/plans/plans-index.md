@@ -7,9 +7,9 @@
 | Metric | Count |
 |--------|-------|
 | Total plans | 47 |
-| Ready | 21 |
+| Ready | 20 |
 | In progress | 0 |
-| Done | 26 |
+| Done | 27 |
 | Blocked | 0 |
 
 ## Functional Plans
@@ -61,7 +61,7 @@
 | PLAN-N-007 | Portability and Self-Hostability | REQ-N-007 | M | true | done | non-functional/PLAN-N-007-portability-self-host.md |
 | PLAN-N-008 | AI Observability via Langfuse | REQ-N-008 | M | true | done | non-functional/PLAN-N-008-ai-observability.md |
 | PLAN-N-009 | Prompt Regression Safety Gate | REQ-N-009 | M | true | ready | non-functional/PLAN-N-009-prompt-regression-safety.md |
-| PLAN-N-010 | AI Recommendation Accuracy Calibration | REQ-N-010 | M | true | ready | non-functional/PLAN-N-010-ai-accuracy-calibration.md |
+| PLAN-N-010 | AI Recommendation Accuracy Calibration | REQ-N-010 | M | true | done | non-functional/PLAN-N-010-ai-accuracy-calibration.md |
 | PLAN-N-011 | Data Freshness and TTL Integrity | REQ-N-011 | M | true | done | non-functional/PLAN-N-011-data-freshness.md |
 | PLAN-N-012 | AI Compliance and Auditability | REQ-N-012 | M | true | ready | non-functional/PLAN-N-012-compliance-auditability.md |
 | PLAN-N-014 | Responsive Design | REQ-N-014 | M | true | ready | non-functional/PLAN-N-014-responsive-design.md |

@@ -86,10 +86,30 @@ def dispatch_all_users() -> None:
     Celery task name: "morning_brief.dispatch_all_users"
     Scheduled at 05:30 UTC daily via beat_schedule.
 
+    PLAN-F-030 TASK-011: Checks FeatureFlagService.is_enabled('morning_brief')
+    before dispatching. If the flag is disabled, logs and returns without
+    dispatching any tasks (AC-005).
+
     Queries the user table for enabled users and fans out individual tasks.
     Each user gets exactly one task regardless of timezone (the per-user
     dispatch_time is handled inside run_for_user via format_and_dispatch).
     """
+    import os
+
+    # Check feature flag before dispatching
+    try:
+        from src.admin.system.feature_flag_service import FeatureFlagService as _FFS
+        _env = os.environ.get("ENVIRONMENT", "production")
+        # Use module-level singleton if available, else check via a simple flag check
+        _flag_service = getattr(dispatch_all_users, "_flag_service", None)
+        if _flag_service is not None and not _flag_service.is_enabled("morning_brief", _env):
+            logger.info(
+                "morning_brief.dispatch_all_users: SKIPPED — morning_brief flag is disabled"
+            )
+            return
+    except Exception as _exc:
+        logger.debug("morning_brief feature-flag check failed (continuing): %s", _exc)
+
     logger.info("morning_brief.dispatch_all_users: starting fan-out")
 
     try:

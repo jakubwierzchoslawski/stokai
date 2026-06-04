@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from slowapi.errors import RateLimitExceeded
 
 from src.admin.router import admin_router
+from src.admin.system.router import system_ops_router
 from src.api.auth.router import auth_router
 from src.api.evaluation.evaluation_router import evaluation_router
 from src.api.middleware.rate_limit import limiter, rate_limit_exceeded_handler
@@ -39,6 +40,7 @@ app.include_router(portfolio_router, prefix="/api/v1")  # PLAN-F-024: Portfolio 
 app.include_router(watchlist_router, prefix="/api/v1")  # PLAN-F-024: Watchlist management
 app.include_router(onboarding_router, prefix="/api/v1")  # PLAN-F-024: Onboarding
 app.include_router(admin_router, prefix="/api/v1")  # PLAN-F-028: admin data-source management
+app.include_router(system_ops_router, prefix="/api/v1/admin")  # PLAN-F-030: System Operations
 app.include_router(memos_router)  # PLAN-F-010: GET /api/v1/events/{event_id}/memo
 app.include_router(evaluation_router, prefix="/api/v1")  # PLAN-F-016: evaluation framework
 app.include_router(alerts_router, prefix="/api/v1")       # PLAN-F-025: Alerts Center

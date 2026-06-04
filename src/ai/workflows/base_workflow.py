@@ -6,6 +6,9 @@ The langfuse_trace_id is stored on the workflow_run row via the episodic
 repository (cross-link between PostgreSQL and Langfuse, Architecture §10).
 
 Subclasses must implement _execute(state) with the actual node graph.
+
+PLAN-F-030 TASK-011: BudgetGuard.assert_under_limit() is called at workflow
+entry to enforce the monthly AI spend cap (Architecture §12.6).
 """
 from __future__ import annotations
 
@@ -55,9 +58,11 @@ class BaseWorkflow(ABC):
         self,
         tracer: ILangfuseTracer,
         episodic_repo: Any,
+        budget_guard: Any = None,
     ) -> None:
         self._tracer = tracer
         self._episodic_repo = episodic_repo
+        self._budget_guard = budget_guard
 
     async def run(self, state: Any) -> Any:
         """Run the full workflow: open trace → execute → close trace.
@@ -82,6 +87,10 @@ class BaseWorkflow(ABC):
             tools_called=None,
             state_snapshot_ref=None,
         )
+
+        # PLAN-F-030: Enforce budget cap before any AI API calls (Architecture §12.6)
+        if self._budget_guard is not None:
+            await self._budget_guard.assert_under_limit(state.tenant_id)
 
         trace_id = self._tracer.open_trace(root_metadata)
         state.trace_id = trace_id

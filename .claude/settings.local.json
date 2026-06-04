@@ -33,7 +33,8 @@
       "Bash(node *)",
       "Bash(dir C:\\\\Users\\\\JakubWierzchoslawski\\\\development\\\\python_space\\\\stokai\\\\src *)",
       "Bash(cp \"/c/Users/JakubWierzchoslawski/development/python_space/stokai/frontend/src/components/qa/\"*.tsx \"/c/Users/JakubWierzchoslawski/development/python_space/stokai/src/frontend/components/qa/\")",
-      "Bash(cp \"/c/Users/JakubWierzchoslawski/development/python_space/stokai/frontend/src/components/qa/\"*.ts \"/c/Users/JakubWierzchoslawski/development/python_space/stokai/src/frontend/components/qa/\")"
+      "Bash(cp \"/c/Users/JakubWierzchoslawski/development/python_space/stokai/frontend/src/components/qa/\"*.ts \"/c/Users/JakubWierzchoslawski/development/python_space/stokai/src/frontend/components/qa/\")",
+      "Bash(grep -v \"^commit\\\\|^Author\\\\|^Date\\\\|^\\\\s\\\\|^$\")"
     ]
   }
 }

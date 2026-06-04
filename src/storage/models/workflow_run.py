@@ -15,7 +15,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import Float, Index, String, text
+from sqlalchemy import Boolean, Float, Index, String, text
 from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMPTZ, UUID as PG_UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -56,6 +56,9 @@ class WorkflowRun(WorkflowBase):
     started_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False)
     completed_at: Mapped[datetime | None] = mapped_column(TIMESTAMPTZ, nullable=True)
     cost_usd: Mapped[float] = mapped_column(Float, nullable=False, server_default=text("0.0"))
+    cost_limited: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("FALSE")
+    )
     final_state: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
     langfuse_trace_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
 

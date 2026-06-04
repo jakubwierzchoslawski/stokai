@@ -16,11 +16,17 @@ from src.storage.models.user import Base
 
 
 class CostRecord(Base):
-    """ORM model for the ``cost_record`` table."""
+    """ORM model for the ``cost_record`` table.
+
+    Columns added by PLAN-N-004 (migration 0063):
+      - user_id         UUID nullable — links to the user who triggered the run.
+      - workflow_run_id UUID nullable — links to the workflow_run row.
+    """
 
     __tablename__ = "cost_record"
     __table_args__ = (
         Index("ix_cost_record_tenant_date", "tenant_id", "date"),
+        Index("ix_cost_record_user_tenant_date", "user_id", "tenant_id", "date"),
     )
 
     record_id: Mapped[uuid.UUID] = mapped_column(
@@ -29,6 +35,10 @@ class CostRecord(Base):
         server_default=text("gen_random_uuid()"),
     )
     tenant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    workflow_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), nullable=True
+    )
     date: Mapped[date] = mapped_column(Date(), nullable=False)
     source: Mapped[str] = mapped_column(String, nullable=False)
     model: Mapped[str | None] = mapped_column(String, nullable=True)

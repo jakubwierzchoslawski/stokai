@@ -56,6 +56,48 @@ class ICostRecordRepository(ABC):
     async def insert(self, record: CostRecord) -> CostRecord:
         """Persist a new CostRecord and return it with generated record_id."""
 
+    @abstractmethod
+    async def daily_total_for_user(
+        self,
+        user_id: uuid.UUID,
+        tenant_id: uuid.UUID,
+        target_date: date,
+    ) -> float:
+        """Return total cost_usd for a specific user on a specific date.
+
+        Sums cost_record.cost_usd where user_id = :user_id AND
+        tenant_id = :tenant_id AND date = :target_date.
+        Returns 0.0 when no records exist.
+        """
+
+    @abstractmethod
+    async def insert_for_workflow_run(
+        self,
+        workflow_run_id: uuid.UUID,
+        user_id: uuid.UUID,
+        tenant_id: uuid.UUID,
+        workflow_type: str,
+        cost_usd: float,
+        target_date: date,
+    ) -> CostRecord:
+        """Insert a cost_record row after a workflow run completes or is terminated.
+
+        Used by base_workflow.py finally block to record telemetry for every run
+        regardless of outcome (normal completion, WorkflowBudgetExceededError,
+        or other exception).
+
+        Args:
+            workflow_run_id: UUID of the workflow_run row.
+            user_id: UUID of the user who triggered the workflow.
+            tenant_id: UUID of the tenant (multi-tenancy scope).
+            workflow_type: Workflow type string (e.g. "morning_brief").
+            cost_usd: Accumulated cost in USD at time of insert.
+            target_date: Calendar date for cost aggregation (typically date.today()).
+
+        Returns:
+            Persisted CostRecord with generated record_id.
+        """
+
 
 class PostgresCostRecordRepository(ICostRecordRepository):
     """SQLAlchemy 2.0 async implementation of ICostRecordRepository."""
@@ -168,6 +210,48 @@ class PostgresCostRecordRepository(ICostRecordRepository):
         ]
 
     async def insert(self, record: CostRecord) -> CostRecord:
+        self._session.add(record)
+        await self._session.flush()
+        await self._session.refresh(record)
+        return record
+
+    async def daily_total_for_user(
+        self,
+        user_id: uuid.UUID,
+        tenant_id: uuid.UUID,
+        target_date: date,
+    ) -> float:
+        """Return total cost_usd for a specific user on a specific date.
+
+        Returns 0.0 via COALESCE when no records exist.
+        """
+        stmt = select(func.coalesce(func.sum(CostRecord.cost_usd), 0.0)).where(
+            CostRecord.user_id == user_id,
+            CostRecord.tenant_id == tenant_id,
+            CostRecord.date == target_date,
+        )
+        result = await self._session.execute(stmt)
+        return float(result.scalar_one())
+
+    async def insert_for_workflow_run(
+        self,
+        workflow_run_id: uuid.UUID,
+        user_id: uuid.UUID,
+        tenant_id: uuid.UUID,
+        workflow_type: str,
+        cost_usd: float,
+        target_date: date,
+    ) -> CostRecord:
+        """Insert a cost_record row after a workflow run completes or is terminated."""
+        record = CostRecord(
+            tenant_id=tenant_id,
+            user_id=user_id,
+            workflow_run_id=workflow_run_id,
+            date=target_date,
+            source="workflow",
+            workflow_type=workflow_type,
+            cost_usd=cost_usd,
+        )
         self._session.add(record)
         await self._session.flush()
         await self._session.refresh(record)

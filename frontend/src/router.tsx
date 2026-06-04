@@ -7,11 +7,13 @@
  *
  * PLAN-F-013 TASK-008
  * PLAN-F-028 TASK-011
+ * PLAN-F-030 TASK-011 — /admin/system (System Operations panel)
  */
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HilQueue } from "./pages/admin/HilQueue";
 import { SourcesPage } from "./pages/admin/sources/SourcesPage";
+import { SystemOpsPage } from "./pages/admin/system/SystemOpsPage";
 
 /** Root application router. */
 export const AppRouter: React.FC = () => {
@@ -30,6 +32,11 @@ export const AppRouter: React.FC = () => {
       React.createElement(Route, {
         path: "/admin/sources",
         element: React.createElement(SourcesPage),
+      }),
+      // PLAN-F-030: Admin system operations panel (admin role required)
+      React.createElement(Route, {
+        path: "/admin/system",
+        element: React.createElement(SystemOpsPage),
       }),
       // ── Default redirect ────────────────────────────────────────────────────
       React.createElement(Route, {

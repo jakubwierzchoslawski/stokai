@@ -4,8 +4,9 @@
  * Links:
  *   - HIL Review Queue (/admin/hil)
  *   - Data Sources (/admin/sources)
+ *   - System Operations (/admin/system)  [PLAN-F-030 TASK-011]
  *
- * PLAN-F-028 TASK-011
+ * PLAN-F-028 TASK-011 | PLAN-F-030 TASK-011
  */
 import React from "react";
 import { NavLink } from "react-router-dom";
@@ -34,6 +35,17 @@ export const AdminNav: React.FC = () => {
             data-testid="nav-sources"
           >
             Data Sources
+          </NavLink>
+        </li>
+        <li>
+          <NavLink
+            to="/admin/system"
+            className={({ isActive }) =>
+              `admin-nav__link ${isActive ? "admin-nav__link--active" : ""}`
+            }
+            data-testid="nav-system"
+          >
+            System Operations
           </NavLink>
         </li>
       </ul>

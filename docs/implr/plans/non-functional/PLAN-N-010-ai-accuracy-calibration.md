@@ -4,7 +4,7 @@ slug: ai-accuracy-calibration
 title: AI Recommendation Accuracy Calibration
 linked_requirement: REQ-N-010
 type: non-functional
-status: ready
+status: done
 blocked_reason:
 complexity: M
 tdd_required: true
@@ -12,7 +12,7 @@ linked_nfrs: []
 dependencies:
   - { id: PLAN-F-016, reason: "Tier 3 calibration infrastructure (calibration_result table, Tier3CalibrationService, CalibrationRepository, daily Celery task, dashboard API) is built by PLAN-F-016; this plan adds threshold enforcement, configurable thresholds, weekly review recording, and outcome-fill closure" }
   - { id: PLAN-F-015, reason: "recommendation_outcome rows with actual_t1d/actual_t1w populated by the Layer 1 outcome-fill task are the raw data source for every calibration computation" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-02T00:00:00Z

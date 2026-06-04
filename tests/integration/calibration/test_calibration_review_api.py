@@ -75,7 +75,9 @@ def _build_app(
     os.environ.setdefault("JWT_SECRET_KEY", JWT_SECRET)
 
     app = FastAPI()
-    app.include_router(evaluation_router, prefix="/api/v1/evaluation")
+    # The router already carries prefix="/evaluation"; mounting at "/api/v1" produces
+    # the correct "/api/v1/evaluation/..." paths that the tests assert against.
+    app.include_router(evaluation_router, prefix="/api/v1")
 
     if mock_cal_repo is not None:
         app.dependency_overrides[get_calibration_repo] = lambda: mock_cal_repo

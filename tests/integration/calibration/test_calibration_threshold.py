@@ -83,7 +83,9 @@ def _build_app(mock_cal_repo: AsyncMock) -> FastAPI:
     os.environ.setdefault("JWT_SECRET_KEY", JWT_SECRET)
 
     app = FastAPI()
-    app.include_router(evaluation_router, prefix="/api/v1/evaluation")
+    # The router already carries prefix="/evaluation"; mounting at "/api/v1" produces
+    # the correct "/api/v1/evaluation/..." paths that the tests assert against.
+    app.include_router(evaluation_router, prefix="/api/v1")
     app.dependency_overrides[get_calibration_repo] = lambda: mock_cal_repo
     # review repo not needed for summary tests, but stub it
     mock_review_repo = AsyncMock()

@@ -24,7 +24,13 @@
       "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/unit/api/test_company_detail_router.py::TestGetCompanyDetailEndpoint -v --tb=short)",
       "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/integration/api/test_company_detail_endpoint.py -v --tb=short)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(npm install *)",
+      "Bash(npx jest *)",
+      "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/unit/storage/test_price_bar_repository.py tests/unit/api/test_company_detail_router.py tests/integration/api/test_company_detail_endpoint.py -v --tb=short)",
+      "Bash(git *)",
+      "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/unit/api/test_company_detail_router.py::TestGetCompanyDetailEndpoint::test_endpoint_401_without_jwt -v --tb=long)",
+      "Bash(node *)"
     ]
   }
 }

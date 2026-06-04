@@ -4,7 +4,7 @@ slug: alerts-center
 title: Alerts Center
 linked_requirement: REQ-F-025
 type: functional
-status: ready
+status: done
 blocked_reason:
 complexity: M
 tdd_required: true
@@ -12,7 +12,7 @@ linked_nfrs:
   - { id: REQ-N-006, reason: "tenant_id isolation on all alert and alert_rule queries; ownership check on every rule mutation" }
 dependencies:
   - { id: PLAN-F-005, reason: "alert and alert_rule rows are persisted by PLAN-F-005; this plan adds the UI/API management layer on top" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-02T00:00:00Z

@@ -19,7 +19,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from src.config.settings import get_settings
 
-_bearer = HTTPBearer(auto_error=True)
+_bearer = HTTPBearer(auto_error=False)
 
 ROLES = {"admin", "operator", "end_user"}
 
@@ -66,9 +66,15 @@ def _decode_token(token: str) -> CurrentUser:
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(_bearer),
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
 ) -> CurrentUser:
     """Return the decoded CurrentUser from the Bearer token."""
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"code": "MISSING_TOKEN", "message": "Bearer token required."},
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     return _decode_token(credentials.credentials)
 
 

@@ -7,9 +7,9 @@
 | Metric | Count |
 |--------|-------|
 | Total plans | 47 |
-| Ready | 20 |
+| Ready | 19 |
 | In progress | 0 |
-| Done | 27 |
+| Done | 28 |
 | Blocked | 0 |
 
 ## Functional Plans
@@ -44,7 +44,7 @@
 | PLAN-F-027 | Q&A Chat Interface | REQ-F-027 | M | true | done | functional/PLAN-F-027-qa-chat-interface.md |
 | PLAN-F-028 | Admin Data Source Management | REQ-F-028 | L | true | ready | functional/PLAN-F-028-admin-data-source-management.md |
 | PLAN-F-029 | Admin AI Audit Console | REQ-F-029 | L | true | ready | functional/PLAN-F-029-admin-ai-audit-console.md |
-| PLAN-F-030 | Admin System Operations Panel | REQ-F-030 | L | true | ready | functional/PLAN-F-030-admin-system-operations.md |
+| PLAN-F-030 | Admin System Operations Panel | REQ-F-030 | L | true | done | functional/PLAN-F-030-admin-system-operations.md |
 | PLAN-F-031 | Cold-Start Data Seeding | REQ-F-031 | M | true | done | functional/PLAN-F-031-cold-start-data-seeding.md |
 | PLAN-F-032 | Cache-or-Fetch Data Access | REQ-F-032 | M | true | done | functional/PLAN-F-032-cache-or-fetch-data-access.md |
 | PLAN-F-033 | User Authentication and Roles | REQ-F-033 | M | true | done | functional/PLAN-F-033-user-authentication-and-roles.md |
@@ -55,7 +55,7 @@
 | PLAN-N-001 | Mode A Pipeline Latency Enforcement | REQ-N-001 | M | true | done | non-functional/PLAN-N-001-mode-a-latency.md |
 | PLAN-N-002 | Mode B Workflow Latency | REQ-N-002 | M | true | ready | non-functional/PLAN-N-002-mode-b-latency.md |
 | PLAN-N-003 | Mode A Per-Event Cost Ceiling | REQ-N-003 | M | true | done | non-functional/PLAN-N-003-mode-a-cost.md |
-| PLAN-N-004 | Mode B Per-Report Cost Ceiling and User Budget | REQ-N-004 | M | true | ready | non-functional/PLAN-N-004-mode-b-cost.md |
+| PLAN-N-004 | Mode B Per-Report Cost Ceiling and User Budget | REQ-N-004 | M | true | done | non-functional/PLAN-N-004-mode-b-cost.md |
 | PLAN-N-005 | MVP Infrastructure and AI Total Budget | REQ-N-005 | S | false | ready | non-functional/PLAN-N-005-infrastructure-budget.md |
 | PLAN-N-006 | Multi-Tenancy and Security | REQ-N-006 | L | true | done | non-functional/PLAN-N-006-multitenancy-security.md |
 | PLAN-N-007 | Portability and Self-Hostability | REQ-N-007 | M | true | done | non-functional/PLAN-N-007-portability-self-host.md |

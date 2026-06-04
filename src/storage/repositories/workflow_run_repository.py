@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import select, update
@@ -77,6 +78,45 @@ class WorkflowRunRepository:
         for key, val in kwargs.items():
             if key in allowed_columns:
                 values[key] = val
+
+        stmt = (
+            update(WorkflowRun)
+            .where(WorkflowRun.workflow_id == workflow_id)
+            .values(**values)
+        )
+        await self._session.execute(stmt)
+        await self._session.flush()
+
+    async def create_workflow_run(self, state: WorkflowState) -> WorkflowRun:
+        """Alias for create() — used by CostAwareBaseWorkflow dispatch layer."""
+        return await self.create(state)
+
+    async def update_workflow_run(
+        self,
+        workflow_id: UUID,
+        *,
+        status: str,
+        cost_usd: float | None = None,
+        cost_limited: bool | None = None,
+        completed_at: datetime | None = None,
+        final_state_json: dict | None = None,
+    ) -> None:
+        """Update workflow_run columns by workflow_id.
+
+        Used by CostAwareBaseWorkflow for status transitions that include
+        cost_limited (PLAN-N-004).
+
+        Allowed columns: status, cost_usd, cost_limited, completed_at, final_state.
+        """
+        values: dict = {"status": status}
+        if cost_usd is not None:
+            values["cost_usd"] = cost_usd
+        if cost_limited is not None:
+            values["cost_limited"] = cost_limited
+        if completed_at is not None:
+            values["completed_at"] = completed_at
+        if final_state_json is not None:
+            values["final_state"] = final_state_json
 
         stmt = (
             update(WorkflowRun)

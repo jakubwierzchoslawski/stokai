@@ -1,0 +1,43 @@
+# Event Deep-Dive Workflow — per-workflow configuration
+#
+# PLAN-N-004 TASK-006
+# Extends: PLAN-F-010 (Event Deep-Dive Workflow)
+#
+# This canonical agents/ file is the authoritative source for cost_ceiling_usd.
+# WorkflowCostGuard reads this value at workflow instantiation.
+
+workflow_id: event_deep_dive
+display_name: "Event Deep-Dive"
+
+# ── Budget (REQ-N-004) ────────────────────────────────────────────────────────
+cost_ceiling_usd: 2.00
+
+# Agent ceiling allocation (must sum ≤ cost_ceiling_usd):
+#   fetch_event_full:              0.00  (DeterministicNode — no LLM cost)
+#   fetch_market_reaction_so_far:  0.00  (DeterministicNode — no LLM cost)
+#   run_exposure_analysts:         0.30  (Sonnet 4.6, parallel per company)
+#   event_deep_dive_agent:         0.50  (Opus 4.7)
+#   historical_context_agent:      0.60  (Opus 4.7)
+#   recommendation_synthesizer:    0.35  (Opus 4.7)
+#   narrative_writer:              0.20  (Opus 4.7)
+#   evaluate_quality:              0.05  (Opus 4.7 LLM-as-judge)
+#   Total allocation:              2.00
+
+# ── Timing ────────────────────────────────────────────────────────────────────
+timeout_seconds: 600
+target_duration_seconds: 300
+
+# ── Confidence thresholds ─────────────────────────────────────────────────────
+confidence_thresholds:
+  auto_dispatch: 0.70
+  hil_min: 0.40
+  block_max: 0.40
+
+# ── Ordered agent nodes ───────────────────────────────────────────────────────
+nodes:
+  - run_exposure_analysts
+  - event_deep_dive_agent
+  - historical_context_agent
+  - recommendation_synthesizer
+  - narrative_writer
+  - evaluate_quality

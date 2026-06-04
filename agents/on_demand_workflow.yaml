@@ -1,0 +1,43 @@
+# On-Demand Analysis Workflow — per-workflow configuration
+#
+# PLAN-N-004 TASK-006
+# Extends: PLAN-F-007 (On-Demand Analysis Workflow)
+#
+# This canonical agents/ file is the authoritative source for cost_ceiling_usd.
+# WorkflowCostGuard reads this value at workflow instantiation.
+
+workflow_id: on_demand_analysis
+display_name: "On-Demand Analysis"
+
+# ── Budget (REQ-N-004) ────────────────────────────────────────────────────────
+cost_ceiling_usd: 1.50
+
+# Agent ceiling allocation (must sum ≤ cost_ceiling_usd):
+#   fetch_company_state:        0.00  (DeterministicNode — no LLM cost)
+#   fetch_active_events:        0.00  (DeterministicNode — no LLM cost)
+#   exposure_analyst:           0.25  (Sonnet 4.6)
+#   anomaly_detector:           0.20  (Sonnet 4.6)
+#   historical_context_agent:   0.35  (Opus 4.7)
+#   recommendation_synthesizer: 0.35  (Opus 4.7)
+#   narrative_writer:           0.25  (Opus 4.7)
+#   evaluate_quality:           0.10  (Opus 4.7 LLM-as-judge)
+#   Total allocation:           1.50
+
+# ── Timing ────────────────────────────────────────────────────────────────────
+timeout_seconds: 300
+target_duration_seconds: 120
+
+# ── Confidence thresholds ─────────────────────────────────────────────────────
+confidence_thresholds:
+  auto_dispatch: 0.70
+  hil_min: 0.40
+  block_max: 0.40
+
+# ── Ordered agent nodes ───────────────────────────────────────────────────────
+nodes:
+  - exposure_analyst
+  - anomaly_detector
+  - historical_context_agent
+  - recommendation_synthesizer
+  - evaluate_quality
+  - narrative_writer

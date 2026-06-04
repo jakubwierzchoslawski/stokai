@@ -63,6 +63,9 @@ class WorkflowState(BaseModel):
     # Cost / token tracking (REQ-N-004)
     cost_usd: float = 0.0
     tokens_consumed: dict[str, int] = Field(default_factory=dict)
+    # Set to True by cost_exceeded_node when a workflow is terminated mid-execution
+    # due to WorkflowBudgetExceededError (PLAN-N-004).
+    cost_limited: bool = False
 
     # Lifecycle
     status: WorkflowStatus = WorkflowStatus.RUNNING

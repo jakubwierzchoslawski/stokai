@@ -1,0 +1,48 @@
+# Watchlist Scan Workflow — per-workflow configuration
+#
+# PLAN-N-004 TASK-006
+# Extends: src/ai/workflows/watchlist_scan/watchlist_scan.yaml (PLAN-F-008)
+#
+# This canonical agents/ copy is the authoritative source for cost_ceiling_usd.
+# WorkflowCostGuard reads this value at workflow instantiation.
+
+workflow_id: watchlist_scan
+display_name: "Watchlist Scan"
+
+# ── Budget (REQ-N-004) ────────────────────────────────────────────────────────
+cost_ceiling_usd: 1.00
+
+# Agent ceiling allocation (must sum ≤ cost_ceiling_usd):
+#   relevance_analyst:           0.15  (Sonnet 4.6)
+#   anomaly_detector:            0.15  (Sonnet 4.6)
+#   historical_context_agent:    0.30  (Opus 4.7, conditional high_anomaly_only)
+#   recommendation_synthesizer:  0.25  (Opus 4.7)
+#   narrative_writer:            0.10  (Opus 4.7)
+#   evaluate_quality:            0.05  (Opus 4.7 LLM-as-judge)
+#   Total allocation:            1.00
+
+# ── Timing ────────────────────────────────────────────────────────────────────
+timeout_seconds: 480
+target_duration_seconds: 240
+
+# ── Scheduling ────────────────────────────────────────────────────────────────
+cron_schedule: "30 17 * * *"  # fire at 17:30 UTC daily
+
+# ── HIL deadline (§7.6) ──────────────────────────────────────────────────────
+hil_deadline: "17:45"
+dispatch_target: "18:00"
+
+# ── Confidence thresholds ─────────────────────────────────────────────────────
+confidence_thresholds:
+  auto_dispatch: 0.70
+  hil_min: 0.40
+  block_max: 0.40
+
+# ── Ordered agent nodes ───────────────────────────────────────────────────────
+nodes:
+  - relevance_analyst
+  - anomaly_detector
+  - historical_context_agent   # conditional: high_anomaly_only
+  - recommendation_synthesizer
+  - evaluate_quality
+  - narrative_writer

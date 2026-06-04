@@ -4,7 +4,7 @@ slug: mode-b-cost
 title: Mode B Per-Report Cost Ceiling and User Budget
 linked_requirement: REQ-N-004
 type: non-functional
-status: ready
+status: done
 blocked_reason:
 complexity: M
 tdd_required: true
@@ -12,7 +12,7 @@ linked_nfrs: []
 dependencies:
   - { id: PLAN-F-006, reason: "Morning Brief Workflow defines WorkflowState.cost_usd, CostGuard, and cost_ceiling_usd workflow config; this plan extends that pattern to all five workflows and adds per-user daily budget enforcement" }
   - { id: PLAN-F-011, reason: "ExecutionLimiter enforces per-agent cost_ceiling_usd; this plan builds the workflow-level and per-user-daily tiers above it, and tests the full three-tier stack end-to-end" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-02T00:00:00Z

@@ -1,0 +1,41 @@
+# Earnings Risk Brief Workflow — per-workflow configuration
+#
+# PLAN-N-004 TASK-006
+# Extends: PLAN-F-009 (Earnings Risk Brief Workflow)
+#
+# This canonical agents/ file is the authoritative source for cost_ceiling_usd.
+# WorkflowCostGuard reads this value at workflow instantiation.
+
+workflow_id: earnings_brief
+display_name: "Earnings Risk Brief"
+
+# ── Budget (REQ-N-004) ────────────────────────────────────────────────────────
+cost_ceiling_usd: 1.50
+
+# Agent ceiling allocation (must sum ≤ cost_ceiling_usd):
+#   fetch_company_state:        0.00  (DeterministicNode — no LLM cost)
+#   earnings_context_agent:     0.30  (Sonnet 4.6)
+#   fetch_earnings_history:     0.00  (DeterministicNode — no LLM cost)
+#   historical_context_agent:   0.35  (Opus 4.7)
+#   recommendation_synthesizer: 0.35  (Opus 4.7)
+#   narrative_writer:           0.30  (Opus 4.7)
+#   evaluate_quality:           0.20  (Opus 4.7 LLM-as-judge)
+#   Total allocation:           1.50
+
+# ── Timing ────────────────────────────────────────────────────────────────────
+timeout_seconds: 360
+target_duration_seconds: 180
+
+# ── Confidence thresholds ─────────────────────────────────────────────────────
+confidence_thresholds:
+  auto_dispatch: 0.70
+  hil_min: 0.40
+  block_max: 0.40
+
+# ── Ordered agent nodes ───────────────────────────────────────────────────────
+nodes:
+  - earnings_context_agent
+  - historical_context_agent
+  - recommendation_synthesizer
+  - evaluate_quality
+  - narrative_writer

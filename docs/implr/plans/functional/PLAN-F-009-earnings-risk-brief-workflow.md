@@ -4,7 +4,7 @@ slug: earnings-risk-brief-workflow
 title: Earnings Risk Brief Workflow (Mode B)
 linked_requirement: REQ-F-009
 type: functional
-status: ready
+status: done
 blocked_reason:
 complexity: L
 tdd_required: true
@@ -14,11 +14,11 @@ linked_nfrs:
 dependencies:
   - { id: PLAN-F-011, reason: "Earnings Context Agent (Opus 4.7), Historical Context Agent, Recommendation Synthesizer, Narrative Writer must be defined in AgentRegistry before this workflow graph can resolve them" }
   - { id: PLAN-F-024, reason: "Portfolio companies with T+1 earnings are identified via portfolio and position data; IPortfolioRepository and IPositionRepository must exist" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-02T00:00:00Z
-updated_at: 2026-06-02T00:00:00Z
+updated_at: 2026-06-04T00:00:00Z
 ---
 
 # PLAN-F-009 — Earnings Risk Brief Workflow (Mode B)

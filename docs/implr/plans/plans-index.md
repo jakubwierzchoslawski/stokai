@@ -23,7 +23,7 @@
 | PLAN-F-006 | Morning Brief Workflow | REQ-F-006 | XL | true | done | functional/PLAN-F-006-morning-brief-workflow.md |
 | PLAN-F-007 | On-Demand Analysis Workflow | REQ-F-007 | L | true | done | functional/PLAN-F-007-on-demand-analysis-workflow.md |
 | PLAN-F-008 | Watchlist Scan Workflow | REQ-F-008 | L | true | done | functional/PLAN-F-008-watchlist-scan-workflow.md |
-| PLAN-F-009 | Earnings Risk Brief Workflow | REQ-F-009 | L | true | ready | functional/PLAN-F-009-earnings-risk-brief-workflow.md |
+| PLAN-F-009 | Earnings Risk Brief Workflow | REQ-F-009 | L | true | done | functional/PLAN-F-009-earnings-risk-brief-workflow.md |
 | PLAN-F-010 | Event Deep-Dive Workflow | REQ-F-010 | L | true | done | functional/PLAN-F-010-event-deep-dive-workflow.md |
 | PLAN-F-011 | Agent Registry and Definitions | REQ-F-011 | L | true | done | functional/PLAN-F-011-agent-registry-and-definitions.md |
 | PLAN-F-012 | Agent Tool Library | REQ-F-012 | L | true | done | functional/PLAN-F-012-tool-library.md |

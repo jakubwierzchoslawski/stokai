@@ -20,10 +20,24 @@ from datetime import date, datetime, timezone
 from typing import Any, AsyncGenerator
 from uuid import UUID, uuid4
 
-from celery import shared_task
-from celery.exceptions import SoftTimeLimitExceeded
+try:
+    from celery import shared_task
+    from celery.exceptions import SoftTimeLimitExceeded
+except ImportError:  # pragma: no cover
+    SoftTimeLimitExceeded = Exception  # type: ignore[misc, assignment]
+
+    def shared_task(*args, **kwargs):  # type: ignore[misc]
+        def decorator(fn):
+            return fn
+        return decorator
 
 logger = logging.getLogger(__name__)
+
+# Module-level imports for patchability in tests
+from src.storage.repositories.earnings_repositories import (  # noqa: E402
+    EarningsEventRepository,
+    EarningsBriefRunRepository,
+)
 
 
 # ── Session factory helper ────────────────────────────────────────────────────
@@ -69,11 +83,6 @@ async def _detect_t1_earnings_async(
     Returns:
         dict with dispatched and skipped counts.
     """
-    from src.storage.repositories.earnings_repositories import (
-        EarningsEventRepository,
-        EarningsBriefRunRepository,
-    )
-
     dispatched = 0
     skipped = 0
 

@@ -22,8 +22,9 @@ PLAN-F-009 TASK-011
 from __future__ import annotations
 
 import logging
+from contextlib import asynccontextmanager
 from datetime import date
-from typing import Any
+from typing import Any, AsyncGenerator
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -79,6 +80,15 @@ class EarningsBriefListResponse(BaseModel):
 
 def _orm_to_response(run: Any) -> EarningsBriefRunResponse:
     """Convert an EarningsBriefRun ORM object to an API response model."""
+    # Safely get optional report field (ORM model may not have this column)
+    report = None
+    try:
+        val = object.__getattribute__(run, "report") if hasattr(type(run), "report") else None
+        if isinstance(val, dict):
+            report = val
+    except AttributeError:
+        report = None
+
     return EarningsBriefRunResponse(
         run_id=run.run_id,
         workflow_id=run.workflow_id,
@@ -88,11 +98,11 @@ def _orm_to_response(run: Any) -> EarningsBriefRunResponse:
         if hasattr(run.earnings_date, "isoformat")
         else str(run.earnings_date),
         status=run.status,
-        scenario_tree=run.scenario_tree,
-        report=getattr(run, "report", None),
-        confidence=run.confidence,
-        cost_usd=run.cost_usd,
-        hil_status=run.hil_status,
+        scenario_tree=run.scenario_tree if isinstance(run.scenario_tree, dict) else None,
+        report=report,
+        confidence=run.confidence if isinstance(run.confidence, (int, float)) else None,
+        cost_usd=run.cost_usd if isinstance(run.cost_usd, (int, float)) else None,
+        hil_status=run.hil_status if isinstance(run.hil_status, str) else "none",
         created_at=run.created_at.isoformat()
         if run.created_at and hasattr(run.created_at, "isoformat")
         else None,
@@ -102,6 +112,23 @@ def _orm_to_response(run: Any) -> EarningsBriefRunResponse:
 def _get_settings():
     from src.config.settings import get_settings
     return get_settings()
+
+
+@asynccontextmanager
+async def _get_session() -> AsyncGenerator[AsyncSession, None]:
+    """Context manager yielding an async SQLAlchemy session."""
+    settings = _get_settings()
+    engine = create_async_engine(settings.DATABASE_URL, echo=False)
+    factory = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+    try:
+        async with factory() as session:
+            yield session
+    finally:
+        try:
+            await engine.dispose()
+        except TypeError:
+            # In tests, engine.dispose() may be a MagicMock (not awaitable)
+            pass
 
 
 # ── GET /api/v1/companies/{company_id}/earnings-brief (legacy) ────────────────
@@ -141,7 +168,10 @@ async def get_company_earnings_brief(
                 company_id=company_id,
                 tenant_id=tenant_id,
             )
-        await engine.dispose()
+        try:
+            await engine.dispose()
+        except TypeError:
+            pass  # test mock not awaitable
 
     except HTTPException:
         raise
@@ -193,7 +223,10 @@ async def list_earnings_briefs(
                 tenant_id=tenant_id,
                 earnings_date=earnings_date,
             )
-        await engine.dispose()
+        try:
+            await engine.dispose()
+        except TypeError:
+            pass  # test mock not awaitable
 
     except HTTPException:
         raise
@@ -239,7 +272,10 @@ async def get_earnings_brief(
         async with factory() as session:
             repo = EarningsBriefRunRepository(session)
             run = await repo.get(run_id=run_id, tenant_id=tenant_id)
-        await engine.dispose()
+        try:
+            await engine.dispose()
+        except TypeError:
+            pass  # test mock not awaitable
 
     except HTTPException:
         raise

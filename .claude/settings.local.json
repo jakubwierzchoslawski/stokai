@@ -30,7 +30,10 @@
       "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/unit/storage/test_price_bar_repository.py tests/unit/api/test_company_detail_router.py tests/integration/api/test_company_detail_endpoint.py -v --tb=short)",
       "Bash(git *)",
       "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/unit/api/test_company_detail_router.py::TestGetCompanyDetailEndpoint::test_endpoint_401_without_jwt -v --tb=long)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(dir C:\\\\Users\\\\JakubWierzchoslawski\\\\development\\\\python_space\\\\stokai\\\\src *)",
+      "Bash(cp \"/c/Users/JakubWierzchoslawski/development/python_space/stokai/frontend/src/components/qa/\"*.tsx \"/c/Users/JakubWierzchoslawski/development/python_space/stokai/src/frontend/components/qa/\")",
+      "Bash(cp \"/c/Users/JakubWierzchoslawski/development/python_space/stokai/frontend/src/components/qa/\"*.ts \"/c/Users/JakubWierzchoslawski/development/python_space/stokai/src/frontend/components/qa/\")"
     ]
   }
 }

@@ -37,6 +37,17 @@ export function TopNav() {
             Screener
           </NavLink>
         </li>
+        <li className="top-nav__item">
+          {/* PLAN-F-026 TASK-008 — Briefs and Reports Reader navigation */}
+          <NavLink
+            to="/briefs"
+            className={({ isActive }) =>
+              `top-nav__link${isActive ? " top-nav__link--active" : ""}`
+            }
+          >
+            Briefs
+          </NavLink>
+        </li>
       </ul>
     </nav>
   );

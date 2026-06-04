@@ -19,6 +19,7 @@ from src.api.routers.onboarding_router import onboarding_router
 from src.alerts.api.alerts_router import alerts_router
 from src.alerts.api.alert_rules_router import alert_rules_router
 from src.alerts.api.anti_fatigue_router import anti_fatigue_router
+from src.api.routers.qa_router import qa_router
 
 app = FastAPI(
     title="StokAI API",
@@ -43,6 +44,7 @@ app.include_router(evaluation_router, prefix="/api/v1")  # PLAN-F-016: evaluatio
 app.include_router(alerts_router, prefix="/api/v1")       # PLAN-F-025: Alerts Center
 app.include_router(alert_rules_router, prefix="/api/v1")  # PLAN-F-025: Alert Rules CRUD
 app.include_router(anti_fatigue_router, prefix="/api/v1") # PLAN-F-025: Anti-fatigue settings
+app.include_router(qa_router, prefix="/api/v1")           # PLAN-F-027: Q&A Chat Interface
 
 
 @app.get("/health")

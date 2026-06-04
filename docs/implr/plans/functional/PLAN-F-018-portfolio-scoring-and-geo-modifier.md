@@ -4,7 +4,7 @@ slug: portfolio-scoring-and-geo-modifier
 title: Portfolio Scoring and Real-Time Geo-Modifier
 linked_requirement: REQ-F-018
 type: functional
-status: ready
+status: done
 blocked_reason:
 complexity: M
 tdd_required: true
@@ -13,11 +13,11 @@ linked_nfrs:
 dependencies:
   - { id: PLAN-F-017, reason: "ICompanyScoreRepository, CompanyScoreRecord, and GeoModifier from scoring engine are consumed directly; base score infrastructure must exist" }
   - { id: PLAN-F-003, reason: "IEventExposureRepository.get_by_event provides the event_exposure rows; event_exposure table and bulk_insert must exist" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-02T00:00:00Z
-updated_at: 2026-06-02T00:00:00Z
+updated_at: 2026-06-04T00:00:00Z
 ---
 
 # PLAN-F-018 — Portfolio Scoring and Real-Time Geo-Modifier

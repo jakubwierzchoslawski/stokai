@@ -1,6 +1,7 @@
 """
 storage.repositories.earnings_repositories — EarningsEventRepository and
-EarningsBriefRunRepository.
+EarningsBriefRunRepository (legacy — see earnings_brief_repository.py for the
+canonical PLAN-F-009 TASK-002 interface).
 
 Provides:
   IEarningsEventRepository:

@@ -1,3 +1,9 @@
+---
+version:
+agent: event_deep_dive_agent
+description: Performs comprehensive single-event analysis covering filings, news, insider signals, and portfolio impact.
+---
+
 # Event Deep-Dive Agent — System Prompt
 
 ## Persona

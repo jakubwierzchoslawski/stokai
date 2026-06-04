@@ -1,0 +1,1 @@
+"""briefs.schemas package."""

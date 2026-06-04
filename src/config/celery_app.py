@@ -37,6 +37,9 @@ def create_celery_app() -> Celery:
             "src.ai.workflows.event_deep_dive",  # event_deep_dive task (PLAN-F-010)
             "src.ai.evaluation.tasks",  # Tier-3 calibration (PLAN-F-016)
             "src.ai.tasks",  # detect_t1_earnings + earnings_brief_task + morning_brief (PLAN-F-009, PLAN-F-006)
+            "src.ai.workflows.earnings_brief.hil",  # earnings_hil_fallback_task (PLAN-F-009)
+            "src.scoring.geo_modifier_worker",  # scoring.apply_geo_modifier (PLAN-F-018)
+            "src.ai.prompts.tasks",  # publish_all_prompts_to_langfuse (PLAN-F-014)
         ]
     )
 
@@ -82,10 +85,15 @@ def create_celery_app() -> Celery:
             "task": "ai.watchlist_scan_fanout",
             "schedule": crontab(hour=17, minute=30),
         },
-        # ── T-1 earnings detection — every 15 min (PLAN-F-009) ───────────────
-        "detect-t1-earnings-every-15min": {
+        # ── T-1 earnings detection — daily 17:30 UTC (PLAN-F-009) ───────────────
+        "detect-t1-earnings-1730": {
             "task": "ai.detect_t1_earnings",
-            "schedule": crontab(minute="*/15"),
+            "schedule": crontab(hour=17, minute=30),
+        },
+        # ── Earnings HIL fallback — every 60 s (PLAN-F-009 TASK-010) ─────────
+        "earnings-hil-fallback-every-60s": {
+            "task": "ai.earnings_hil_fallback",
+            "schedule": 60.0,  # seconds
         },
         # ── Morning Brief fan-out — daily 05:30 UTC (PLAN-F-006) ─────────────
         "morning-brief-dispatch": {

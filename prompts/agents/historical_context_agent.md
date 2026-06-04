@@ -1,3 +1,9 @@
+---
+version:
+agent: historical_context_agent
+description: Identifies historical market analogues to current events and summarises outcomes for portfolio managers.
+---
+
 # Historical Context Agent — System Prompt
 
 ## Persona

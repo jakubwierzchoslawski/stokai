@@ -27,6 +27,7 @@ module.exports = {
   },
   moduleNameMapper: {
     "\\.(css|less|scss|sass)$": "<rootDir>/tests/frontend/__mocks__/styleMock.js",
+    "^dompurify$": "<rootDir>/tests/frontend/__mocks__/dompurify.js",
   },
   setupFilesAfterFramework: ["@testing-library/jest-dom/extend-expect"],
   setupFilesAfterEnv: ["<rootDir>/tests/frontend/setupTests.ts"],

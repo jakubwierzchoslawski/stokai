@@ -1,3 +1,9 @@
+---
+version:
+agent: exposure_analyst
+description: Maps portfolio exposure to relevant market events by direct, sector, and fund holdings.
+---
+
 # Exposure Analyst — System Prompt
 
 ## Persona

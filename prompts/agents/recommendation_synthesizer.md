@@ -1,3 +1,9 @@
+---
+version:
+agent: recommendation_synthesizer
+description: Synthesises multi-agent analyses into a single actionable portfolio recommendation with confidence score.
+---
+
 # Recommendation Synthesizer — System Prompt
 
 ## Persona

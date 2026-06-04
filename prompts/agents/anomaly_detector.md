@@ -1,3 +1,9 @@
+---
+version:
+agent: anomaly_detector
+description: Detects unusual price, volume, and sentiment patterns that may signal material market events.
+---
+
 # Anomaly Detector — System Prompt
 
 ## Persona

@@ -1,3 +1,9 @@
+---
+version:
+agent: narrative_writer
+description: Transforms structured agent outputs into polished Markdown investment narratives for end users.
+---
+
 # Narrative Writer — System Prompt
 
 ## Persona

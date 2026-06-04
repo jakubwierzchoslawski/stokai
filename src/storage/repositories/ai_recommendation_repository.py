@@ -55,6 +55,42 @@ class AiRecommendationRepository:
         await self._session.refresh(orm)
         return orm.recommendation_id
 
+    async def save_earnings_brief(self, state: "EarningsBriefState") -> UUID:  # type: ignore[name-defined]
+        """Persist an earnings brief recommendation from a completed EarningsBriefState.
+
+        Maps state.recommendation (scenario-tree form) and state.scenario_tree
+        to the ai_recommendation row. The scenario_tree JSONB is stored in the
+        recommendation field keyed as 'forecast' (Architecture §10).
+
+        Args:
+            state: The final EarningsBriefState after workflow completion.
+
+        Returns:
+            The recommendation_id UUID of the newly created row.
+        """
+        from src.ai.workflows.earnings_brief.state import EarningsBriefState
+
+        # Build the recommendation payload including scenario_tree as forecast
+        recommendation_payload = dict(state.recommendation or {})
+        if state.scenario_tree is not None:
+            recommendation_payload["forecast"] = state.scenario_tree.model_dump()
+
+        orm = AiRecommendation(
+            workflow_id=state.workflow_id,
+            tenant_id=state.tenant_id,
+            company_id=state.company_id,
+            event_id=None,
+            workflow_type=state.workflow_type,
+            recommendation=recommendation_payload,
+            overall_confidence=state.overall_confidence,
+            status=state.status.value if hasattr(state.status, "value") else str(state.status),
+            created_at=datetime.now(tz=timezone.utc),
+        )
+        self._session.add(orm)
+        await self._session.flush()
+        await self._session.refresh(orm)
+        return orm.recommendation_id
+
     async def list_for_company(
         self,
         company_id: UUID,

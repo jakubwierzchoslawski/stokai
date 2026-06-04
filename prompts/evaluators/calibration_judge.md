@@ -1,3 +1,9 @@
+---
+version:
+agent: calibration_judge
+description: Assesses whether agent confidence levels are properly calibrated relative to the quality and breadth of gathered evidence.
+---
+
 # Calibration Judge Prompt
 
 You are an expert evaluator specialising in confidence calibration for AI-generated

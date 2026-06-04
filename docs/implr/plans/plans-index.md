@@ -32,7 +32,7 @@
 | PLAN-F-015 | Four-Layer Memory Subsystem | REQ-F-015 | L | true | done | functional/PLAN-F-015-four-layer-memory-subsystem.md |
 | PLAN-F-016 | Three-Tier Evaluation Framework | REQ-F-016 | L | true | done | functional/PLAN-F-016-evaluation-framework.md |
 | PLAN-F-017 | Scoring Engine and Indicator Builder | REQ-F-017 | L | true | done | functional/PLAN-F-017-scoring-engine-and-indicator-builder.md |
-| PLAN-F-018 | Portfolio Scoring and Real-Time Geo-Modifier | REQ-F-018 | M | true | ready | functional/PLAN-F-018-portfolio-scoring-and-geo-modifier.md |
+| PLAN-F-018 | Portfolio Scoring and Real-Time Geo-Modifier | REQ-F-018 | M | true | done | functional/PLAN-F-018-portfolio-scoring-and-geo-modifier.md |
 | PLAN-F-019 | Intelligence Map (Primary Interface) | REQ-F-019 | XL | true | ready | functional/PLAN-F-019-intelligence-map.md |
 | PLAN-F-020 | Progressive Disclosure UI (Popup, Side Panel, Deep Dive) | REQ-F-020 | L | true | ready | functional/PLAN-F-020-progressive-disclosure-ui.md |
 | PLAN-F-021 | Map Live, Historical, and Playback Modes | REQ-F-021 | L | true | ready | functional/PLAN-F-021-map-live-historical-playback-modes.md |

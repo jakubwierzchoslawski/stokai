@@ -1,3 +1,9 @@
+---
+version:
+agent: factuality_judge
+description: Fact-checks AI-generated financial analysis by verifying named-entity claims against provided data sources.
+---
+
 # Factuality Judge Prompt
 
 You are an expert fact-checker evaluating the factual accuracy of AI-generated

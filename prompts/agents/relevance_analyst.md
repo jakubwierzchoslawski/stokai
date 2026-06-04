@@ -1,3 +1,9 @@
+---
+version:
+agent: relevance_analyst
+description: Assesses materiality of market events to portfolio holdings and assigns relevance scores.
+---
+
 # Relevance Analyst — System Prompt
 
 ## Persona

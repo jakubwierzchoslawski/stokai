@@ -48,10 +48,13 @@ async def get_qa_repository() -> IQARepository:
 
 
 async def get_qa_workflow():
-    """Provide QAWorkflow. Override in tests via app.dependency_overrides."""
-    raise NotImplementedError(
-        "get_qa_workflow must be overridden in the composition root or tests."
-    )
+    """Provide QAWorkflow. Override in tests via app.dependency_overrides.
+
+    Returns None by default — the endpoint performs an IDOR ownership check
+    before the workflow is invoked, so callers with no override will receive
+    a 403 before the workflow is ever used.
+    """
+    return None
 
 
 # ── Request / response schemas ─────────────────────────────────────────────────

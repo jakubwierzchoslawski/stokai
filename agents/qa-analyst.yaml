@@ -39,8 +39,8 @@ tools:
 limits:
   max_input_tokens: 16000
   max_iterations: 10    # AC-005: Q&A Analyst uniquely allowed 10 iterations
-  timeout_seconds: 300  # 5-minute ceiling for interactive sessions
-  cost_ceiling_usd: 0.60   # REQ-N-003: per-agent ceiling per session
+  timeout_seconds: 120  # PLAN-F-027 TASK-007: 2-minute ceiling for interactive sessions
+  cost_ceiling_usd: 0.40   # PLAN-F-027 TASK-007: REQ-N-003 per-agent ceiling per Q&A session
 
 confidence_threshold: 0.50   # Lower threshold — Q&A is interactive, user can refine
 

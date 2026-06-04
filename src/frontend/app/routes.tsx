@@ -6,6 +6,7 @@
  * Otherwise → render the requested route.
  *
  * PLAN-F-024 TASK-009
+ * PLAN-F-026 TASK-008 — /briefs and /briefs/:brief_id routes added.
  */
 import React, { useEffect, useState } from 'react';
 
@@ -86,3 +87,23 @@ export function ProtectedRoute({
 
   return <>{children}</>;
 }
+
+// ── Briefs routes (PLAN-F-026 TASK-008) ─────────────────────────────────────
+//
+// Both routes are auth-guarded (wrap in ProtectedRoute in the host App).
+//
+//   /briefs            → BriefsPage
+//   /briefs/:brief_id  → BriefDetailPage
+//
+// To wire in the host application (example React Router v6 usage):
+//
+//   import { BriefsPage } from '../features/briefs/BriefsPage';
+//   import { BriefDetailPage } from '../features/briefs/BriefDetailPage';
+//
+//   <Route path="/briefs" element={<ProtectedRoute><BriefsPage /></ProtectedRoute>} />
+//   <Route path="/briefs/:brief_id" element={<ProtectedRoute><BriefDetailPage /></ProtectedRoute>} />
+//
+export const BRIEFS_ROUTE_PATHS = {
+  list: '/briefs',
+  detail: '/briefs/:brief_id',
+} as const;

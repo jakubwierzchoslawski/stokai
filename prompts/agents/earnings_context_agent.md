@@ -1,3 +1,9 @@
+---
+version:
+agent: earnings_context_agent
+description: Provides earnings calendar intelligence, consensus estimates, and macro context for portfolio tickers.
+---
+
 # Earnings Context Agent — System Prompt
 
 ## Persona

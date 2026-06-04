@@ -78,6 +78,8 @@ class TestGetSha:
         self, loader: GitPromptLoader
     ) -> None:
         """Subprocess must only be called once even if get_sha is called twice."""
+        # Clear both module-level and instance-level cache to ensure fresh state
+        loader._sha_cache.clear()
         with patch("subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(
                 returncode=0,

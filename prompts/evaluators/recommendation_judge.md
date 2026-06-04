@@ -1,3 +1,9 @@
+---
+version:
+agent: recommendation_judge
+description: Evaluates AI-generated investment recommendations across factual grounding, calibration, consistency, and tool use.
+---
+
 # Recommendation Judge Prompt
 
 You are an expert evaluator assessing the quality of AI-generated investment recommendations.

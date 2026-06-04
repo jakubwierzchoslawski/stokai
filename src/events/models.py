@@ -134,5 +134,7 @@ class PipelineContext(BaseModel):
     alert_dispatched: bool = False
     silent_logged: bool = False
     deep_dive_enqueued: bool = False
+    # Set to True after geo-modifier Celery task is enqueued (PLAN-F-018 TASK-006)
+    geo_modifier_enqueued: bool = False
     # Per-step latency tracking
     step_latencies_ms: dict[str, int] = {}

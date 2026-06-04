@@ -59,6 +59,13 @@ class Settings(BaseSettings):
     AGENTS_DIR: str = "agents"
     PROMPTS_DIR: str = "prompts"
 
+    # ── Prompt Management Pipeline (PLAN-F-014) ────────────────────────────────
+    # Whether to enable Langfuse prompt publishing on deploy.
+    LANGFUSE_PROMPTS_ENABLED: bool = True
+    # Percentage of traffic to route to canary prompt version (0–100).
+    # Default 10% — human admin promotes via 'stokai prompts promote' after monitoring.
+    CANARY_TRAFFIC_PCT: int = Field(default=10, ge=0, le=100)
+
     # ── Port binding (12-factor) ──────────────────────────────────────────────
     PORT: int = 8000
 
@@ -68,6 +75,14 @@ class Settings(BaseSettings):
     # SendGrid dynamic template ID for the Morning Brief HTML email.
     # Must be set when alerts are enabled; validated at startup via validator below.
     SENDGRID_MORNING_BRIEF_TEMPLATE_ID: str = ""
+
+    # ── Earnings Risk Brief (PLAN-F-009) ──────────────────────────────────────
+    # Per-brief cost ceiling in USD (AC-001: $1.50).
+    EARNINGS_BRIEF_COST_CEILING_USD: float = 1.50
+    # HIL deadline time (24h format, UTC). Briefs unreviewed by this time are held.
+    EARNINGS_BRIEF_HIL_DEADLINE_TIME: str = "17:45"
+    # Hard workflow timeout in seconds (10 min = 600 s).
+    EARNINGS_BRIEF_HARD_TIMEOUT_SECONDS: int = 600
 
     # ── Feature flags ─────────────────────────────────────────────────────────
     # Twitter/X source adapter. Default=false (free-tier plan; enable via env).

@@ -24,9 +24,13 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
-# Regex: 1-5 uppercase letters, not preceded/followed by alphanumeric.
+# Regex: 2-5 consecutive uppercase letters, not preceded/followed by alphanumeric.
+# Requires at least 2 chars so single-letter words like 'I', 'A' are excluded here
+# (further filtered by _COMMON_WORDS for any that slip through).
 # Captures common US ticker formats: AAPL, TSLA, GOOGL, MSFT, BRK, etc.
-_TICKER_RE = re.compile(r"(?<![A-Z0-9])([A-Z]{1,5})(?![A-Z0-9])")
+# Note: the regex is applied to the *original* text so only tokens that are
+# already fully uppercase in the user's input are treated as ticker candidates.
+_TICKER_RE = re.compile(r"(?<![A-Za-z0-9])([A-Z]{2,5})(?![A-Za-z0-9])")
 
 # Words that look like tickers but are common English words — exclude them
 # to reduce false positives. Extend as needed.
@@ -69,6 +73,11 @@ PortfolioLookupFn = Callable[[UUID, list[str]], Awaitable[list[str]]]
 def extract_tickers(text: str) -> list[str]:
     """Extract potential ticker symbols from text using regex.
 
+    Only tokens that are already uppercase in the original text are treated as
+    ticker candidates. Lowercase words (e.g. "apple") are intentionally ignored
+    to reduce false positives — real ticker references are written in capitals
+    (AAPL, MSFT, GOOGL).
+
     Returns a de-duplicated list of uppercase tokens that match the ticker
     pattern and are not common English words.
 
@@ -78,13 +87,15 @@ def extract_tickers(text: str) -> list[str]:
     Returns:
         List of candidate ticker symbols (may include false positives).
     """
-    candidates = _TICKER_RE.findall(text.upper())
+    # Run regex on original text so only already-uppercase tokens match
+    candidates = _TICKER_RE.findall(text)
     seen: set[str] = set()
     result: list[str] = []
     for tok in candidates:
-        if tok not in _COMMON_WORDS and tok not in seen:
-            seen.add(tok)
-            result.append(tok)
+        upper_tok = tok.upper()
+        if upper_tok not in _COMMON_WORDS and upper_tok not in seen:
+            seen.add(upper_tok)
+            result.append(upper_tok)
     return result
 
 

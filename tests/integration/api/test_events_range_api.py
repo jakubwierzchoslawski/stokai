@@ -14,13 +14,14 @@ ADMIN_TENANT_ID = UUID("00000000-0000-0000-0000-000000000001")
 
 
 def _make_jwt_token(role: str = "admin", tenant_id: UUID | None = None) -> str:
-    import jwt
+    from jose import jwt
     from datetime import datetime, timedelta
 
     payload = {
         "sub": str(uuid4()),
         "tenant_id": str(tenant_id or ADMIN_TENANT_ID),
         "role": role,
+        "email": "test@example.com",
         "exp": datetime.utcnow() + timedelta(hours=1),
     }
     return jwt.encode(payload, "test-secret", algorithm="HS256")
@@ -41,26 +42,21 @@ class TestEventsRangeAuth:
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with TestClient(app) as client:
-            response = client.get(
-                "/api/v1/events",
-                params={"from": "2025-01-01", "to": "2025-01-31"},
-            )
+        with patch("src.api.auth_deps.get_settings"):
+            with TestClient(app) as client:
+                response = client.get(
+                    "/api/v1/events",
+                    params={"from": "2025-01-01", "to": "2025-01-31"},
+                )
         assert response.status_code == 401
 
 
 class TestEventsRangeValidation:
-    def _auth_client(self):
-        from fastapi.testclient import TestClient
-
-        app = _make_app()
-        return TestClient(app), _make_jwt_token()
-
     def test_from_without_to_returns_422(self):
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with patch("src.api.auth.get_settings") as mock_settings:
+        with patch("src.api.auth_deps.get_settings") as mock_settings:
             mock_settings.return_value.JWT_SECRET_KEY = "test-secret"
             with TestClient(app) as client:
                 token = _make_jwt_token()
@@ -75,7 +71,7 @@ class TestEventsRangeValidation:
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with patch("src.api.auth.get_settings") as mock_settings:
+        with patch("src.api.auth_deps.get_settings") as mock_settings:
             mock_settings.return_value.JWT_SECRET_KEY = "test-secret"
             with TestClient(app) as client:
                 token = _make_jwt_token()
@@ -90,7 +86,7 @@ class TestEventsRangeValidation:
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with patch("src.api.auth.get_settings") as mock_settings:
+        with patch("src.api.auth_deps.get_settings") as mock_settings:
             mock_settings.return_value.JWT_SECRET_KEY = "test-secret"
             with TestClient(app) as client:
                 token = _make_jwt_token()
@@ -107,7 +103,7 @@ class TestEventsRangeValidation:
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with patch("src.api.auth.get_settings") as mock_settings:
+        with patch("src.api.auth_deps.get_settings") as mock_settings:
             mock_settings.return_value.JWT_SECRET_KEY = "test-secret"
             with TestClient(app) as client:
                 token = _make_jwt_token()
@@ -128,7 +124,7 @@ class TestEventsRangeValidation:
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with patch("src.api.auth.get_settings") as mock_settings:
+        with patch("src.api.auth_deps.get_settings") as mock_settings:
             mock_settings.return_value.JWT_SECRET_KEY = "test-secret"
             with TestClient(app) as client:
                 token = _make_jwt_token()
@@ -148,7 +144,7 @@ class TestEventsRangeValidation:
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with patch("src.api.auth.get_settings") as mock_settings:
+        with patch("src.api.auth_deps.get_settings") as mock_settings:
             mock_settings.return_value.JWT_SECRET_KEY = "test-secret"
             with TestClient(app) as client:
                 token = _make_jwt_token()

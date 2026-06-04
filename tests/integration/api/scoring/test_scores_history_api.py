@@ -14,13 +14,15 @@ ADMIN_TENANT_ID = UUID("00000000-0000-0000-0000-000000000001")
 
 
 def _make_jwt_token(role: str = "admin", tenant_id: UUID | None = None) -> str:
-    import jwt
+    """Create a minimal JWT token signed with the test secret."""
+    from jose import jwt
     from datetime import datetime, timedelta
 
     payload = {
         "sub": str(uuid4()),
         "tenant_id": str(tenant_id or ADMIN_TENANT_ID),
         "role": role,
+        "email": "test@example.com",
         "exp": datetime.utcnow() + timedelta(hours=1),
     }
     return jwt.encode(payload, "test-secret", algorithm="HS256")
@@ -36,34 +38,39 @@ def _make_app():
     return app
 
 
+def _patched_client():
+    """Return a TestClient with get_settings patched to use test-secret."""
+    from fastapi.testclient import TestClient
+
+    app = _make_app()
+    patcher = patch("src.api.auth_deps.get_settings")
+    mock_settings = patcher.start()
+    mock_settings.return_value.JWT_SECRET_KEY = "test-secret"
+    client = TestClient(app)
+    return client, patcher
+
+
 class TestScoresHistoryAuth:
     def test_unauthenticated_request_returns_401(self):
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with TestClient(app) as client:
-            company_id = str(uuid4())
-            response = client.get(
-                "/api/v1/scores/history",
-                params={"company_ids": company_id, "at": "2025-06-01T12:00:00Z"},
-            )
+        with patch("src.api.auth_deps.get_settings"):
+            with TestClient(app) as client:
+                company_id = str(uuid4())
+                response = client.get(
+                    "/api/v1/scores/history",
+                    params={"company_ids": company_id, "at": "2025-06-01T12:00:00Z"},
+                )
         assert response.status_code == 401
 
 
 class TestScoresHistoryValidation:
-    def _client_with_token(self):
-        from fastapi.testclient import TestClient
-
-        app = _make_app()
-        token = _make_jwt_token()
-        client = TestClient(app)
-        return client, token
-
     def test_missing_at_parameter_returns_422(self):
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with patch("src.api.auth.get_settings") as mock_settings:
+        with patch("src.api.auth_deps.get_settings") as mock_settings:
             mock_settings.return_value.JWT_SECRET_KEY = "test-secret"
             with TestClient(app) as client:
                 token = _make_jwt_token()
@@ -79,7 +86,7 @@ class TestScoresHistoryValidation:
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with patch("src.api.auth.get_settings") as mock_settings:
+        with patch("src.api.auth_deps.get_settings") as mock_settings:
             mock_settings.return_value.JWT_SECRET_KEY = "test-secret"
             with TestClient(app) as client:
                 token = _make_jwt_token()
@@ -95,7 +102,7 @@ class TestScoresHistoryValidation:
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with patch("src.api.auth.get_settings") as mock_settings:
+        with patch("src.api.auth_deps.get_settings") as mock_settings:
             mock_settings.return_value.JWT_SECRET_KEY = "test-secret"
             with TestClient(app) as client:
                 token = _make_jwt_token()
@@ -114,7 +121,7 @@ class TestScoresHistoryValidation:
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with patch("src.api.auth.get_settings") as mock_settings:
+        with patch("src.api.auth_deps.get_settings") as mock_settings:
             mock_settings.return_value.JWT_SECRET_KEY = "test-secret"
             with TestClient(app) as client:
                 token = _make_jwt_token()
@@ -137,7 +144,7 @@ class TestScoresHistoryValidation:
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with patch("src.api.auth.get_settings") as mock_settings:
+        with patch("src.api.auth_deps.get_settings") as mock_settings:
             mock_settings.return_value.JWT_SECRET_KEY = "test-secret"
             with TestClient(app) as client:
                 token = _make_jwt_token()
@@ -157,7 +164,7 @@ class TestScoresHistoryValidation:
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with patch("src.api.auth.get_settings") as mock_settings:
+        with patch("src.api.auth_deps.get_settings") as mock_settings:
             mock_settings.return_value.JWT_SECRET_KEY = "test-secret"
             with TestClient(app) as client:
                 token = _make_jwt_token()
@@ -175,7 +182,7 @@ class TestScoresHistoryValidation:
         from fastapi.testclient import TestClient
 
         app = _make_app()
-        with patch("src.api.auth.get_settings") as mock_settings:
+        with patch("src.api.auth_deps.get_settings") as mock_settings:
             mock_settings.return_value.JWT_SECRET_KEY = "test-secret"
             with TestClient(app) as client:
                 token = _make_jwt_token()

@@ -4,7 +4,7 @@ slug: map-live-historical-playback-modes
 title: Map Live, Historical, and Playback Modes
 linked_requirement: REQ-F-021
 type: functional
-status: ready
+status: done
 blocked_reason:
 complexity: L
 tdd_required: true
@@ -12,11 +12,11 @@ linked_nfrs: []
 dependencies:
   - { id: PLAN-F-019, reason: "intelligence-map: useMapMode hook, WebSocket manager, and IntelligenceMap composition root must exist before time modes can be added" }
   - { id: PLAN-F-017, reason: "scoring-engine-and-indicator-builder: company_score TimescaleDB hypertable and ICompanyScoreRepository.get_history must exist; GET /api/v1/scores/company/{id}/history endpoint required by Historical mode" }
-executed_at:
+executed_at: 2026-06-05T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-03T00:00:00Z
-updated_at: 2026-06-03T00:00:00Z
+updated_at: 2026-06-05T00:00:00Z
 ---
 
 # PLAN-F-021 — Map Live, Historical, and Playback Modes

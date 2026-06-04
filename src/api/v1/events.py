@@ -14,21 +14,24 @@ PLAN-F-021 TASK-011 adds the from/to date-range filter.
 from __future__ import annotations
 
 import logging
-from datetime import date, timedelta
-from typing import List, Optional
+from datetime import date
+from typing import Annotated, List, Optional
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from src.api.auth import CurrentUser
+from src.api.auth_deps import CurrentUser, get_current_user
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/events", tags=["events"])
 
+# FastAPI dependency type alias.
+AuthUser = Annotated[CurrentUser, Depends(get_current_user)]
+
 
 @router.get("", response_model=dict)
 async def get_events(
-    user: CurrentUser,
+    user: AuthUser,
     context: Optional[str] = Query(
         default="global",
         description="Map context: global | portfolio | sector",
@@ -110,23 +113,13 @@ async def get_events(
 
 
 # ── Repository stubs ──────────────────────────────────────────────────────────
-# These stubs are replaced when IEventRepository is injected via FastAPI
-# dependency injection (wired in a future plan or in production setup).
 
 def _stub_get_events_in_range(
     from_date: date,
     to_date: date,
     tenant_id,
 ) -> List[dict]:
-    """Stub: IEventRepository.get_events_in_range.
-
-    Real SQL:
-        SELECT * FROM geo_event
-        WHERE occurred_at >= :from_date
-          AND occurred_at <= :to_date + interval '1 day'
-          AND (tenant_id = :tenant_id OR tenant_id IS NULL)
-        ORDER BY occurred_at ASC
-    """
+    """Stub: IEventRepository.get_events_in_range."""
     return []
 
 

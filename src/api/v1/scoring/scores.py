@@ -9,16 +9,19 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import List
+from typing import Annotated, List
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from src.api.auth import CurrentUser
+from src.api.auth_deps import CurrentUser, get_current_user
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/scores", tags=["scores"])
+
+# FastAPI dependency type alias for authenticated users.
+AuthUser = Annotated[CurrentUser, Depends(get_current_user)]
 
 # Maximum number of company IDs accepted per score-at-time request.
 MAX_COMPANY_IDS = 200
@@ -27,8 +30,8 @@ MAX_COMPANY_IDS = 200
 @router.get("/company/{company_id}", response_model=dict)
 async def get_company_score(
     company_id: UUID,
+    user: AuthUser,
     indicator_id: UUID = Query(..., description="Indicator to retrieve score for"),
-    user: CurrentUser = None,
 ) -> dict:
     """Get current score for a company and indicator."""
     return {
@@ -46,9 +49,9 @@ async def get_company_score(
 @router.get("/company/{company_id}/history", response_model=dict)
 async def get_company_score_history(
     company_id: UUID,
+    user: AuthUser,
     indicator_id: UUID = Query(..., description="Indicator to retrieve history for"),
     limit: int = Query(default=90, ge=1, le=365),
-    user: CurrentUser = None,
 ) -> dict:
     """Get score history for a company and indicator."""
     return {
@@ -64,7 +67,7 @@ async def get_company_score_history(
 
 @router.get("/history", response_model=dict)
 async def get_scores_at_time(
-    user: CurrentUser,
+    user: AuthUser,
     company_ids: str = Query(
         ...,
         description="Comma-separated UUID strings for up to 200 companies",

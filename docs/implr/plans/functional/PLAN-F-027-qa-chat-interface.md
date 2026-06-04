@@ -4,7 +4,7 @@ slug: qa-chat-interface
 title: Q&A Chat Interface
 linked_requirement: REQ-F-027
 type: functional
-status: ready
+status: done
 blocked_reason:
 complexity: M
 tdd_required: true
@@ -16,7 +16,7 @@ linked_nfrs:
 dependencies:
   - { id: PLAN-F-011, reason: "qa-analyst agent YAML definition and ExecutionLimiter are prerequisite" }
   - { id: PLAN-F-012, reason: "Tool Library provides portfolio-scoped tools the Q&A Analyst invokes" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-02T00:00:00Z

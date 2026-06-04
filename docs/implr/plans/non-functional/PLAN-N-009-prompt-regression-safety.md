@@ -4,7 +4,7 @@ slug: prompt-regression-safety
 title: Prompt Regression Safety Gate
 linked_requirement: REQ-N-009
 type: non-functional
-status: ready
+status: done
 blocked_reason:
 complexity: M
 tdd_required: true
@@ -12,7 +12,7 @@ linked_nfrs:
 dependencies:
   - { id: PLAN-F-014, reason: "Rollback CLI (PromptLabelService.rollback) and RollbackResult contract are owned by PLAN-F-014; this plan's rollback verification tests depend on that contract" }
   - { id: PLAN-F-016, reason: "GoldenDatasetRunner.run_suite() and RegressionReport contract are owned by PLAN-F-016; this plan's CI gate and performance tests call those interfaces" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-02T00:00:00Z

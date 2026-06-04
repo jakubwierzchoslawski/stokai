@@ -42,7 +42,7 @@
 | PLAN-F-025 | Alerts Center | REQ-F-025 | M | true | done | functional/PLAN-F-025-alerts-center.md |
 | PLAN-F-026 | Briefs and Reports Reader | REQ-F-026 | M | true | done | functional/PLAN-F-026-briefs-reader.md |
 | PLAN-F-027 | Q&A Chat Interface | REQ-F-027 | M | true | done | functional/PLAN-F-027-qa-chat-interface.md |
-| PLAN-F-028 | Admin Data Source Management | REQ-F-028 | L | true | ready | functional/PLAN-F-028-admin-data-source-management.md |
+| PLAN-F-028 | Admin Data Source Management | REQ-F-028 | L | true | done | functional/PLAN-F-028-admin-data-source-management.md |
 | PLAN-F-029 | Admin AI Audit Console | REQ-F-029 | L | true | ready | functional/PLAN-F-029-admin-ai-audit-console.md |
 | PLAN-F-030 | Admin System Operations Panel | REQ-F-030 | L | true | done | functional/PLAN-F-030-admin-system-operations.md |
 | PLAN-F-031 | Cold-Start Data Seeding | REQ-F-031 | M | true | done | functional/PLAN-F-031-cold-start-data-seeding.md |
@@ -60,11 +60,11 @@
 | PLAN-N-006 | Multi-Tenancy and Security | REQ-N-006 | L | true | done | non-functional/PLAN-N-006-multitenancy-security.md |
 | PLAN-N-007 | Portability and Self-Hostability | REQ-N-007 | M | true | done | non-functional/PLAN-N-007-portability-self-host.md |
 | PLAN-N-008 | AI Observability via Langfuse | REQ-N-008 | M | true | done | non-functional/PLAN-N-008-ai-observability.md |
-| PLAN-N-009 | Prompt Regression Safety Gate | REQ-N-009 | M | true | ready | non-functional/PLAN-N-009-prompt-regression-safety.md |
+| PLAN-N-009 | Prompt Regression Safety Gate | REQ-N-009 | M | true | done | non-functional/PLAN-N-009-prompt-regression-safety.md |
 | PLAN-N-010 | AI Recommendation Accuracy Calibration | REQ-N-010 | M | true | done | non-functional/PLAN-N-010-ai-accuracy-calibration.md |
 | PLAN-N-011 | Data Freshness and TTL Integrity | REQ-N-011 | M | true | done | non-functional/PLAN-N-011-data-freshness.md |
 | PLAN-N-012 | AI Compliance and Auditability | REQ-N-012 | M | true | ready | non-functional/PLAN-N-012-compliance-auditability.md |
-| PLAN-N-014 | Responsive Design | REQ-N-014 | M | true | ready | non-functional/PLAN-N-014-responsive-design.md |
+| PLAN-N-014 | Responsive Design | REQ-N-014 | M | true | draft | non-functional/PLAN-N-014-responsive-design.md |
 | PLAN-N-015 | Scalability via Cache | REQ-N-015 | M | true | done | non-functional/PLAN-N-015-scalability-cache.md |
 
 ## Execution Order

@@ -87,3 +87,54 @@ jobs:
           name: prompt-regression-report
           path: ${{ github.step_summary }}
           if-no-files-found: ignore
+
+      # PLAN-N-009 TASK-003: Performance gate — ensures regression run completes
+      # in under 5 minutes (AC-004).
+      #
+      # Exit codes from perf_gate.py:
+      #   0 — regression passed AND elapsed <= 300 s
+      #   1 — regression failed (metric breach)
+      #   2 — regression passed BUT elapsed > 300 s  (timing warning only)
+      #
+      # continue-on-error: true for exit code 2 — the step surfaces a timing
+      # warning without hard-blocking the PR.  This behaviour is intentional
+      # for the first two sprints while timing baselines are collected.  It
+      # will be changed to a hard block once baseline data is established.
+      - name: prompt-regression-perf-check
+        if: steps.changed-prompts.outputs.changed_files != ''
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          CHANGED="${{ steps.changed-prompts.outputs.changed_files }}"
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.sha }}"
+
+          for FILE in $CHANGED; do
+            ROLE_ID=$(basename "${FILE}" .md)
+            CANDIDATE_SHA=$(git hash-object "${FILE}" 2>/dev/null || echo "unknown")
+            PRODUCTION_SHA=$(git show "${BASE_SHA}:${FILE}" 2>/dev/null | git hash-object --stdin 2>/dev/null || echo "unknown")
+
+            echo "--- perf-check role_id=${ROLE_ID} ---"
+            python -m src.ai.evaluation.ci.perf_gate \
+              --role-id "${ROLE_ID}" \
+              --candidate-sha "${CANDIDATE_SHA}" \
+              --production-sha "${PRODUCTION_SHA}" \
+              --max-seconds 300 \
+              | tee "perf_timing_${ROLE_ID}.json"
+          done
+        env:
+          DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
+          ANTHROPIC_API_KEY: "sk-ant-ci-placeholder"
+          OPENAI_API_KEY: "sk-ci-placeholder"
+          JWT_SECRET_KEY: "ci-placeholder-secret-key-32chars!!"
+          JWT_REFRESH_SECRET_KEY: "ci-placeholder-refresh-key-32char"
+          REDIS_URL: "redis://localhost:6379/0"
+          PROMPT_SHA_FALLBACK: "true"
+
+      - name: Upload perf-gate timing artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-regression-perf-timing
+          path: perf_timing_*.json
+          if-no-files-found: ignore

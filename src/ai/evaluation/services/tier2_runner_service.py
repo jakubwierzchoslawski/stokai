@@ -37,6 +37,15 @@ _LOG_DIR = "logs/tier2_regression"
 _REGRESSION_THRESHOLD = -0.05
 
 
+class InsufficientDatasetError(Exception):
+    """Raised when the golden dataset has fewer than the required minimum active items.
+
+    The Tier-2 regression gate requires at least 20 active items to produce
+    a statistically meaningful per-metric delta.  Callers that need to surface
+    this condition programmatically (e.g. perf_gate.py) should catch this error.
+    """
+
+
 class AgentRunner:
     """Default agent runner — stub that returns empty scores.
 

@@ -56,7 +56,9 @@ def _make_jwt(role: str = "end_user", tenant_id: uuid.UUID | None = None) -> str
 
 def _make_app() -> FastAPI:
     app = FastAPI()
-    app.include_router(router, prefix="/api/v1/companies")
+    # router has prefix="/companies"; mount under /api/v1 so the full path is
+    # /api/v1/companies/{company_id}/detail
+    app.include_router(router, prefix="/api/v1")
     return app
 
 
@@ -164,7 +166,7 @@ class TestGetCompanyDetailEndpoint:
             patch("src.api.v1.company_detail_router._fetch_score_breakdown", side_effect=_scores),
             patch("src.api.v1.company_detail_router._fetch_active_events", side_effect=_events),
             patch("src.api.v1.company_detail_router._fetch_analysis_history", side_effect=_hist),
-            patch("src.api.auth_deps.get_settings") as mock_settings,
+            patch("src.api.auth_deps.get_settings"),
         ]
         return patches, app
 

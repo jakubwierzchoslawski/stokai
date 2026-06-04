@@ -30,7 +30,12 @@ _DEFAULT_SETTINGS = {
 
 
 def _make_session_with_settings(settings: dict | None) -> AsyncMock:
-    """Session whose first execute returns settings row, second is UPDATE."""
+    """Session whose first execute is UPDATE, second returns settings row (get_settings).
+
+    update_settings() call order:
+      1. UPDATE "user" ...  (no mapping needed)
+      2. SELECT ... FROM "user"  (get_settings called internally after update)
+    """
     session = AsyncMock()
 
     class FakeRow:
@@ -40,15 +45,15 @@ def _make_session_with_settings(settings: dict | None) -> AsyncMock:
         def __getitem__(self, key):
             return self._data[key]
 
-    first_result = MagicMock()
-    first_result.mappings.return_value.first.return_value = (
-        FakeRow(settings) if settings is not None else None
-    )
-
     update_result = MagicMock()
     update_result.rowcount = 1
 
-    session.execute = AsyncMock(side_effect=[first_result, update_result])
+    select_result = MagicMock()
+    select_result.mappings.return_value.first.return_value = (
+        FakeRow(settings) if settings is not None else None
+    )
+
+    session.execute = AsyncMock(side_effect=[update_result, select_result])
     return session
 
 

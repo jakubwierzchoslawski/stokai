@@ -57,8 +57,12 @@ class MorningBriefState(BaseModel):
     requires_hil: bool = False
     hil_reason: str | None = None
 
-    # Cost tracking
+    # Workflow inputs (arbitrary dict; token_budget_override injected by CostGuard)
+    inputs: dict = Field(default_factory=dict)
+
+    # Cost / token tracking (REQ-N-004)
     cost_usd: float = 0.0
+    tokens_consumed: dict[str, int] = Field(default_factory=dict)
 
     # Observability
     langfuse_trace_id: str | None = None

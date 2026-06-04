@@ -47,7 +47,8 @@ def _make_jwt(tenant_id: uuid.UUID | None = None) -> str:
 
 def _make_app() -> FastAPI:
     app = FastAPI()
-    app.include_router(router, prefix="/api/v1/companies")
+    # router has prefix="/companies"; mount under /api/v1
+    app.include_router(router, prefix="/api/v1")
     return app
 
 

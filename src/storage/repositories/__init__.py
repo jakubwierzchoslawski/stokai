@@ -11,6 +11,7 @@ Public protocols:
     CompanyExposureRepository / ICompanyRepository — tracked company data (PLAN-F-003).
     GeoEventRepository / IGeoEventRepository — geo_event table (PLAN-F-003).
     EventExposureRepository / IEventExposureRepository — event_exposure table (PLAN-F-003).
+    PriceBarRepository / IPriceBarRepository — price_bar hypertable (PLAN-F-023).
 """
 from src.storage.repositories.base import TenantIdMissingError
 from src.storage.repositories.brief_repository import BriefRepository, IBriefRepository
@@ -28,6 +29,7 @@ from src.storage.repositories.geo_event_repository import (
     GeoEventRepository,
     IGeoEventRepository,
 )
+from src.storage.repositories.price_bar_repository import IPriceBarRepository, PriceBar, PriceBarRepository
 from src.storage.repositories.workflow_run_repository import WorkflowRunRepository
 
 __all__ = [
@@ -44,4 +46,8 @@ __all__ = [
     "EventExposureRepository",
     "IEventExposureRepository",
     "EventExposure",
+    # PLAN-F-023: price bar repository
+    "IPriceBarRepository",
+    "PriceBar",
+    "PriceBarRepository",
 ]

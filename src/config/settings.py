@@ -62,6 +62,13 @@ class Settings(BaseSettings):
     # ── Port binding (12-factor) ──────────────────────────────────────────────
     PORT: int = 8000
 
+    # ── Morning Brief (PLAN-F-006) ────────────────────────────────────────────
+    # Default dispatch time for the Morning Brief email (user-overridable via D7).
+    MORNING_BRIEF_DEFAULT_SEND_TIME: str = "06:00"
+    # SendGrid dynamic template ID for the Morning Brief HTML email.
+    # Must be set when alerts are enabled; validated at startup via validator below.
+    SENDGRID_MORNING_BRIEF_TEMPLATE_ID: str = ""
+
     # ── Feature flags ─────────────────────────────────────────────────────────
     # Twitter/X source adapter. Default=false (free-tier plan; enable via env).
     # GDELT, EDGAR, and price_anomaly are always enabled.

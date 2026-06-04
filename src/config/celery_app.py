@@ -36,7 +36,7 @@ def create_celery_app() -> Celery:
             "src.ai.workflows.on_demand.hil",  # hil_fallback_check_task (PLAN-F-007)
             "src.ai.workflows.event_deep_dive",  # event_deep_dive task (PLAN-F-010)
             "src.ai.evaluation.tasks",  # Tier-3 calibration (PLAN-F-016)
-            "src.ai.tasks",  # detect_t1_earnings + earnings_brief_task (PLAN-F-009)
+            "src.ai.tasks",  # detect_t1_earnings + earnings_brief_task + morning_brief (PLAN-F-009, PLAN-F-006)
         ]
     )
 
@@ -86,6 +86,11 @@ def create_celery_app() -> Celery:
         "detect-t1-earnings-every-15min": {
             "task": "ai.detect_t1_earnings",
             "schedule": crontab(minute="*/15"),
+        },
+        # ── Morning Brief fan-out — daily 05:30 UTC (PLAN-F-006) ─────────────
+        "morning-brief-dispatch": {
+            "task": "morning_brief.dispatch_all_users",
+            "schedule": crontab(hour=5, minute=30),
         },
     }
 

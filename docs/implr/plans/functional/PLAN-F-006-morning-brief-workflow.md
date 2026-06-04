@@ -4,7 +4,7 @@ slug: morning-brief-workflow
 title: Morning Brief Workflow (Mode B — Workflow 1)
 linked_requirement: REQ-F-006
 type: functional
-status: ready
+status: done
 blocked_reason:
 complexity: XL
 tdd_required: true
@@ -16,7 +16,7 @@ dependencies:
   - { id: PLAN-F-011, reason: "Named-role agents (relevance_analyst, anomaly_detector, historical_context_agent, recommendation_synthesizer, narrative_writer, evaluate_quality) must be defined in AgentRegistry before this workflow can load and invoke them" }
   - { id: PLAN-F-015, reason: "Memory layers required: Layer 1 episodic record for every workflow run; Layer 4 user_feedback written on every HIL action" }
   - { id: PLAN-F-013, reason: "HIL review path required for confidence 0.4–0.69 outputs; workflow pauses on LangGraph checkpoint and resumes only on HIL approval; timeout handler reads HIL status at 05:45" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-02T00:00:00Z

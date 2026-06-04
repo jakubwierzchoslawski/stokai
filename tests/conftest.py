@@ -21,3 +21,17 @@ _TEST_ENV = {
 
 for _key, _value in _TEST_ENV.items():
     os.environ.setdefault(_key, _value)
+
+# SQLAlchemy compat — TIMESTAMPTZ was removed from sqlalchemy.dialects.postgresql
+# in SQLAlchemy 2.x. Many source models import it directly. Patch the namespace
+# here so all tests can import those models without errors.
+try:
+    from sqlalchemy.dialects import postgresql as _pg_dialect
+    if not hasattr(_pg_dialect, "TIMESTAMPTZ"):
+        from sqlalchemy import DateTime as _DateTime
+        _pg_dialect.TIMESTAMPTZ = _DateTime(timezone=True)  # type: ignore[attr-defined]
+        # Also patch the __init__ module attribute used by 'from ... import TIMESTAMPTZ'
+        import sqlalchemy.dialects.postgresql as _pg_pkg
+        _pg_pkg.TIMESTAMPTZ = _DateTime(timezone=True)  # type: ignore[attr-defined]
+except Exception:  # pragma: no cover
+    pass

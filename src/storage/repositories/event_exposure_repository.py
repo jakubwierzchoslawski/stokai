@@ -9,13 +9,14 @@ PLAN-F-003 TASK-003.
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import Any, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 from uuid import UUID
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.event_pipeline.exposure_mapping import ExposureRecord
+if TYPE_CHECKING:
+    from src.event_pipeline.exposure_mapping import ExposureRecord  # noqa: F401 — type hints only
 
 
 # ---------------------------------------------------------------------------

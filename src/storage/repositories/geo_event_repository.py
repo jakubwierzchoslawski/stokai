@@ -16,7 +16,12 @@ from uuid import UUID
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.event_pipeline.pipeline_state import GeoEvent, GeoEventCreate
+# TYPE_CHECKING guard breaks the circular import:
+# geo_event_repository -> event_pipeline.pipeline_state -> event_pipeline.__init__
+#   -> exposure_mapping -> geo_event_repository
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.event_pipeline.pipeline_state import GeoEvent, GeoEventCreate
 
 
 # ---------------------------------------------------------------------------
@@ -138,6 +143,7 @@ class GeoEventRepository:
         )
         await self._session.flush()
 
+        from src.event_pipeline.pipeline_state import GeoEvent  # noqa: PLC0415
         returned_id: UUID = result.scalar_one()
         return GeoEvent(
             event_id=returned_id,
@@ -172,6 +178,7 @@ class GeoEventRepository:
         row = result.mappings().one_or_none()
         if row is None:
             return None
+        from src.event_pipeline.pipeline_state import GeoEvent  # noqa: PLC0415
         return GeoEvent(
             event_id=row["event_id"],
             headline=row.get("headline", ""),

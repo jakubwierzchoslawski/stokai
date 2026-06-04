@@ -4,7 +4,27 @@
       "PowerShell(Get-FileHash *)",
       "PowerShell($str = \"b3c2e7a1f94d6e08a5b2c9d3f1e74a62\"; $bytes = [System.Text.Encoding]::UTF8.GetBytes\\($str\\); $md5 = [System.Security.Cryptography.MD5]::Create\\(\\); $hash = $md5.ComputeHash\\($bytes\\); \\($hash | ForEach-Object { $_.ToString\\(\"x2\"\\) }\\) -join \"\")",
       "PowerShell(Test-Path *)",
-      "PowerShell(cmd /c \"rd /s /q `\"B:\\\\development\\\\python_space\\\\stokai\\\\docs\\\\implr\\\\requirements\\\\.staging`\"\" ; if \\($?\\) { \"staging cleaned\" } else { \"cleanup failed\" })"
+      "PowerShell(cmd /c \"rd /s /q `\"B:\\\\development\\\\python_space\\\\stokai\\\\docs\\\\implr\\\\requirements\\\\.staging`\"\" ; if \\($?\\) { \"staging cleaned\" } else { \"cleanup failed\" })",
+      "Bash(python -m pytest tests/unit/ai/workflows/test_morning_brief_state.py tests/unit/ai/workflows/test_morning_brief_nodes.py tests/unit/ai/workflows/test_morning_brief_agent_nodes.py tests/unit/ai/workflows/test_morning_brief_routing.py -v --tb=short)",
+      "Bash(python -m pytest tests/unit/storage/test_price_bar_repository.py tests/unit/api/test_company_detail_router.py -v --tb=short)",
+      "Bash(python *)",
+      "Bash(pip show *)",
+      "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/unit/storage/test_price_bar_repository.py -v --tb=short)",
+      "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pip.exe install *)",
+      "Bash(pip install *)",
+      "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/unit/storage/test_event_exposure_repository.py -v --tb=short)",
+      "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/unit/api/test_cache_stats.py -v --tb=short)",
+      "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/unit/storage/test_seeding_checkpoint_repository.py -v --tb=short)",
+      "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/python.exe *)",
+      "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/unit/storage/test_brief_repository.py -v --tb=short)",
+      "Bash(grep -A8 \"/{portfolio_id}\\\\\",\" C:/Users/JakubWierzchoslawski/development/python_space/stokai/src/api/routers/portfolio_router.py)",
+      "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/unit/api/test_company_detail_router.py -v --tb=short)",
+      "Bash(git stash *)",
+      "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/unit/api/test_company_detail_router.py::TestGetCompanyDetailEndpoint::test_endpoint_returns_200_with_all_panels -v --tb=long)",
+      "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/unit/api/test_company_detail_router.py::TestGetCompanyDetailEndpoint -v --tb=short)",
+      "Bash(/c/Users/JakubWierzchoslawski/AppData/Local/Python/pythoncore-3.14-64/Scripts/pytest.exe tests/integration/api/test_company_detail_endpoint.py -v --tb=short)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }

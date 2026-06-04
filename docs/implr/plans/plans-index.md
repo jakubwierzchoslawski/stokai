@@ -20,7 +20,7 @@
 | PLAN-F-003 | Event Exposure Mapping | REQ-F-003 | M | true | done | functional/PLAN-F-003-exposure-mapping.md |
 | PLAN-F-004 | Event Embedding and Historical Analogy Search | REQ-F-004 | M | true | done | functional/PLAN-F-004-event-embedding-and-analogy-search.md |
 | PLAN-F-005 | Alert Dispatch with Anti-Fatigue Controls | REQ-F-005 | L | true | done | functional/PLAN-F-005-alert-dispatch-anti-fatigue.md |
-| PLAN-F-006 | Morning Brief Workflow | REQ-F-006 | XL | true | ready | functional/PLAN-F-006-morning-brief-workflow.md |
+| PLAN-F-006 | Morning Brief Workflow | REQ-F-006 | XL | true | done | functional/PLAN-F-006-morning-brief-workflow.md |
 | PLAN-F-007 | On-Demand Analysis Workflow | REQ-F-007 | L | true | done | functional/PLAN-F-007-on-demand-analysis-workflow.md |
 | PLAN-F-008 | Watchlist Scan Workflow | REQ-F-008 | L | true | done | functional/PLAN-F-008-watchlist-scan-workflow.md |
 | PLAN-F-009 | Earnings Risk Brief Workflow | REQ-F-009 | L | true | ready | functional/PLAN-F-009-earnings-risk-brief-workflow.md |

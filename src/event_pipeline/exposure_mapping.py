@@ -9,37 +9,20 @@ Implements:
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from pydantic import BaseModel
 
+from src.event_pipeline.domain import TrackedCompany  # noqa: F401 — re-exported for compat
 from src.event_pipeline.pipeline_state import PipelineContext
-from src.storage.repositories.company_exposure_repository import ICompanyRepository
-from src.storage.repositories.event_exposure_repository import IEventExposureRepository
-from src.storage.repositories.geo_event_repository import IGeoEventRepository
 
-
-# ---------------------------------------------------------------------------
-# Domain models
-# ---------------------------------------------------------------------------
-
-
-class TrackedCompany(BaseModel):
-    """A company tracked in the portfolio universe.
-
-    Attributes:
-        company_id: Unique identifier for the company.
-        sector_internal: Internal sector classification string.
-        sector_gics: GICS sector label.
-        geo_revenue: Mapping of region name → revenue fraction (sums to ~1.0).
-        market_cap_weight: This company's weight in the tracked universe [0, 1].
-    """
-
-    company_id: UUID
-    sector_internal: str
-    sector_gics: str
-    geo_revenue: dict[str, float]  # region → fraction (sums to ~1.0)
-    market_cap_weight: float  # company's weight in universe
+if TYPE_CHECKING:
+    # These imports are only needed for type hints; using TYPE_CHECKING breaks
+    # the circular dependency between event_pipeline and storage.repositories.
+    from src.storage.repositories.company_exposure_repository import ICompanyRepository
+    from src.storage.repositories.event_exposure_repository import IEventExposureRepository
+    from src.storage.repositories.geo_event_repository import IGeoEventRepository
 
 
 class ExposureRecord(BaseModel):

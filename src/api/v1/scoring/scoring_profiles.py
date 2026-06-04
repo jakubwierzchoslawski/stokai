@@ -85,7 +85,7 @@ async def create_scoring_profile(
     }
 
 
-@router.delete("/{profile_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{profile_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def delete_scoring_profile(
     profile_id: UUID,
     user: AdminUser,

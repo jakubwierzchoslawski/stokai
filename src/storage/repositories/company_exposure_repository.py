@@ -14,7 +14,7 @@ from uuid import UUID
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.event_pipeline.exposure_mapping import TrackedCompany
+from src.event_pipeline.domain import TrackedCompany
 
 
 # ---------------------------------------------------------------------------

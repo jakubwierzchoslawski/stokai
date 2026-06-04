@@ -4,7 +4,7 @@ slug: watchlist-scan-workflow
 title: Watchlist Scan Workflow (Mode B)
 linked_requirement: REQ-F-008
 type: functional
-status: ready
+status: done
 blocked_reason:
 complexity: L
 tdd_required: true
@@ -14,7 +14,7 @@ linked_nfrs:
 dependencies:
   - { id: PLAN-F-011, reason: "Named-role agents (Relevance Analyst, Anomaly Detector, Historical Context Agent, Recommendation Synthesizer, Narrative Writer) must be registered and operational" }
   - { id: PLAN-F-024, reason: "Portfolio and watchlist DB tables and repository layer must exist; fetch_watchlist tool depends on them" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-02T00:00:00Z

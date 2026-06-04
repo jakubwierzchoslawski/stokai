@@ -1,0 +1,35 @@
+workflow_id: watchlist_scan
+cost_ceiling_usd: 1.00
+timeout_seconds: 480
+hil_deadline: "17:45"
+dispatch_target: "18:00"
+pg_checkpoint: true
+celery_time_limit: 540
+celery_soft_time_limit: 480
+description: >
+  Mode B Workflow 3 — Watchlist Scan.
+  Triggered daily at 17:30 UTC. Fetches each subscribed user's watchlist and
+  portfolio, filters geopolitical events for relevance, recomputes exposure
+  scores, detects anomalies, retrieves historical analogies for high-anomaly
+  names, synthesizes action recommendations, writes a narrative report, and
+  evaluates overall quality before branching on confidence.
+  Reports with confidence >= 0.70 are auto-dispatched by email targeting 18:00.
+  Confidence 0.40-0.69 enters the HIL queue with a 17:45 review deadline.
+  Confidence < 0.40 is blocked.
+confidence_thresholds:
+  auto_dispatch: 0.70
+  hil_min: 0.40
+  block_max: 0.40
+agents:
+  - role: relevance_analyst
+    model: claude-sonnet-4-6
+  - role: anomaly_detector
+    model: claude-sonnet-4-6
+  - role: historical_context_agent
+    model: claude-opus-4-7
+    conditional: high_anomaly_only
+  - role: recommendation_synthesizer
+    model: claude-opus-4-7
+  - role: narrative_writer
+    model: claude-opus-4-7
+    position: last_agent_node

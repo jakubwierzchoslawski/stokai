@@ -19,6 +19,7 @@ class WorkflowType(str, Enum):
     WATCHLIST_SCAN = "watchlist_scan"
     EARNINGS_BRIEF = "earnings_brief"
     EVENT_DEEP_DIVE = "event_deep_dive"
+    QA = "qa"  # PLAN-F-027: Interactive Q&A sessions
 
 
 class WorkflowStatus(str, Enum):
@@ -38,7 +39,7 @@ class WorkflowState(BaseModel):
     workflow_type: WorkflowType
     tenant_id: UUID
     user_id: UUID
-    company_id: UUID
+    company_id: UUID | None = None  # nullable: QA workflow spans multiple companies
     started_at: datetime
     inputs: dict[str, Any] = Field(default_factory=dict)
 

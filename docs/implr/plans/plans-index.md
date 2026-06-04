@@ -7,9 +7,9 @@
 | Metric | Count |
 |--------|-------|
 | Total plans | 47 |
-| Ready | 23 |
+| Ready | 22 |
 | In progress | 0 |
-| Done | 24 |
+| Done | 25 |
 | Blocked | 0 |
 
 ## Functional Plans
@@ -17,7 +17,7 @@
 |----|-------|-------------|-----------|-----|--------|------|
 | PLAN-F-001 | Reactive Pipeline Ingestion (Mode A) | REQ-F-001 | XL | true | done | functional/PLAN-F-001-reactive-pipeline-ingestion.md |
 | PLAN-F-002 | Event Classification and Ticker Extraction | REQ-F-002 | M | true | done | functional/PLAN-F-002-event-classification-and-extraction.md |
-| PLAN-F-003 | Event Exposure Mapping | REQ-F-003 | M | true | ready | functional/PLAN-F-003-exposure-mapping.md |
+| PLAN-F-003 | Event Exposure Mapping | REQ-F-003 | M | true | done | functional/PLAN-F-003-exposure-mapping.md |
 | PLAN-F-004 | Event Embedding and Historical Analogy Search | REQ-F-004 | M | true | done | functional/PLAN-F-004-event-embedding-and-analogy-search.md |
 | PLAN-F-005 | Alert Dispatch with Anti-Fatigue Controls | REQ-F-005 | L | true | done | functional/PLAN-F-005-alert-dispatch-anti-fatigue.md |
 | PLAN-F-006 | Morning Brief Workflow | REQ-F-006 | XL | true | ready | functional/PLAN-F-006-morning-brief-workflow.md |

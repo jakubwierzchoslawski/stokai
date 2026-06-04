@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -33,3 +33,29 @@ class CalibrationQueryParams(BaseModel):
 
     days: int = Field(default=30, ge=1, le=365)
     action_signal: Optional[str] = None
+
+
+# ── Calibration Review schemas ────────────────────────────────────────────────
+
+
+class CalibrationReviewRequest(BaseModel):
+    """Request body for POST /evaluation/calibration/reviews."""
+
+    action_taken: Literal[
+        "no_action", "improvement_loop_triggered", "model_flag"
+    ]
+    notes: Optional[str] = None
+
+
+class CalibrationReviewResponse(BaseModel):
+    """Response schema for a calibration review record."""
+
+    review_id: uuid.UUID
+    reviewed_by: uuid.UUID
+    reviewed_at: datetime
+    corr_at_review: Optional[float]
+    below_threshold: bool
+    action_taken: str
+    notes: Optional[str]
+
+    model_config = {"from_attributes": True}

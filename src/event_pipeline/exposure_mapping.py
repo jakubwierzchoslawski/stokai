@@ -15,10 +15,8 @@ from pydantic import BaseModel
 
 from src.event_pipeline.pipeline_state import PipelineContext
 from src.storage.repositories.company_exposure_repository import ICompanyRepository
-from src.storage.repositories.event_exposure_repository import (
-    IEventExposureRepository,
-    IGeoEventRepository,
-)
+from src.storage.repositories.event_exposure_repository import IEventExposureRepository
+from src.storage.repositories.geo_event_repository import IGeoEventRepository
 
 
 # ---------------------------------------------------------------------------

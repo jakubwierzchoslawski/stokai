@@ -13,6 +13,8 @@ Endpoints:
   DELETE /evaluation/golden-dataset/{item_id}        → 204
   GET  /evaluation/calibration                       — list recent calibration rows
   GET  /evaluation/calibration/summary               — 30-day summary
+  POST /evaluation/calibration/reviews               → 201 (admin only)
+  GET  /evaluation/calibration/reviews               — list recent reviews (admin only)
 """
 from __future__ import annotations
 
@@ -24,6 +26,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from src.ai.evaluation.interfaces.i_calibration_repository import (
     ICalibrationRepository,
+)
+from src.ai.evaluation.interfaces.i_calibration_review_repository import (
+    ICalibrationReviewRepository,
 )
 from src.ai.evaluation.interfaces.i_evaluation_repository import (
     IEvaluationRepository,
@@ -44,6 +49,9 @@ from src.ai.evaluation.schemas.calibration_schemas import (
     CalibrationResult,
     CalibrationSummary,
 )
+from src.ai.evaluation.schemas.calibration_review_schemas import (
+    CalibrationReview,
+)
 from src.ai.evaluation.schemas.evaluation_schemas import (
     EvaluationResult,
     EvaluationResultCreate,
@@ -52,7 +60,14 @@ from src.ai.evaluation.schemas.golden_dataset_schemas import (
     GoldenDatasetItem,
     GoldenDatasetItemCreate,
 )
+from src.ai.evaluation.services.calibration_review_service import (
+    CalibrationReviewService,
+)
 from src.api.auth_deps import CurrentUser, require_admin
+from src.api.evaluation.evaluation_api_schemas import (
+    CalibrationReviewRequest,
+    CalibrationReviewResponse,
+)
 from src.config.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -86,6 +101,13 @@ def get_calibration_repo() -> ICalibrationRepository:
     """Stub — override in tests or wire with a real DB session via Depends."""
     raise NotImplementedError(
         "get_calibration_repo must be overridden with a real session-backed repo."
+    )
+
+
+def get_calibration_review_repo() -> ICalibrationReviewRepository:
+    """Stub — override in tests or wire with a real DB session via Depends."""
+    raise NotImplementedError(
+        "get_calibration_review_repo must be overridden with a real session-backed repo."
     )
 
 
@@ -281,3 +303,75 @@ async def get_calibration_summary(
         below_threshold=below_threshold,
         assessment=assessment,
     )
+
+
+# ── /evaluation/calibration/reviews ──────────────────────────────────────────
+
+
+@evaluation_router.post(
+    "/calibration/reviews",
+    response_model=CalibrationReviewResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Record a weekly calibration review (admin only)",
+)
+async def create_calibration_review(
+    body: CalibrationReviewRequest,
+    admin: CurrentUser = Depends(require_admin),
+    cal_repo: ICalibrationRepository = Depends(get_calibration_repo),
+    review_repo: ICalibrationReviewRepository = Depends(get_calibration_review_repo),
+) -> CalibrationReviewResponse:
+    """
+    Record an admin calibration review decision.
+
+    Reads the current rolling CORR from the calibration repository, derives
+    below_threshold, persists the review, and returns it with a 201 status.
+    """
+    service = CalibrationReviewService(
+        review_repo=review_repo,
+        calibration_repo=cal_repo,
+    )
+    review = await service.record_review(
+        reviewed_by=admin.user_id,
+        action_taken=body.action_taken,
+        notes=body.notes,
+    )
+    return CalibrationReviewResponse(
+        review_id=review.review_id,
+        reviewed_by=review.reviewed_by,
+        reviewed_at=review.reviewed_at,
+        corr_at_review=review.corr_at_review,
+        below_threshold=review.below_threshold,
+        action_taken=review.action_taken,
+        notes=review.notes,
+    )
+
+
+@evaluation_router.get(
+    "/calibration/reviews",
+    response_model=list[CalibrationReviewResponse],
+    summary="List recent calibration reviews (admin only)",
+)
+async def list_calibration_reviews(
+    limit: int = Query(default=10, ge=1, le=100),
+    _admin: CurrentUser = Depends(require_admin),
+    cal_repo: ICalibrationRepository = Depends(get_calibration_repo),
+    review_repo: ICalibrationReviewRepository = Depends(get_calibration_review_repo),
+) -> list[CalibrationReviewResponse]:
+    """Return the most recent calibration reviews in descending order."""
+    service = CalibrationReviewService(
+        review_repo=review_repo,
+        calibration_repo=cal_repo,
+    )
+    reviews = await service.list_reviews(limit=limit)
+    return [
+        CalibrationReviewResponse(
+            review_id=r.review_id,
+            reviewed_by=r.reviewed_by,
+            reviewed_at=r.reviewed_at,
+            corr_at_review=r.corr_at_review,
+            below_threshold=r.below_threshold,
+            action_taken=r.action_taken,
+            notes=r.notes,
+        )
+        for r in reviews
+    ]

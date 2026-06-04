@@ -151,10 +151,12 @@ def initialise_ai_module(
     except StartupValidationError as exc:
         failures.extend(exc.failures)
 
-    # Step 2: Validate workflow structures
-    if workflow_node_sequences:
+    # Step 2: Validate workflow structures (includes WatchlistScanWorkflow — PLAN-F-008)
+    from src.ai.workflows.watchlist_scan_workflow import _NODE_SEQUENCE as WATCHLIST_NODE_SEQUENCE
+    all_sequences = list(workflow_node_sequences or []) + [WATCHLIST_NODE_SEQUENCE]
+    if all_sequences:
         validator = WorkflowStructureValidator()
-        for sequence in workflow_node_sequences:
+        for sequence in all_sequences:
             try:
                 validator.validate(sequence)
             except WorkflowStructureError as exc:

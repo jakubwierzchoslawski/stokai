@@ -36,6 +36,7 @@ def create_celery_app() -> Celery:
             "src.ai.workflows.on_demand.hil",  # hil_fallback_check_task (PLAN-F-007)
             "src.ai.workflows.event_deep_dive",  # event_deep_dive task (PLAN-F-010)
             "src.ai.evaluation.tasks",  # Tier-3 calibration (PLAN-F-016)
+            "src.ai.tasks",  # detect_t1_earnings + earnings_brief_task (PLAN-F-009)
         ]
     )
 
@@ -75,6 +76,16 @@ def create_celery_app() -> Celery:
         "run-daily-calibration": {
             "task": "src.ai.evaluation.tasks.calibration_tasks.run_daily_calibration",
             "schedule": crontab(hour=2, minute=0),
+        },
+        # ── Watchlist scan fan-out — daily 17:30 UTC (PLAN-F-008) ─────────────
+        "watchlist-scan-fanout-1730": {
+            "task": "ai.watchlist_scan_fanout",
+            "schedule": crontab(hour=17, minute=30),
+        },
+        # ── T-1 earnings detection — every 15 min (PLAN-F-009) ───────────────
+        "detect-t1-earnings-every-15min": {
+            "task": "ai.detect_t1_earnings",
+            "schedule": crontab(minute="*/15"),
         },
     }
 

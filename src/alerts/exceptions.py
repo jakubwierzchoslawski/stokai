@@ -61,6 +61,24 @@ class BudgetHardStopError(Exception):
         self.daily_budget_usd = daily_budget_usd
 
 
+class NotFoundError(Exception):
+    """Raised when a requested alert-domain resource does not exist or belongs
+    to another user/tenant.  Never reveals whether the resource exists."""
+
+    def __init__(self, resource: str = "Resource", resource_id: object = None) -> None:
+        msg = f"{resource} not found"
+        if resource_id is not None:
+            msg = f"{resource} {resource_id!r} not found"
+        super().__init__(msg)
+
+
+class ValidationError(Exception):
+    """Raised when alert-domain input fails validation rules."""
+
+    def __init__(self, message: str = "Validation error") -> None:
+        super().__init__(message)
+
+
 class SendGridError(Exception):
     """Raised when the SendGrid API returns a non-2xx response.
 

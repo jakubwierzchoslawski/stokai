@@ -16,6 +16,9 @@ from src.api.routers.hil_router import hil_router
 from src.api.routers.portfolio_router import portfolio_router
 from src.api.routers.watchlist_router import watchlist_router
 from src.api.routers.onboarding_router import onboarding_router
+from src.alerts.api.alerts_router import alerts_router
+from src.alerts.api.alert_rules_router import alert_rules_router
+from src.alerts.api.anti_fatigue_router import anti_fatigue_router
 
 app = FastAPI(
     title="StokAI API",
@@ -37,6 +40,9 @@ app.include_router(onboarding_router, prefix="/api/v1")  # PLAN-F-024: Onboardin
 app.include_router(admin_router, prefix="/api/v1")  # PLAN-F-028: admin data-source management
 app.include_router(memos_router)  # PLAN-F-010: GET /api/v1/events/{event_id}/memo
 app.include_router(evaluation_router, prefix="/api/v1")  # PLAN-F-016: evaluation framework
+app.include_router(alerts_router, prefix="/api/v1")       # PLAN-F-025: Alerts Center
+app.include_router(alert_rules_router, prefix="/api/v1")  # PLAN-F-025: Alert Rules CRUD
+app.include_router(anti_fatigue_router, prefix="/api/v1") # PLAN-F-025: Anti-fatigue settings
 
 
 @app.get("/health")

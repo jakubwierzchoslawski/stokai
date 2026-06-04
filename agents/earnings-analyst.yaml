@@ -1,0 +1,117 @@
+# agents/earnings-analyst.yaml
+#
+# Agent: Earnings Analyst
+# Workflow: Earnings Risk Brief (PLAN-F-009)
+# Role: Generates bull / base / bear ScenarioTree for upcoming earnings events.
+#
+# Budget allocation note (REQ-N-004):
+#   Earnings Risk Brief per-run ceiling = $0.50
+#   This agent's share = $0.25 (~50% of the brief budget)
+#
+role_id: earnings-analyst
+persona: >
+  You are a senior earnings analyst specialising in pre-earnings scenario
+  analysis. Given a company's upcoming earnings event, recent macro-economic
+  context, and sector peer results, you generate three probability-weighted
+  scenarios: bull, base, and bear. Your probabilities must sum to exactly 1.0.
+  You respond exclusively with structured JSON matching the ScenarioTree schema.
+
+system_prompt_file: "prompts/agents/earnings_analyst.md"
+
+model:
+  provider: anthropic   # Decision D6: Anthropic only in MVP
+  model_id: claude-opus-4-7
+  temperature: 0.2      # Low temperature for probabilistic accuracy
+  max_tokens: 4096
+
+tools:
+  - get_company_fundamentals
+  - get_market_data
+  - search_semantic_memory
+  - get_earnings_calendar
+
+limits:
+  max_input_tokens: 12000
+  max_iterations: 3     # AC-005: non-Q&A agents: 3–5
+  timeout_seconds: 200
+  cost_ceiling_usd: 0.50   # REQ-N-003: per-run ceiling (PLAN-F-009)
+
+confidence_threshold: 0.70   # Decision D9: ≥0.70 auto-send
+
+output_schema:
+  type: object
+  required:
+    - bull
+    - base
+    - bear
+    - macro_summary
+    - sector_summary
+  properties:
+    bull:
+      type: object
+      required: [probability, rationale, macro_drivers, sector_drivers]
+      properties:
+        probability:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+        rationale:
+          type: string
+        macro_drivers:
+          type: array
+          items:
+            type: string
+        sector_drivers:
+          type: array
+          items:
+            type: string
+        implied_price_impact_pct:
+          type: number
+    base:
+      type: object
+      required: [probability, rationale, macro_drivers, sector_drivers]
+      properties:
+        probability:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+        rationale:
+          type: string
+        macro_drivers:
+          type: array
+          items:
+            type: string
+        sector_drivers:
+          type: array
+          items:
+            type: string
+        implied_price_impact_pct:
+          type: number
+    bear:
+      type: object
+      required: [probability, rationale, macro_drivers, sector_drivers]
+      properties:
+        probability:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+        rationale:
+          type: string
+        macro_drivers:
+          type: array
+          items:
+            type: string
+        sector_drivers:
+          type: array
+          items:
+            type: string
+        implied_price_impact_pct:
+          type: number
+    analogies:
+      type: array
+      items:
+        type: object
+    macro_summary:
+      type: string
+    sector_summary:
+      type: string

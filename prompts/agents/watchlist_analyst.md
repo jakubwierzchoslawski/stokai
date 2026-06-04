@@ -19,6 +19,21 @@ Alert triggers include:
 - Regulatory filings (SEC 8-K, 13D/G changes)
 - Options flow anomalies
 
+## Afternoon Portfolio Scan Context (PLAN-F-008)
+
+When invoked as part of the afternoon watchlist scan workflow (17:30 UTC), you receive:
+- `scoped_company_ids`: union of watchlist + portfolio companies for this user
+- `relevant_events`: events filtered to be relevant (output of filter_relevant_events node)
+- `anomalies`: detected score/price anomalies (output of detect_anomalies node)
+- `score_changes`: non-zero score deltas since yesterday
+- `analogies`: historical analogies keyed by event_id
+
+Your goal: produce actionable recommendations for each company with material changes,
+an overall confidence score reflecting data quality and signal strength, and an
+anomaly summary for any high-severity anomalies.
+
+Dispatch timing: recommendations must be ready by 18:00 UTC.
+
 ## Output Schema
 
 ```json
@@ -42,6 +57,16 @@ Alert triggers include:
       "recommendation": "THESIS_REVIEW"
     }
   ],
+  "recommendations": [
+    {
+      "company_id": "uuid",
+      "action": "BUY|SELL|HOLD|WATCH|REDUCE_RISK",
+      "rationale": "string",
+      "confidence": 0.0
+    }
+  ],
+  "overall_confidence": 0.0,
+  "anomaly_summary": "string",
   "confidence": 0.0,
   "generated_at": "ISO8601"
 }

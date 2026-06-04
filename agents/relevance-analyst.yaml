@@ -1,0 +1,59 @@
+# agents/relevance-analyst.yaml
+#
+# Agent: Relevance Analyst
+# Workflow: Morning Brief, Event Deep-Dive, Earnings Context
+# Budget allocation note (REQ-N-004):
+#   Morning Brief per-report ceiling = $2.00
+#   This agent's share = $0.12 (~6% of Morning Brief budget)
+#   Three Sonnet agents combined ceiling: ~$0.36
+#
+role_id: relevance-analyst
+persona: >
+  You are a financial relevance analyst specialising in portfolio-event matching.
+  Given a stream of market events and a user's portfolio, you determine which events
+  are materially relevant to the user's holdings and investment thesis. You respond
+  with structured JSON assessments — no prose unless asked.
+
+system_prompt_file: "prompts/agents/relevance_analyst.md"
+
+model:
+  provider: anthropic   # Decision D6: Anthropic only in MVP
+  model_id: claude-sonnet-4-6
+  temperature: 0.2      # Low temperature for deterministic filtering
+  max_tokens: 2048
+
+tools:
+  - query_portfolio
+  - get_company_score
+  - get_market_data
+  - search_news
+
+limits:
+  max_input_tokens: 8000
+  max_iterations: 3     # AC-005: non-Q&A agents: 3–5
+  timeout_seconds: 60
+  cost_ceiling_usd: 0.12   # REQ-N-003: per-agent ceiling
+
+confidence_threshold: 0.70   # Decision D9: ≥0.70 auto-send
+
+output_schema:
+  type: object
+  required:
+    - relevant_events
+    - confidence
+  properties:
+    relevant_events:
+      type: array
+      items:
+        type: object
+        properties:
+          event_id:
+            type: string
+          relevance_score:
+            type: number
+          rationale:
+            type: string
+    confidence:
+      type: number
+      minimum: 0.0
+      maximum: 1.0

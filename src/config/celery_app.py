@@ -1,65 +1,85 @@
-"""Celery application instance and beat schedule.
-
-PLAN-F-022 TASK-007.
-
-All Celery configuration is loaded from environment variables (12-factor, P-06).
-The beat schedule registers the health metric flush task every 60 seconds.
-
-Beat schedule:
-  - health_flush_task: every 60 seconds — flushes Redis health counters to
-    PostgreSQL DataSourceHealthMetric rows.
-
-Future tasks to add:
-  - Midnight reset task: calls HealthCounter.reset() per source at 00:00
-    per tenant timezone (out of scope for PLAN-F-022).
 """
-from __future__ import annotations
+Celery application factory for StokAI.
 
-import os
-
+Uses get_settings() singleton so all broker/backend URLs come from environment
+variables — never hardcoded. Module-level celery_app is created at import time
+so ``celery -A src.config.celery_app worker`` works without additional calls.
+"""
 from celery import Celery
 from celery.schedules import crontab
 
-# ---------------------------------------------------------------------------
-# Application instance
-# ---------------------------------------------------------------------------
+from src.config.settings import get_settings
 
-#: Redis URL for both the broker and the result backend.
-#: Required — set CELERY_BROKER_URL in .env (see .env.example, P-06).
-#: No default value: fail fast at startup if the env var is absent.
-CELERY_BROKER_URL: str = os.environ.get("CELERY_BROKER_URL", "")
-CELERY_RESULT_BACKEND: str = os.environ.get("CELERY_RESULT_BACKEND", CELERY_BROKER_URL)
 
-app = Celery(
-    "stokai",
-    broker=CELERY_BROKER_URL,
-    backend=CELERY_RESULT_BACKEND,
-    include=["src.admin.data_sources.health_flush_task"],
-)
+def create_celery_app() -> Celery:
+    """Create and configure the Celery application from Settings."""
+    settings = get_settings()
+    app = Celery("stokai")
+    app.conf.broker_url = settings.CELERY_BROKER_URL
+    app.conf.result_backend = settings.CELERY_RESULT_BACKEND
+    app.conf.task_serializer = "json"
+    app.conf.result_serializer = "json"
+    app.conf.accept_content = ["json"]
+    app.conf.timezone = "UTC"
+    app.conf.enable_utc = True
 
-app.conf.update(
-    # Serialisation — JSON is safe and human-readable
-    task_serializer="json",
-    accept_content=["json"],
-    result_serializer="json",
-    # Timezone — UTC throughout (tenant-local time is handled at application layer)
-    timezone="UTC",
-    enable_utc=True,
-    # Task acknowledgement: ack only after the task completes (not at delivery)
-    task_acks_late=True,
-    # Worker prefetch — 1 ensures fair scheduling under load
-    worker_prefetch_multiplier=1,
-)
+    # Auto-discover tasks in all src sub-packages
+    app.autodiscover_tasks(
+        [
+            "src.admin.data_sources",
+            "src.events",
+            "src.scoring",
+            "src.ai.memory.tasks",
+            "src.alerts",   # Mode B event_deep_dive task (PLAN-F-005)
+            "src.ai.hil",   # HIL timeout task (PLAN-F-013)
+            "src.ai.workflows.on_demand",      # on_demand_analysis_task (PLAN-F-007)
+            "src.ai.workflows.on_demand.hil",  # hil_fallback_check_task (PLAN-F-007)
+            "src.ai.workflows.event_deep_dive",  # event_deep_dive task (PLAN-F-010)
+            "src.ai.evaluation.tasks",  # Tier-3 calibration (PLAN-F-016)
+        ]
+    )
 
-# ---------------------------------------------------------------------------
-# Beat (periodic task) schedule
-# ---------------------------------------------------------------------------
+    # Beat schedule
+    app.conf.beat_schedule = {
+        # ── Existing ──────────────────────────────────────────────────────────
+        "health-flush-every-60s": {
+            "task": "src.admin.data_sources.health_flush_task.health_flush",
+            "schedule": 60.0,  # seconds
+        },
+        # ── Memory hygiene (Layer 2 decay) — Monday 02:00 UTC ─────────────────
+        "run-semantic-hygiene-weekly": {
+            "task": "src.ai.memory.tasks.hygiene_tasks.run_semantic_hygiene",
+            "schedule": crontab(hour=2, minute=0, day_of_week=1),
+        },
+        # ── Procedural pattern mining — Tuesday 03:00 UTC ──────────────────────
+        "run-pattern-mining-weekly": {
+            "task": "src.ai.memory.tasks.mining_tasks.run_pattern_mining",
+            "schedule": crontab(hour=3, minute=0, day_of_week=2),
+        },
+        # ── Improvement loop — Wednesday 04:00 UTC ────────────────────────────
+        "run-improvement-loop-weekly": {
+            "task": "src.ai.memory.tasks.improvement_tasks.run_improvement_loop",
+            "schedule": crontab(hour=4, minute=0, day_of_week=3),
+        },
+        # ── HIL deadline enforcement — every 60 s (PLAN-F-013) ───────────────
+        "expire-overdue-hil-items-every-60s": {
+            "task": "src.ai.hil.hil_timeout_task.expire_overdue_hil_items",
+            "schedule": 60.0,  # seconds
+        },
+        # ── On-demand HIL fallback — every 60 s (PLAN-F-007 TASK-009) ────────
+        "hil-fallback-check-every-60s": {
+            "task": "ai.hil_fallback_check",
+            "schedule": 60.0,  # seconds
+        },
+        # ── Tier-3 calibration — daily 02:00 UTC (PLAN-F-016) ────────────────
+        "run-daily-calibration": {
+            "task": "src.ai.evaluation.tasks.calibration_tasks.run_daily_calibration",
+            "schedule": crontab(hour=2, minute=0),
+        },
+    }
 
-app.conf.beat_schedule = {
-    # PLAN-F-022 TASK-007: flush Redis health counters to PostgreSQL every 60 s
-    "health-flush-every-60s": {
-        "task": "src.admin.data_sources.health_flush_task.flush_health_metrics",
-        "schedule": 60.0,  # seconds
-        "options": {"expires": 55},  # discard if worker picks it up late
-    },
-}
+    return app
+
+
+# Module-level singleton — created at import time for celery CLI compatibility.
+celery_app = create_celery_app()

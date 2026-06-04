@@ -1,7 +1,7 @@
 ---
 plan_id: PLAN-N-001
-slug: n-mode-a-latency
-title: NFR — Mode A Reactive Pipeline Latency
+slug: mode-a-latency
+title: Mode A Pipeline Latency Enforcement
 linked_requirement: REQ-N-001
 type: non-functional
 status: done
@@ -10,442 +10,242 @@ complexity: M
 tdd_required: true
 linked_nfrs: []
 dependencies:
-  - { id: PLAN-F-001, reason: "Pipeline implementation and EventRecord/AlertRecord models required for latency testing" }
-executed_at: 2026-06-01T00:00:00Z
+  - { id: PLAN-F-001, reason: "The pipeline being measured — PipelineExecutor and all 12 steps must exist before latency guards and timing instrumentation can be layered on" }
+executed_at: 2026-06-03T00:00:00Z
 reviewed_at:
 review_id:
-created_at: 2026-05-31T00:00:00Z
-updated_at: 2026-05-31T00:00:00Z
+created_at: 2026-06-02T00:00:00Z
+updated_at: 2026-06-02T00:00:00Z
 ---
 
-# PLAN-N-001 — NFR — Mode A Reactive Pipeline Latency
+# PLAN-N-001 — Mode A Pipeline Latency Enforcement
 
 ## Linked Requirement
-**REQ-N-001** — NFR — Mode A Reactive Pipeline Latency
-Status: approved | Jira: (blank)
+**REQ-N-001** — Mode A Pipeline Latency
+Status: approved | Jira:
 
 ## Objective
-
-This plan measures and enforces the end-to-end latency guarantees for the Mode A Reactive
-Pipeline defined in PLAN-F-001. No new pipeline logic is introduced. Instead, a
-`tests/performance/` test suite is built that injects synthetic test events directly into
-the production `PipelineExecutor`, reads the `detected_at` and `generated_at` timestamps
-from the resulting `EventRecord`, reads `dispatched_at` from the resulting `AlertRecord`,
-and asserts that the p95 of the elapsed durations stays within the per-source SLAs:
-tweet/X-class < 30 seconds, GDELT geo-events < 90 seconds, SEC EDGAR filings < 20 minutes.
-A complementary timestamp-presence assertion verifies that `detected_at`, `generated_at`,
-and `dispatched_at` are never null on any completed pipeline run. All performance tests are
-tagged `@pytest.mark.performance`, run in a dedicated CI stage that blocks merge on SLA
-breach, and are isolated from the default test suite.
+Instrument the 12-step Mode A Reactive Pipeline with per-step timeout guards, a whole-pipeline wall-clock timer, and Langfuse latency spans so that SLA violations are detected immediately rather than discovered retrospectively. Provide an automated pytest latency test suite that fires synthetic events at varied intensities and asserts p95 end-to-end latency ≤ 90 s, p95 tweet-to-alert ≤ 30 s, p95 score-change alert ≤ 5 min, and p95 SEC-filing alert ≤ 20 min. Configure a Langfuse score alert that fires when the production p95 crosses 80 s (10-second headroom before the SLA).
 
 ## Architecture Context
+Mode A is defined in Architecture §6. Each of the 12 deterministic and LLM steps has an explicit latency budget (< 1 s–8 s per step; total ≤ 60 s processing plus 30-second SLA margin). The pipeline executor lives in the `events` module (`src/event_pipeline/`). Observability is handled by Langfuse (§12.4): every event produces one root trace; each step should be a child span carrying `latency_ms`. Timeout guards wrap each step call; a `StepTimeoutError` cancels the current step and records the failure in the Langfuse span before re-raising, keeping pipeline failures visible.
 
-This plan touches:
+This plan adds three new artefacts to the `events` module:
+- `src/event_pipeline/latency.py` — `StepLatencyGuard` context-manager / decorator and per-step budget registry.
+- `src/event_pipeline/langfuse_spans.py` — thin wrapper that opens/closes Langfuse child spans and records `latency_ms`, `step_name`, and `budget_ms` on each step.
+- `tests/performance/test_mode_a_latency.py` — pytest latency test suite with synthetic event fixtures.
 
-- **`tests/performance/`** — new test module (ARCHITECTURE.md §4 folder structure under
-  `tests/`). No changes to `src/`.
-- **`src/event_pipeline/pipeline_executor.py`** (read-only) — the production executor whose
-  timestamps are measured.
-- **`src/db/models/event_record.py`** and **`src/db/models/alert_record.py`** (read-only)
-  — the ORM models that carry `detected_at`, `generated_at`, and `dispatched_at`; both
-  produced by PLAN-F-001.
-- **`src/event_pipeline/pipeline_state.py`** (read-only) — `PipelineState` carries
-  `detected_at` and `generated_at` through all 13 steps; `TraceStep` (Step 13) sets
-  `generated_at`.
-- **`pyproject.toml` / `pytest.ini`** — registers the `performance` mark and the CI gate
-  configuration.
-
-Architecture sections directly relevant:
-
-- §6 Mode A Reactive Pipeline — latency budget per source tier (the target numbers this plan
-  enforces).
-- §14 NFR Summary — latency row: tweet < 30 s, geo < 90 s, SEC < 20 min.
-- §12 Observability — `detected_at` and `generated_at` are already written to Langfuse
-  traces by TraceStep; this plan cross-checks the same values via the DB models.
-
-SOLID design is enforced in the test infrastructure:
-
-- **SRP**: `LatencyCollector` measures a single pipeline run and returns elapsed seconds;
-  `PerformanceReporter` aggregates a list of durations and computes percentiles;
-  `EventInjector` (abstract base class) creates typed test events per source.
-- **OCP**: adding a new source type (e.g. `PRICE_ANOMALY`) requires only a new
-  `EventInjector` subclass — zero changes to `LatencyCollector` or `PerformanceReporter`.
-- **DIP**: `LatencyCollector` depends on the `EventInjector` Protocol abstraction, not on
-  concrete adapters.
-
-## Applied NFR Constraints
-
-This plan IS the NFR. It does not consume a separate NFR constraint table. For reference,
-the latency targets this plan enforces come directly from ARCHITECTURE.md §6 and §14:
-
-| Source tier | SLA (p95 detected_at → dispatched_at) |
-|-------------|---------------------------------------|
-| Tweet / X   | < 30 seconds                          |
-| GDELT geo   | < 90 seconds                          |
-| SEC EDGAR   | < 20 minutes (1 200 seconds)          |
-
-Budget constraint C-001 is satisfied by the existing pipeline design (Haiku 4.5 for
-classification at ~$0.01/classify). This plan does not introduce additional LLM calls.
+The pipeline executor (`src/event_pipeline/pipeline_executor.py`) is extended to call the guard and the span wrapper around every step, and to record end-to-end wall-clock time on the root trace.
 
 ## Component Design
 
 ### New Components
 
 ```
+src/event_pipeline/
+  latency.py
+    StepBudget          — dataclass: step_name, budget_ms, is_llm
+    STEP_BUDGETS        — dict[str, StepBudget] (all 12 steps, authoritative from §6)
+    StepTimeoutError    — subclass of PipelineError
+    StepLatencyGuard    — async context manager; records actual_ms, raises on breach
+
+src/event_pipeline/
+  langfuse_spans.py
+    LangfuseSpanContext — async context manager wrapping langfuse.span(); captures
+                          step_name, budget_ms, actual_ms, breach bool as span metadata
+
 tests/performance/
-  ├── conftest.py                   — pytest fixtures: test DB session, isolated Redis,
-  │                                   PipelineExecutor instance with mocked LLM providers
-  ├── collectors/
-  │   ├── __init__.py
-  │   ├── latency_collector.py      — LatencyCollector: runs one pipeline invocation,
-  │   │                               reads EventRecord.detected_at and AlertRecord.dispatched_at,
-  │   │                               returns elapsed float seconds
-  │   └── performance_reporter.py  — PerformanceReporter: accepts list[float], computes
-  │                                   p50/p95/p99/max; returns LatencyReport dataclass
-  ├── injectors/
-  │   ├── __init__.py
-  │   ├── base.py                   — EventInjector Protocol: source_type property,
-  │   │                               build_payload(index: int) -> RawEventPayload
-  │   ├── tweet_injector.py         — TweetEventInjector: builds X_FILTERED_STREAM payloads;
-  │   │                               payload size calibrated to realistic tweet content
-  │   ├── gdelt_injector.py         — GdeltEventInjector: builds GDELT geo-event payloads
-  │   │                               with lat/lon and category fields
-  │   └── edgar_injector.py         — EdgarEventInjector: builds SEC_EDGAR filing payloads
-  │                                   with filing_timestamp set to now()
-  └── test_mode_a_latency.py        — performance test suite (all @pytest.mark.performance):
-                                       test_tweet_p95_under_30s
-                                       test_gdelt_p95_under_90s
-                                       test_edgar_p95_under_20_minutes
-                                       test_event_record_timestamps_non_null
+  conftest.py           — synthetic event factories (intensity 1–5, TIER1-tweet,
+                          score-change, SEC-filing variants); fake pipeline executor
+                          that injects configurable sleep per step
+  test_mode_a_latency.py — latency assertion suite (see TASK-004)
+
+src/config/
+  langfuse_alerts.py    — register_latency_alerts() — calls Langfuse API to upsert
+                          the p95 > 80 s score monitor; idempotent, run at startup
 ```
 
 ### Modified Components
 
 | File | Change | Reason |
 |------|--------|--------|
-| `pyproject.toml` | Add `[tool.pytest.ini_options]` markers entry for `performance: "Mode A latency SLA assertions"` | Prevents pytest warning on unregistered mark |
-| `.github/workflows/ci.yml` (or equivalent CI config) | Add a blocking `performance-gate` stage that runs `pytest -m performance --tb=short` after unit/integration stages pass | CI enforcement of p95 thresholds |
+| `src/event_pipeline/pipeline_executor.py` | Wrap each step call with `StepLatencyGuard` and `LangfuseSpanContext`; record end-to-end wall time on root trace as `pipeline_latency_ms` | Central execution loop must own timing |
+| `src/event_pipeline/exceptions.py` | Add `StepTimeoutError(step_name, budget_ms, actual_ms)` | Typed failure for SLA violation |
 
 ### Interfaces and Contracts
 
 ```python
-# tests/performance/injectors/base.py
-from typing import Protocol
-from src.event_pipeline.pipeline_state import RawEventPayload
+# src/event_pipeline/latency.py
 
-class EventInjector(Protocol):
-    source_type: str  # matches RawEventSource enum value
-
-    def build_payload(self, index: int) -> RawEventPayload: ...
-
-
-# tests/performance/collectors/latency_collector.py
 from dataclasses import dataclass
 
-@dataclass
-class LatencyCollector:
-    executor: "PipelineExecutor"
-    db_session: "AsyncSession"
-    injector: EventInjector
+@dataclass(frozen=True)
+class StepBudget:
+    step_name: str
+    budget_ms: int
+    is_llm: bool
 
-    async def run_once(self, index: int) -> float:
-        """
-        Injects one test event, awaits pipeline completion, reads
-        EventRecord.detected_at and AlertRecord.dispatched_at from the DB,
-        and returns elapsed seconds as a float.
-        Raises AssertionError if either timestamp is None.
-        """
-        ...
+STEP_BUDGETS: dict[str, StepBudget] = {
+    "persist_raw_event":      StepBudget("persist_raw_event",      1_000,  False),
+    "classify_event":         StepBudget("classify_event",         5_000,  True),
+    "extract_tickers":        StepBudget("extract_tickers",        3_000,  True),
+    "compute_exposure_map":   StepBudget("compute_exposure_map",   3_000,  False),
+    "persist_event_record":   StepBudget("persist_event_record",   1_000,  False),
+    "embed_event":            StepBudget("embed_event",            2_000,  True),
+    "find_historical_analogies": StepBudget("find_historical_analogies", 3_000, False),
+    "generate_alert_text":    StepBudget("generate_alert_text",    8_000,  True),
+    "evaluate_alert_rules":   StepBudget("evaluate_alert_rules",   1_000,  False),
+    "dispatch_or_log_silent": StepBudget("dispatch_or_log_silent", 2_000,  False),
+    "enqueue_deep_dive":      StepBudget("enqueue_deep_dive",      1_000,  False),
+    "return_pipeline_result": StepBudget("return_pipeline_result", 1_000,  False),
+}
 
+class StepTimeoutError(PipelineError):
+    def __init__(self, step_name: str, budget_ms: int, actual_ms: float) -> None: ...
 
-# tests/performance/collectors/performance_reporter.py
-from dataclasses import dataclass
+class StepLatencyGuard:
+    """Async context manager. Raises StepTimeoutError if step exceeds budget_ms."""
+    def __init__(self, budget: StepBudget) -> None: ...
+    async def __aenter__(self) -> "StepLatencyGuard": ...
+    async def __aexit__(self, *exc: object) -> bool: ...
+    @property
+    def actual_ms(self) -> float: ...  # available after __aexit__
+```
 
-@dataclass
-class LatencyReport:
-    p50: float
-    p95: float
-    p99: float
-    max: float
-    sample_count: int
+```python
+# src/event_pipeline/langfuse_spans.py
 
-class PerformanceReporter:
-    @staticmethod
-    def compute(durations: list[float]) -> LatencyReport:
-        """
-        Accepts a non-empty list of elapsed-second floats.
-        Computes percentile statistics using statistics.quantiles or numpy.
-        Returns LatencyReport.
-        """
-        ...
+class LangfuseSpanContext:
+    """Async context manager that wraps a Langfuse child span for one pipeline step."""
+    def __init__(
+        self,
+        parent_trace_id: str,
+        budget: StepBudget,
+        langfuse_client: "Langfuse",
+    ) -> None: ...
+    async def __aenter__(self) -> "LangfuseSpanContext": ...
+    async def __aexit__(self, *exc: object) -> bool: ...
+    # On exit writes: latency_ms, budget_ms, step_name, sla_breach (bool) to span metadata
+```
+
+```python
+# pipeline_executor.py — changed call pattern (pseudocode)
+
+async def _run_step(
+    self,
+    step_name: str,
+    coro: Coroutine[Any, Any, T],
+    *,
+    trace_id: str,
+) -> T:
+    budget = STEP_BUDGETS[step_name]
+    async with LangfuseSpanContext(trace_id, budget, self._langfuse):
+        async with StepLatencyGuard(budget):
+            return await coro
 ```
 
 ## Implementation Tasks
 
-### TASK-001: Test infrastructure — EventInjector base, concrete injectors, conftest fixtures
-**Complexity**: M | **TDD**: true
-**Files**:
-- `tests/performance/conftest.py`
-- `tests/performance/injectors/__init__.py`
-- `tests/performance/injectors/base.py`
-- `tests/performance/injectors/tweet_injector.py`
-- `tests/performance/injectors/gdelt_injector.py`
-- `tests/performance/injectors/edgar_injector.py`
+### TASK-001: Step budget registry and StepLatencyGuard · S/no-TDD · src/event_pipeline/latency.py, src/event_pipeline/exceptions.py
 
-Define the `EventInjector` Protocol as specified in the Interfaces section. Implement three
-concrete injectors:
+Create `src/event_pipeline/latency.py` with the `StepBudget` dataclass, the `STEP_BUDGETS` dict (all 12 steps, values from Architecture §6), and the `StepLatencyGuard` async context manager. `StepLatencyGuard` uses `asyncio.wait_for` (or a manual `time.perf_counter` check on `__aexit__`) to enforce `budget_ms`. On breach it raises `StepTimeoutError`.
 
-`TweetEventInjector`: builds `RawEventPayload(source=RawEventSource.X_FILTERED_STREAM, ...)`
-with a realistic tweet-like `raw_payload` dict (text, user, timestamp fields). Sets
-`detected_at = datetime.utcnow()` at construction time so the clock starts at injection, not
-at executor entry. Each call to `build_payload(index)` produces a distinct payload (unique
-text and ID) to prevent deduplication from collapsing the 100-event test run.
+Add `StepTimeoutError` to `src/event_pipeline/exceptions.py`.
 
-`GdeltEventInjector`: builds `RawEventPayload(source=RawEventSource.GDELT, ...)` with lat,
-lon, category, and a varied `raw_payload` per index.
+**AC covered**: enables AC-001, AC-002 (per-step enforcement is prerequisite for end-to-end guarantee)
 
-`EdgarEventInjector`: builds `RawEventPayload(source=RawEventSource.SEC_EDGAR, ...)` with a
-`filing_timestamp` field set to `datetime.utcnow()` in the payload. Each filing has a unique
-CIK and accession number.
+---
 
-`conftest.py` fixtures:
-- `performance_db_session` — yields an `AsyncSession` connected to the test PostgreSQL DB
-  (same DB used for integration tests; pgvector extension enabled).
-- `isolated_redis` — yields a Redis client bound to a test-only key namespace
-  (`perf:{test_run_id}:*`) to avoid cross-contamination with other test suites.
-- `pipeline_executor_factory` — yields a factory function that constructs a
-  `PipelineExecutor` with all 13 step instances wired, LLM providers replaced with
-  deterministic mocks (classify returns fixed category/confidence), and the DB session and
-  Redis client from the above fixtures injected. LLM mocks are calibrated to return in
-  < 5 ms to isolate infrastructure latency rather than artificial LLM latency.
+### TASK-002: Integrate StepLatencyGuard into PipelineExecutor · M/TDD · src/event_pipeline/pipeline_executor.py, src/event_pipeline/latency.py
+
+Modify `PipelineExecutor._run_step` to wrap every step coroutine with `StepLatencyGuard`. Each step call already exists from PLAN-F-001; this task adds the guard without altering step logic.
+
+Behaviour on `StepTimeoutError`:
+- Log the breach at ERROR level with `step_name`, `budget_ms`, `actual_ms`.
+- Re-raise; the pipeline marks the event as `failed` and writes an episodic-memory failure entry (existing failure path from PLAN-F-001).
 
 **Tests to write first (TDD)**:
-- `test_tweet_injector_produces_distinct_payloads` — call `build_payload` 10 times; assert
-  all raw_payload dicts have distinct content (no dedup collision).
-- `test_gdelt_injector_source_type` — assert `injector.source_type == "GDELT"`.
-- `test_edgar_injector_filing_timestamp_present` — assert `filing_timestamp` key present in
-  each built payload's `raw_payload`.
-- `test_conftest_db_session_fixture_connects` — assert DB session can execute a simple SELECT
-  without error.
-- `test_lm_mock_returns_in_under_5ms` — time the mock LLM call; assert < 5 ms.
+- Given a step coroutine that sleeps 10 ms under a 50 ms budget, `StepLatencyGuard` completes without raising.
+- Given a step coroutine that sleeps 200 ms under a 50 ms budget, `StepLatencyGuard` raises `StepTimeoutError` with `step_name` and both ms values populated.
+- Given the `classify_event` step is injected with a 6 000 ms sleep (over the 5 000 ms budget), `PipelineExecutor.run` propagates `StepTimeoutError` with `step_name="classify_event"`.
+- Given all 12 steps complete within budget, `PipelineExecutor.run` returns successfully without raising.
 
-**Acceptance criteria covered**: AC-001, AC-002, AC-003 (test infrastructure required for all three)
+**AC covered**: AC-001 (enforce ≤90s by enforcing per-step budgets that sum to ≤60s), AC-002 (tweet path traverses the same executor, classify+extract+embed+alert budgets sum to 18s well within 30s TIER1 target)
 
 ---
 
-### TASK-002: LatencyCollector and PerformanceReporter
-**Complexity**: M | **TDD**: true
-**Files**:
-- `tests/performance/collectors/__init__.py`
-- `tests/performance/collectors/latency_collector.py`
-- `tests/performance/collectors/performance_reporter.py`
+### TASK-003: End-to-end pipeline timer and Langfuse span integration · M/TDD · src/event_pipeline/pipeline_executor.py, src/event_pipeline/langfuse_spans.py
 
-Implement `LatencyCollector` as specified in Interfaces:
+Add `LangfuseSpanContext` to `src/event_pipeline/langfuse_spans.py`. Extend `PipelineExecutor`:
+1. Record `pipeline_start_ns = time.perf_counter_ns()` before step 1.
+2. Wrap each step call in `LangfuseSpanContext(trace_id, budget, langfuse_client)` in addition to `StepLatencyGuard`.
+3. After step 12 (or on failure), compute `pipeline_latency_ms` and write it to the root Langfuse trace as a numeric score named `"pipeline_latency_ms"`.
+4. If `pipeline_latency_ms > 80_000` (80 s), also write a boolean score `"sla_warning": 1` on the trace for Langfuse alert filtering.
 
-`run_once(index)` performs these steps in sequence:
-1. Calls `self.injector.build_payload(index)` to produce the test `RawEventPayload`.
-2. Persists a `RawEvent` row via the DB session (mirrors the Celery task entry point) so
-   the executor can load it by ID.
-3. Calls `await self.executor.run(initial_state)`.
-4. Queries the DB for the resulting `EventRecord` and `AlertRecord` by `raw_event_id`.
-5. Asserts `event_record.detected_at is not None` and `event_record.generated_at is not None`.
-6. Asserts `alert_record.dispatched_at is not None` (for AUTO_SEND route; for HIL_QUEUE route
-   uses `hil_queue.created_at` as the dispatched proxy timestamp).
-7. Returns `(alert_record.dispatched_at - event_record.detected_at).total_seconds()`.
-
-Implement `PerformanceReporter.compute(durations)`:
-- Validates `len(durations) >= 1`.
-- Computes p50, p95, p99, max using `statistics.quantiles` (stdlib; no numpy dependency in
-  test-only code unless already in the project).
-- Returns a `LatencyReport` dataclass.
+`LangfuseSpanContext` records on each span: `latency_ms` (actual), `budget_ms`, `step_name`, `sla_breach` (bool). When the span's `__aexit__` receives a `StepTimeoutError`, it marks the span with `"status": "error"` before propagating.
 
 **Tests to write first (TDD)**:
-- `test_collector_run_once_returns_positive_float` — single pipeline run with mock executor;
-  assert return value is a positive float.
-- `test_collector_raises_if_detected_at_null` — mock EventRecord with `detected_at=None`;
-  assert `AssertionError` raised.
-- `test_collector_raises_if_dispatched_at_null` — mock AlertRecord with `dispatched_at=None`;
-  assert `AssertionError` raised.
-- `test_reporter_p95_of_known_sequence` — feed `[1.0] * 95 + [100.0] * 5` (100 values);
-  assert `report.p95 == 100.0` and `report.p50 == 1.0`.
-- `test_reporter_raises_on_empty_list` — assert `ValueError` on empty input.
+- `LangfuseSpanContext.__aexit__` with a happy-path coroutine writes `latency_ms > 0` and `sla_breach=False` to the mock Langfuse span.
+- `LangfuseSpanContext.__aexit__` with a coroutine that raises `StepTimeoutError` marks the span `"status": "error"` and sets `sla_breach=True`.
+- `PipelineExecutor.run` on a 12-step all-fast fake pipeline writes `pipeline_latency_ms` score to the root trace.
+- `PipelineExecutor.run` on a fake pipeline where total time exceeds 80 s writes `sla_warning=1` to the root trace.
 
-**Acceptance criteria covered**: AC-001, AC-002, AC-003, AC-004
+**AC covered**: AC-001 (Langfuse captures end-to-end ms; operator can verify p95 ≤ 90 s from Langfuse dashboard), AC-003 (score-change path flows through same executor timer), AC-004 (SEC filing path flows through same executor timer)
 
 ---
 
-### TASK-003: Performance test suite — three SLA assertions and timestamp-presence assertion
-**Complexity**: M | **TDD**: true
-**Files**:
-- `tests/performance/test_mode_a_latency.py`
+### TASK-004: Automated pytest latency test suite · M/TDD · tests/performance/test_mode_a_latency.py, tests/performance/conftest.py
 
-Write four `@pytest.mark.performance` test functions. All four use the fixtures and
-components from TASK-001 and TASK-002. All four run against the production
-`PipelineExecutor` wired with deterministic LLM mocks — no reimplementation of pipeline
-logic.
+Create `tests/performance/conftest.py` with:
+- `synthetic_event_factory(intensity, source)` — builds a `GeoEvent`-like dict for sources `gdelt`, `twitter_tier1`, `edgar`, `price_anomaly`.
+- `FakePipelineExecutor(step_delays_ms)` — runs all 12 steps with injected sleep values; uses real `StepLatencyGuard` and the same wall-clock timer as `PipelineExecutor`. Reports `pipeline_latency_ms`.
 
-`test_tweet_p95_under_30s`:
-- Constructs `LatencyCollector(executor=..., injector=TweetEventInjector())`.
-- Calls `run_once(i)` in a loop for `i in range(100)`, collecting 100 elapsed floats.
-- Calls `PerformanceReporter.compute(durations)`.
-- Asserts `report.p95 < 30.0` with a descriptive failure message that includes the actual
-  p95, p99, and max values.
-
-`test_gdelt_p95_under_90s`:
-- Same pattern with `GdeltEventInjector()`, 100 events.
-- Asserts `report.p95 < 90.0`.
-
-`test_edgar_p95_under_20_minutes`:
-- Same pattern with `EdgarEventInjector()`, 20 events (per AC-003).
-- Asserts `report.p95 < 1200.0` (20 minutes in seconds).
-
-`test_event_record_timestamps_non_null`:
-- Runs one pipeline invocation per source type (tweet, GDELT, EDGAR).
-- For each, reads the resulting `EventRecord` from the DB.
-- Asserts `event_record.detected_at is not None`.
-- Asserts `event_record.generated_at is not None`.
-- This test does not assert latency thresholds — it is a data-integrity assertion covering
-  AC-004 independently of p95 calculations.
-
-Each test function is decorated with `@pytest.mark.performance` and includes a docstring
-citing the source AC.
+Create `tests/performance/test_mode_a_latency.py`:
 
 **Tests to write first (TDD)**:
-The four test functions listed above ARE the tests. They are written first. They will fail
-until TASK-001 and TASK-002 implementations are complete (red). They pass once collectors
-and injectors are wired (green).
+- **AC-001**: Run 100 intensity-4 events through `FakePipelineExecutor` where each step sleeps at 80% of its budget. Assert `statistics.quantiles(latencies, n=20)[18]` (p95) ≤ 90 000 ms.
+- **AC-001 breach detection**: Run 100 intensity-4 events where `classify_event` sleeps 5 100 ms (just over budget). Assert all runs raise `StepTimeoutError` on that step.
+- **AC-002**: Run 100 TIER1-tweet events through `FakePipelineExecutor` where all steps sleep at 50% of budget. Assert p95 total latency ≤ 30 000 ms. (TIER1 tweets hit the same pipeline; the 30 s window is achievable because per-step budgets sum to ≤ 18 s LLM + ≤ 10 s deterministic = ≤ 28 s at nominal load.)
+- **AC-003**: Run 100 score-change events (intensity 3, source `price_anomaly`) through `FakePipelineExecutor` at nominal step latencies. Assert p95 ≤ 300 000 ms (5 min).
+- **AC-004**: Run 100 SEC-filing events through `FakePipelineExecutor` at nominal step latencies. Assert p95 ≤ 1 200 000 ms (20 min).
+- **Budget registry completeness**: Assert `len(STEP_BUDGETS) == 12` and all step names match the canonical list from Architecture §6.
+- **Budget sum sanity**: Assert `sum(b.budget_ms for b in STEP_BUDGETS.values()) <= 27_000` (sum of all per-step budgets ≤ 27 s, well within 60 s processing budget).
 
-**Acceptance criteria covered**: AC-001, AC-002, AC-003, AC-004
-
----
-
-### TASK-004: pytest mark registration and CI gate
-**Complexity**: S | **TDD**: false
-**Files**:
-- `pyproject.toml`
-- `.github/workflows/ci.yml` (or `docker-compose.test.yml` if CI uses Compose-based test
-  runner; adapt to whichever CI config is present)
-
-Register the `performance` mark in `pyproject.toml` under `[tool.pytest.ini_options]`:
-
-```toml
-[tool.pytest.ini_options]
-markers = [
-    "performance: Mode A latency SLA assertions (deselect with -m 'not performance')",
-]
-```
-
-Add a `performance-gate` stage to the CI pipeline that:
-1. Runs after `unit` and `integration` stages complete successfully.
-2. Executes `pytest tests/performance/ -m performance --tb=short -v`.
-3. Fails the build on any non-zero exit code.
-4. The stage is a blocking gate — merge to main is not permitted if it fails.
-
-The default test suite (`pytest` without `-m`) must not include performance tests; the
-`not performance` filter must be applied to the default run to keep CI fast.
-
-**Acceptance criteria covered**: AC-001, AC-002, AC-003 (CI gate enforces all three SLAs on every merge)
+**AC covered**: AC-001, AC-002, AC-003, AC-004
 
 ---
 
-### TASK-005: Performance baseline documentation in test module docstring
-**Complexity**: S | **TDD**: false
-**Files**:
-- `tests/performance/test_mode_a_latency.py` (update from TASK-003)
+### TASK-005: Langfuse p95 latency alert configuration · S/no-TDD · src/config/langfuse_alerts.py
 
-Add a module-level docstring to `test_mode_a_latency.py` that records:
-- The SLA targets (tweet < 30 s, GDELT < 90 s, EDGAR < 20 min).
-- The test event counts (100 / 100 / 20).
-- The infrastructure assumptions: mocked LLM (< 5 ms), real PostgreSQL + Redis, isolated
-  key namespace.
-- The architectural reference: ARCHITECTURE.md §6 Latency Budget and §14 NFR Summary.
-- A note that these tests measure infrastructure latency under mock-LLM conditions; a
-  separate load test against the live system (with real Haiku 4.5 calls) is required before
-  production sign-off.
+Create `src/config/langfuse_alerts.py` with `register_latency_alerts(langfuse_client)`. This function calls the Langfuse Python SDK to upsert a numeric score monitor:
+- Score name: `"pipeline_latency_ms"`
+- Condition: p95 over a rolling 1-hour window exceeds `80_000` ms.
+- Notification channel: operator email (read from `LANGFUSE_ALERT_EMAIL` env var; optional — skipped if not set).
 
-This task exists to make the assumptions explicit and discoverable inside the codebase,
-satisfying DEV-STANDARDS.md §9 (observability and logging norms applied to test artefacts).
+The function is idempotent (safe to call at every application startup). It is invoked from the application startup hook alongside other Langfuse initialisation.
 
-**Acceptance criteria covered**: AC-001, AC-002, AC-003, AC-004 (baseline documentation
-ensures the SLAs and the non-null assertion are traceable to ACs for future reviewers)
+**AC covered**: AC-001 (production monitoring closes the loop — automated alert at p95 > 80 s gives 10 s headroom before SLA breach at 90 s)
+
+---
 
 ## Acceptance Criteria Coverage
 
-| AC | Description | Covered by |
-|----|-------------|-----------|
-| AC-001 | 100 sequential tweet-class test events processed — p95 detected_at to dispatched_at < 30 seconds | TASK-001, TASK-002, TASK-003, TASK-004 |
-| AC-002 | 100 GDELT geo-event test events — p95 detected_at to dispatched_at < 90 seconds | TASK-001, TASK-002, TASK-003, TASK-004 |
-| AC-003 | 20 SEC EDGAR filing test events — p95 filing_timestamp to dispatched_at < 20 minutes | TASK-001, TASK-002, TASK-003, TASK-004 |
-| AC-004 | Any pipeline run completes — both detected_at and generated_at present and non-null on EventRecord | TASK-002, TASK-003, TASK-005 |
+- AC-001: End-to-end p95 ≤ 90 s for intensity-4/5 events → TASK-001, TASK-002, TASK-003, TASK-004, TASK-005
+- AC-002: TIER1 tweet p95 ≤ 30 s → TASK-002, TASK-004
+- AC-003: Score-change alert p95 ≤ 5 min → TASK-003, TASK-004
+- AC-004: SEC filing alert p95 ≤ 20 min → TASK-003, TASK-004
 
-AC coverage: 4/4 = **100%**
+## Acceptance Notes
 
-## Definition of Done
+The pytest latency suite (TASK-004) uses `FakePipelineExecutor` with injected step delays and real `StepLatencyGuard` logic. It does not call any LLM API. The AC-002 TIER1-tweet assertion relies on the fact that the same 12-step executor is used regardless of source (per Architecture §6 — the pipeline is uniform); the 30 s target is achievable because per-step budgets sum to ≤ 28 s at nominal operation.
 
-- [ ] All 5 tasks complete
-- [ ] `tests/performance/` passes `pytest -m performance` with zero failures on the CI test environment
-- [ ] `test_tweet_p95_under_30s` asserts p95 < 30 s with 100 events
-- [ ] `test_gdelt_p95_under_90s` asserts p95 < 90 s with 100 events
-- [ ] `test_edgar_p95_under_20_minutes` asserts p95 < 1 200 s with 20 events
-- [ ] `test_event_record_timestamps_non_null` passes for all three source types
-- [ ] `pytest` (default, no `-m` flag) does not include performance tests
-- [ ] CI `performance-gate` stage is present and blocking
-- [ ] `LatencyCollector` raises `AssertionError` on any null timestamp (not a silent pass)
-- [ ] `PerformanceReporter` is a pure function — no DB or Redis access
-- [ ] `EventInjector` subclasses produce distinct payloads per index (no dedup collisions)
-- [ ] LLM mock latency < 5 ms per call (measured by `test_lm_mock_returns_in_under_5ms`)
-- [ ] No TODO/FIXME in produced code
-- [ ] TDD red-green-refactor cycle followed for all M-complexity tasks (TASK-001, TASK-002, TASK-003)
-- [ ] dev-code-review run and all Critical/High findings resolved
-- [ ] PLAN-F-001 executed (EventRecord, AlertRecord, PipelineExecutor importable) before any TASK in this plan begins
+AC-003 and AC-004 latency targets (5 min and 20 min) encompass the full path from source ingestion to alert dispatch, not just pipeline execution time. The pipeline itself must complete in ≤ 60 s; any remaining budget is consumed by ingestion polling intervals (GDELT 15-min poll for score-change events, EDGAR feed latency for SEC filings). The test asserts the pipeline-execution portion stays within the allocated share of the budget.
 
-## Open Questions Inherited
-
-| # | Question | Resolution |
-|---|----------|-----------|
-| 1 | REQ-N-001 OQ-1: Tweet alert < 30 s — sub-targets per pipeline step not allocated | Resolved by design: this plan measures the end-to-end elapsed time and asserts at the p95 level. Per-step sub-targets are not enforced; if the p95 SLA is breached, Langfuse trace spans (written by TraceStep in PLAN-F-001) provide step-level breakdown for root-cause analysis. No new per-step assertions are added to avoid brittle tests that break under normal variance. |
+Production p95 verification (AC-001 at scale) must be confirmed from the Langfuse dashboard after the first 100 production events have been processed.
 
 ## Risks and Notes
 
-- **PLAN-F-001 hard prerequisite**: All five tasks in this plan depend on `PipelineExecutor`,
-  `EventRecord`, `AlertRecord`, `RawEventPayload`, and `RawEventSource` being importable from
-  `src/`. Do not start any task until PLAN-F-001 is at status `done` (or at minimum its
-  TASK-001 and TASK-002 are complete and the models exist).
-
-- **Mock vs real LLM latency**: The performance tests use deterministic LLM mocks (< 5 ms)
-  to isolate infrastructure latency (Redis, PostgreSQL, Celery scheduling overhead). This
-  gives a lower-bound latency measurement. Before production sign-off, a manual run with
-  real Haiku 4.5 calls must be performed to verify the SLAs hold end-to-end. The Haiku 4.5
-  p99 classify latency is typically 1–3 seconds per call; with two LLM calls per event
-  (classify + confidence), the real-call budget for all other steps is approximately 24
-  seconds for the tweet SLA.
-
-- **Deduplication must be bypassed in performance tests**: the 100-event test loop submits
-  events in rapid sequence. `TweetEventInjector.build_payload(index)` must produce a unique
-  fingerprint per index (e.g. embed `index` in the payload text and ID). If deduplication
-  triggers on any event, the `LatencyCollector` will receive a `DuplicateEvent` exception
-  and the run count will be short. TASK-001 tests must verify distinctness.
-
-- **AlertRecord dispatched_at for HIL_QUEUE route**: if the test executor's mock confidence
-  is set below 0.7, events route to HIL_QUEUE and no `AlertRecord` with `dispatched_at` is
-  written. `LatencyCollector` handles this by using `hil_queue.created_at` as the proxy
-  timestamp. Mock confidence in performance tests must be set to >= 0.7 to produce
-  `AUTO_SEND` routes and true `dispatched_at` values, unless the test specifically targets
-  the HIL path.
-
-- **Celery task execution in tests**: the performance tests call `PipelineExecutor.run()`
-  directly — they do not go through the Celery task queue. This avoids Celery worker boot
-  overhead and broker round-trip from skewing latency measurements. The Celery task entry
-  point (`pipeline_task.py`) is not under test here; that is covered by PLAN-F-001
-  TASK-013.
-
-- **p95 with N=20 for EDGAR**: twenty events is a small sample for a stable p95 estimate.
-  The EDGAR SLA of 20 minutes is generous enough that the p95 of 20 samples is still a
-  meaningful signal (one outlier at the top). If flakiness is observed, the EDGAR sample
-  count can be raised to 50 without changing the assertion threshold.
-
-- **CI environment performance**: the `performance-gate` CI stage must run on a consistent
-  instance type to avoid false failures. If CI runners vary in resource allocation, consider
-  using a fixed `runs-on` label (e.g. a dedicated performance runner) or relaxing the p95
-  threshold to 20 s / 60 s / 15 min for CI and reserving the tight SLA check for a
-  scheduled nightly run.
+- `asyncio.wait_for` imposes a hard cancellation on an in-flight LLM coroutine. If the Anthropic or OpenAI client does not honour cancellation cleanly, the underlying HTTP connection may leak. Use an `httpx.AsyncClient` with an explicit `timeout` parameter equal to `budget_ms / 1000` as a belt-and-suspenders measure alongside `wait_for`.
+- The Langfuse Python SDK `span()` call is synchronous in some versions. Wrap it in `asyncio.to_thread` if the SDK does not provide an async context manager by the time this task is executed.
+- The p95 computation in TASK-004 uses Python's `statistics.quantiles` which requires ≥ 2 samples; the test fixture must always produce exactly 100 samples to avoid flakiness.
+- PLAN-F-001 must be `done` (or at minimum the `PipelineExecutor._run_step` interface must be finalised) before TASK-002 can be implemented. This plan treats PLAN-F-001 as a hard dependency.

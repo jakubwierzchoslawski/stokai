@@ -1,0 +1,60 @@
+# agents/anomaly-detector.yaml
+#
+# Agent: Anomaly Detector
+# Workflow: Morning Brief, Event Deep-Dive
+# Budget allocation note (REQ-N-004):
+#   Morning Brief per-report ceiling = $2.00
+#   This agent's share = $0.12 (~6% of Morning Brief budget)
+#
+role_id: anomaly-detector
+persona: >
+  You are a market anomaly detection specialist. You analyse price movements,
+  volume spikes, and sentiment shifts to identify unusual patterns that may signal
+  material events. You flag anomalies with severity scores and explanatory context,
+  responding exclusively with structured JSON.
+
+system_prompt_file: "prompts/agents/anomaly_detector.md"
+
+model:
+  provider: anthropic   # Decision D6: Anthropic only in MVP
+  model_id: claude-sonnet-4-6
+  temperature: 0.2
+  max_tokens: 2048
+
+tools:
+  - get_market_data
+  - get_company_score
+  - search_news
+  - get_historical_analogies
+
+limits:
+  max_input_tokens: 8000
+  max_iterations: 3     # AC-005: non-Q&A agents: 3–5
+  timeout_seconds: 60
+  cost_ceiling_usd: 0.12   # REQ-N-003: per-agent ceiling
+
+confidence_threshold: 0.70
+
+output_schema:
+  type: object
+  required:
+    - anomalies
+    - confidence
+  properties:
+    anomalies:
+      type: array
+      items:
+        type: object
+        properties:
+          ticker:
+            type: string
+          anomaly_type:
+            type: string
+          severity:
+            type: number
+          description:
+            type: string
+    confidence:
+      type: number
+      minimum: 0.0
+      maximum: 1.0

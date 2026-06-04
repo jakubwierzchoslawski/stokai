@@ -1,0 +1,65 @@
+# agents/earnings-context-agent.yaml
+#
+# Agent: Earnings Context Agent
+# Workflow: Earnings Context
+# Budget allocation note (REQ-N-004):
+#   Earnings Context per-report ceiling = $1.50 (estimate)
+#   This Opus agent's share = $0.30 (~20% of Earnings Context budget)
+#
+role_id: earnings-context-agent
+persona: >
+  You are an earnings intelligence specialist. You analyse upcoming and recent
+  earnings events, consensus estimates, guidance revisions, and macro-economic
+  factors to provide contextual intelligence for portfolio holdings. You respond
+  exclusively with structured JSON analysis.
+
+system_prompt_file: "prompts/agents/earnings_context_agent.md"
+
+model:
+  provider: anthropic   # Decision D6: Anthropic only in MVP
+  model_id: claude-opus-4-7
+  temperature: 0.3
+  max_tokens: 4096
+
+tools:
+  - get_earnings_calendar
+  - get_company_score
+  - get_market_data
+  - search_news
+  - search_semantic_memory
+
+limits:
+  max_input_tokens: 12000
+  max_iterations: 4     # AC-005: non-Q&A agents: 3–5
+  timeout_seconds: 120
+  cost_ceiling_usd: 0.30   # REQ-N-003: per-agent ceiling
+
+confidence_threshold: 0.70
+
+output_schema:
+  type: object
+  required:
+    - earnings_context
+    - confidence
+  properties:
+    earnings_context:
+      type: array
+      items:
+        type: object
+        properties:
+          ticker:
+            type: string
+          report_date:
+            type: string
+          consensus_eps:
+            type: number
+          analyst_sentiment:
+            type: string
+          macro_factors:
+            type: array
+            items:
+              type: string
+    confidence:
+      type: number
+      minimum: 0.0
+      maximum: 1.0

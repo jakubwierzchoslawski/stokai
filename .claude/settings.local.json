@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-FileHash *)",
+      "PowerShell($str = \"b3c2e7a1f94d6e08a5b2c9d3f1e74a62\"; $bytes = [System.Text.Encoding]::UTF8.GetBytes\\($str\\); $md5 = [System.Security.Cryptography.MD5]::Create\\(\\); $hash = $md5.ComputeHash\\($bytes\\); \\($hash | ForEach-Object { $_.ToString\\(\"x2\"\\) }\\) -join \"\")",
+      "PowerShell(Test-Path *)",
+      "PowerShell(cmd /c \"rd /s /q `\"B:\\\\development\\\\python_space\\\\stokai\\\\docs\\\\implr\\\\requirements\\\\.staging`\"\" ; if \\($?\\) { \"staging cleaned\" } else { \"cleanup failed\" })"
+    ]
+  }
+}

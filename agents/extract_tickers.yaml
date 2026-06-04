@@ -1,0 +1,10 @@
+agent_id: extract_tickers
+model: claude-haiku-4-5
+purpose: "Extract NYSE/NASDAQ ticker symbols directly mentioned or implied by an event."
+prompt_file: prompts/classifiers/ticker_extractor.md
+limits:
+  max_input_tokens: 1000
+  max_output_tokens: 100
+  timeout_seconds: 3
+  cost_ceiling_usd: 0.001
+output_schema: TickerExtractionResult

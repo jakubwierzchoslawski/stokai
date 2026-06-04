@@ -1,49 +1,38 @@
-"""Pipeline exception hierarchy.
-
-All exceptions that can halt the Mode A pipeline are subclasses of
-``PipelineHalt``.  The executor catches ``PipelineHalt`` subclasses and uses
-them to set the correct ``pipeline_status`` on the raw event record:
-
-  - ``DuplicateEvent``      → pipeline_status = "duplicate"
-  - any other ``PipelineHalt`` → pipeline_status = "failed"
-
-Single Responsibility: this module contains only exception definitions.
+"""
+Pipeline exceptions for Mode A Reactive Pipeline.
 """
 from __future__ import annotations
 
 
-class PipelineHalt(Exception):
-    """Base exception for any condition that halts the pipeline.
+class PipelineError(Exception):
+    """Base class for all pipeline errors."""
 
-    Parameters
-    ----------
-    step_name:
-        The ``PipelineStep.step_name`` value of the step that raised.
-    detail:
-        Human-readable error detail logged internally (never sent to clients).
+
+class StepTimeoutError(PipelineError):
+    """Raised when a pipeline step exceeds its latency budget.
+
+    Attributes:
+        step_name: Name of the step that timed out.
+        budget_ms: Allowed latency budget in milliseconds.
+        actual_ms: Actual elapsed time in milliseconds.
     """
 
-    def __init__(self, step_name: str, detail: str) -> None:
+    def __init__(self, step_name: str, budget_ms: int, actual_ms: float) -> None:
         self.step_name = step_name
-        self.detail = detail
-        super().__init__(f"[{step_name}] {detail}")
+        self.budget_ms = budget_ms
+        self.actual_ms = actual_ms
+        super().__init__(
+            f"Step '{step_name}' exceeded budget: {actual_ms:.1f} ms > {budget_ms} ms"
+        )
 
 
-class DuplicateEvent(PipelineHalt):
-    """Raised by Step 2 (DEDUPLICATE) when the event fingerprint is already present.
-
-    The executor catches this subclass and sets ``pipeline_status = duplicate``
-    instead of ``failed``.
-    """
+class PipelineIngestionError(PipelineError):
+    """Raised when event ingestion fails at the adapter level."""
 
 
-class ClassificationError(PipelineHalt):
-    """Raised when the LLM classification response cannot be used."""
+class PipelineClassificationError(PipelineError):
+    """Raised when event classification fails."""
 
 
-class InvalidCategoryError(ClassificationError):
-    """Raised when the LLM returns a category not in the 6-value enum."""
-
-
-class InvalidIntensityError(ClassificationError):
-    """Raised when the LLM returns an intensity value outside 1–5."""
+class PipelineDispatchError(PipelineError):
+    """Raised when alert dispatch fails."""

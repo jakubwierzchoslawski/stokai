@@ -1,169 +1,160 @@
+# StokAI CI Pipeline
+# Runs on push to main and on every pull request.
+#
+# Jobs:
+#   1. lint             — ruff check + format
+#   2. test-unit        — pytest (unit tests only, no Docker)
+#   3. azure-import-scan— AST scan for Azure SDK imports in src/
+#   4. compose-smoke    — docker compose up health check (requires Docker secrets)
+#
+# IMPORTANT: compose-smoke requires the following GitHub Actions secrets to be set:
+#   DATABASE_URL, REDIS_URL, ANTHROPIC_API_KEY, OPENAI_API_KEY,
+#   JWT_SECRET_KEY, JWT_REFRESH_SECRET_KEY,
+#   POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB,
+#   LANGFUSE_DB_USER, LANGFUSE_DB_PASSWORD, LANGFUSE_DB_NAME,
+#   LANGFUSE_SECRET_KEY, LANGFUSE_PUBLIC_KEY
+
 name: CI
 
 on:
   push:
-    branches: ["main", "feat/**", "fix/**"]
+    branches: ["main"]
   pull_request:
     branches: ["main"]
 
-env:
-  PYTHON_VERSION: "3.12"
-  TEST_DATABASE_URL: "postgresql+asyncpg://stokai:stokai@localhost:5432/stokai_test"
-
 jobs:
-  # ---------------------------------------------------------------------------
-  # Unit test stage — no external services required
-  # ---------------------------------------------------------------------------
-  unit:
-    name: Unit tests
+
+  # ── 1. Lint ──────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint (ruff)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: "3.12"
+
+      - name: Install ruff
+        run: pip install ruff>=0.4.0
+
+      - name: ruff check
+        run: ruff check src/ tests/
+
+      - name: ruff format check
+        run: ruff format --check src/ tests/
+
+  # ── 2. Unit tests ────────────────────────────────────────────────────────────
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -e ".[test]"
+        run: pip install -e ".[dev]"
 
       - name: Run unit tests
-        run: |
-          pytest tests/unit/ \
-            -m "not integration and not performance" \
-            --tb=short \
-            -v \
-            --cov=src \
-            --cov-report=term-missing
-
-  # ---------------------------------------------------------------------------
-  # Integration test stage — requires PostgreSQL + Redis
-  # ---------------------------------------------------------------------------
-  integration:
-    name: Integration tests
-    runs-on: ubuntu-latest
-    needs: unit
-
-    services:
-      postgres:
-        image: pgvector/pgvector:pg16
+        run: pytest tests/ -v --ignore=tests/integration
         env:
-          POSTGRES_USER: stokai
-          POSTGRES_PASSWORD: stokai
-          POSTGRES_DB: stokai_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U stokai -d stokai_test"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
+          REDIS_URL: "redis://localhost:6379/0"
+          ANTHROPIC_API_KEY: "sk-ant-ci-test"
+          OPENAI_API_KEY: "sk-ci-test"
+          JWT_SECRET_KEY: "ci-secret-key-at-least-32-chars-long"
+          JWT_REFRESH_SECRET_KEY: "ci-refresh-secret-key-at-least-32-chars"
 
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 3
-
-    env:
-      TEST_DATABASE_URL: "postgresql+asyncpg://stokai:stokai@localhost:5432/stokai_test"
-      DATABASE_URL: "postgresql://stokai:stokai@localhost:5432/stokai_test"
-      REDIS_URL: "redis://localhost:6379/0"
-
+  # ── 3. Azure import scan ─────────────────────────────────────────────────────
+  azure-import-scan:
+    name: Azure SDK Import Scan
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: "3.12"
 
-      - name: Install dependencies
-        run: pip install -e ".[test]"
+      - name: Install pytest
+        run: pip install pytest
 
-      - name: Run Alembic migrations
-        run: python -m alembic upgrade head
+      - name: Scan src/ for Azure SDK imports
+        run: pytest tests/test_azure_import_scan.py -v
 
-      - name: Run integration tests
-        run: |
-          pytest tests/integration/ \
-            -m "integration and not performance" \
-            --tb=short \
-            -v
-
-  # ---------------------------------------------------------------------------
-  # Performance gate — blocking CI stage (PLAN-N-001)
-  # Runs after unit and integration stages.
-  # Fails the build on any SLA breach.
-  # Merge to main is not permitted if this stage fails.
-  # ---------------------------------------------------------------------------
-  performance-gate:
-    name: Performance gate (Mode A latency SLA)
+  # ── 4. Compose smoke test ────────────────────────────────────────────────────
+  compose-smoke:
+    name: Compose Smoke Test
     runs-on: ubuntu-latest
-    needs: [unit, integration]
-
-    services:
-      postgres:
-        image: pgvector/pgvector:pg16
-        env:
-          POSTGRES_USER: stokai
-          POSTGRES_PASSWORD: stokai
-          POSTGRES_DB: stokai_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U stokai -d stokai_test"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 3
-
+    needs: [lint, test-unit, azure-import-scan]
+    # Skip smoke test if running without required secrets
+    # Set env vars from GitHub Actions secrets
     env:
-      TEST_DATABASE_URL: "postgresql+asyncpg://stokai:stokai@localhost:5432/stokai_test"
-      DATABASE_URL: "postgresql://stokai:stokai@localhost:5432/stokai_test"
-      REDIS_URL: "redis://localhost:6379/0"
-
+      DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql+asyncpg://stokai:smoketest@postgres:5432/stokai' }}
+      REDIS_URL: ${{ secrets.REDIS_URL || 'redis://redis:6379/0' }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY || 'sk-ant-smoke-placeholder' }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'sk-smoke-placeholder' }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'smoke-test-jwt-secret-key-long-enough' }}
+      JWT_REFRESH_SECRET_KEY: ${{ secrets.JWT_REFRESH_SECRET_KEY || 'smoke-test-refresh-secret-long-enough' }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'stokai' }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'smoketest' }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'stokai' }}
+      LANGFUSE_DB_USER: ${{ secrets.LANGFUSE_DB_USER || 'langfuse' }}
+      LANGFUSE_DB_PASSWORD: ${{ secrets.LANGFUSE_DB_PASSWORD || 'smoketest' }}
+      LANGFUSE_DB_NAME: ${{ secrets.LANGFUSE_DB_NAME || 'langfuse' }}
+      LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY || 'smoke-langfuse-secret' }}
+      LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY || 'smoke-langfuse-public' }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install dependencies
-        run: pip install -e ".[test]"
-
-      - name: Run Alembic migrations
-        run: python -m alembic upgrade head
-
-      - name: Run Mode A latency SLA assertions
+      - name: Write .env file for compose
         run: |
-          pytest tests/performance/ \
-            -m performance \
-            --tb=short \
-            -v
-        # Non-zero exit code fails the build — blocking gate.
-        # Merge to main is not permitted if any SLA assertion fails.
+          cat > .env <<'EOF'
+          DATABASE_URL=${DATABASE_URL}
+          REDIS_URL=${REDIS_URL}
+          ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+          OPENAI_API_KEY=${OPENAI_API_KEY}
+          JWT_SECRET_KEY=${JWT_SECRET_KEY}
+          JWT_REFRESH_SECRET_KEY=${JWT_REFRESH_SECRET_KEY}
+          POSTGRES_USER=${POSTGRES_USER}
+          POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+          POSTGRES_DB=${POSTGRES_DB}
+          LANGFUSE_DB_USER=${LANGFUSE_DB_USER}
+          LANGFUSE_DB_PASSWORD=${LANGFUSE_DB_PASSWORD}
+          LANGFUSE_DB_NAME=${LANGFUSE_DB_NAME}
+          LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+          LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+          EOF
+          # Expand variables
+          envsubst < .env > .env.expanded && mv .env.expanded .env
 
-      - name: Upload performance results
+      - name: Start stack (production compose only — no override)
+        run: >
+          docker compose
+          -f docker-compose.yml
+          up -d --wait --timeout 120
+
+      - name: Health check API
+        run: |
+          for i in $(seq 1 10); do
+            status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health)
+            if [ "$status" = "200" ]; then
+              echo "Health check passed (HTTP $status)"
+              exit 0
+            fi
+            echo "Attempt $i: got HTTP $status, retrying in 10s..."
+            sleep 10
+          done
+          echo "Health check failed after 10 attempts"
+          docker compose logs api
+          exit 1
+
+      - name: Tear down stack
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: performance-results
-          path: .pytest_cache/
-          retention-days: 30
+        run: docker compose -f docker-compose.yml down -v

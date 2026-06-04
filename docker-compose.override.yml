@@ -1,30 +1,40 @@
----
-# docker-compose.override.yml — Local development ergonomics
-# Automatically merged with docker-compose.yml by Docker Compose.
-# Adds bind-mounts for hot code reload without a full image rebuild.
-# Exposes debugger (5678) and Celery Flower (5555) ports for dev use.
-
-version: "3.9"
+# Local development overrides — merged automatically by Docker Compose.
+# DO NOT commit with production credentials.
+# This file enables hot-reload and exposes service ports for local tools.
+#
+# Usage: docker compose up  (override is applied automatically)
+# Production: docker compose -f docker-compose.yml up  (skips this file)
 
 services:
 
-  stokai-app:
+  # Source mount enables hot-reload for all application containers
+  api:
     volumes:
-      # Bind-mount source so code changes are visible without rebuild.
-      - ./src:/app/src
-      - ./agents:/app/agents
-    ports:
-      - "5678:5678"    # debugpy remote debugger
-    environment: {}    # placeholder; do not add values here — use .env
+      - ./:/app
+    environment:
+      DEBUG: "true"
+      LOG_LEVEL: "DEBUG"
 
-  stokai-worker:
+  worker:
     volumes:
-      - ./src:/app/src
-      - ./agents:/app/agents
-    ports:
-      - "5555:5555"    # Celery Flower monitoring UI (start flower separately if needed)
+      - ./:/app
 
-  stokai-scheduler:
+  beat:
     volumes:
-      - ./src:/app/src
-      - ./agents:/app/agents
+      - ./:/app
+
+  # Expose data store ports for local tooling (psql, redis-cli, DBeaver, etc.)
+  postgres:
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+  redis:
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
+  # Expose Langfuse UI on host port 3000 and enable debug mode for local dev
+  langfuse-server:
+    ports:
+      - "${LANGFUSE_PORT:-3000}:3000"
+    environment:
+      LANGFUSE_DEBUG: "true"

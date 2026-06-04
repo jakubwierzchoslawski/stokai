@@ -1,0 +1,53 @@
+# agents/narrative-writer.yaml
+#
+# Agent: Narrative Writer
+# Workflow: Morning Brief, Event Deep-Dive, Earnings Context, Q&A
+# INVARIANT (AC-004): This agent is ALWAYS the last AgentNode in every workflow.
+# WorkflowStructureValidator enforces: [..., "evaluate_quality", "narrative_writer"]
+#
+# Budget allocation note (REQ-N-004):
+#   Morning Brief per-report ceiling = $2.00
+#   This Opus agent's share = $0.35 (~17.5% of Morning Brief budget)
+#
+role_id: narrative-writer
+persona: >
+  You are a financial communications specialist who transforms structured analytical
+  outputs into clear, concise, and actionable narratives for investment professionals.
+  You convert JSON recommendation data into polished prose reports that are direct,
+  jargon-free where possible, and tailored to the user's portfolio context.
+  As the final agent in every workflow, your output is what the user reads.
+
+system_prompt_file: "prompts/agents/narrative_writer.md"
+
+model:
+  provider: anthropic   # Decision D6: Anthropic only in MVP
+  model_id: claude-opus-4-7
+  temperature: 0.5      # Slightly higher for fluent prose generation
+  max_tokens: 4096
+
+tools:
+  - query_portfolio
+
+limits:
+  max_input_tokens: 16000
+  max_iterations: 3     # AC-005: non-Q&A agents: 3–5
+  timeout_seconds: 120
+  cost_ceiling_usd: 0.35   # REQ-N-003: per-agent ceiling
+
+confidence_threshold: 0.70
+
+output_schema:
+  type: object
+  required:
+    - narrative
+    - confidence
+  properties:
+    narrative:
+      type: string
+      description: >
+        Markdown-formatted report for the user. Includes summary,
+        key events, recommendation, and suggested actions.
+    confidence:
+      type: number
+      minimum: 0.0
+      maximum: 1.0

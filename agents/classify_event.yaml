@@ -1,12 +1,10 @@
-# classify_event.yaml — agent configuration for the Mode A classification step.
-# Architecture: C-005 (Anthropic-only, multi-provider YAML), C-001 (~$0.01/classify).
-role_id: classify_event
-model:
-  provider: anthropic
-  model_id: claude-haiku-4-5
-timeout_seconds: 10
-max_retries: 2
-cost_ceiling_usd: 0.02
-output_schema:
-  category: str   # must be one of EventCategory enum values
-  intensity: int  # must be 1–5
+agent_id: classify_event
+model: claude-haiku-4-5
+purpose: "Classify a raw geopolitical event into structured categories, intensity, sentiment, regions, sectors, and CAMEO code."
+prompt_file: prompts/classifiers/event_classifier.md
+limits:
+  max_input_tokens: 2000
+  max_output_tokens: 200
+  timeout_seconds: 5
+  cost_ceiling_usd: 0.002
+output_schema: ClassificationResult

@@ -1,40 +1,42 @@
-# StokAI — Makefile convenience targets
-# Decision D6: Docker Compose primary runtime.
-# Usage: make <target>
-# Prerequisites: Docker Engine installed, .env file present (cp .env.example .env)
+.PHONY: up down logs test test-integration scan-azure shell-api migrate ps help
 
-.PHONY: up down logs shell deploy-prompts build ps help
+## Show this help message
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-## up: Start the full StokAI stack (builds images if needed, runs in background)
+## Start all services in detached mode
 up:
 	docker compose up -d --build
 
-## down: Stop and remove containers and volumes
+## Stop all services
 down:
-	docker compose down -v
+	docker compose down
 
-## logs: Tail logs from all services (Ctrl+C to stop)
+## Follow service logs
 logs:
 	docker compose logs -f
 
-## shell: Open a bash shell inside the stokai-app container
-shell:
-	docker compose exec stokai-app bash
+## Run all tests (unit only, excludes integration)
+test:
+	pytest tests/ -v --ignore=tests/integration
 
-## build: Build images without starting containers
-build:
-	docker compose build
+## Run integration tests only
+test-integration:
+	pytest tests/integration/ -v -m integration
 
-## ps: Show status of all containers
+## Scan src/ for forbidden Azure SDK imports
+scan-azure:
+	pytest tests/test_azure_import_scan.py -v
+
+## Open an interactive shell in the api container
+shell-api:
+	docker compose exec api bash
+
+## Run database migrations via Alembic
+migrate:
+	docker compose exec api alembic upgrade head
+
+## Show service status
 ps:
 	docker compose ps
-
-## deploy-prompts: Publish Langfuse prompts from the agents/ directory
-## This target is a placeholder; wired by PLAN-F-013.
-deploy-prompts:
-	@echo "deploy-prompts: placeholder — will be wired by PLAN-F-013"
-	@echo "Expected: publish all prompt files under agents/ to Langfuse as versioned prompts."
-
-## help: Show this help
-help:
-	@grep -E '^## ' Makefile | sed 's/## //'

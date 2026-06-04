@@ -1,0 +1,62 @@
+# agents/historical-context-agent.yaml
+#
+# Agent: Historical Context Agent
+# Workflow: Morning Brief, Event Deep-Dive
+# Budget allocation note (REQ-N-004):
+#   Morning Brief per-report ceiling = $2.00
+#   This Opus agent's share = $0.35 (~17.5% of Morning Brief budget)
+#   Opus agents combined: ~$1.55 of the $2.00 ceiling
+#
+role_id: historical-context-agent
+persona: >
+  You are a financial historian specialising in market analogies. Using a
+  vector-search knowledge base of historical market events, you identify past
+  episodes most similar to the current situation, summarise outcomes, and
+  provide statistical context on how portfolios with comparable exposures
+  performed. You respond exclusively with structured JSON.
+
+system_prompt_file: "prompts/agents/historical_context_agent.md"
+
+model:
+  provider: anthropic   # Decision D6: Anthropic only in MVP
+  model_id: claude-opus-4-7
+  temperature: 0.3
+  max_tokens: 4096
+
+tools:
+  - get_historical_analogies
+  - search_semantic_memory
+  - get_market_data
+  - get_company_score
+
+limits:
+  max_input_tokens: 12000
+  max_iterations: 3     # AC-005: non-Q&A agents: 3–5
+  timeout_seconds: 120
+  cost_ceiling_usd: 0.35   # REQ-N-003: per-agent ceiling
+
+confidence_threshold: 0.70
+
+output_schema:
+  type: object
+  required:
+    - analogies
+    - confidence
+  properties:
+    analogies:
+      type: array
+      items:
+        type: object
+        properties:
+          event_date:
+            type: string
+          description:
+            type: string
+          similarity_score:
+            type: number
+          outcome_summary:
+            type: string
+    confidence:
+      type: number
+      minimum: 0.0
+      maximum: 1.0

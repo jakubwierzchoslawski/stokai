@@ -1,7 +1,5 @@
--- StokAI — PostgreSQL initialisation script
--- Runs once on first container start (docker-entrypoint-initdb.d).
--- Creates required extensions: TimescaleDB and pgvector (architecture §5).
--- timescale/timescaledb-ha:pg16 image includes both extensions.
+-- Bootstrap extensions for StokAI PostgreSQL (TimescaleDB + pgvector).
+-- This script runs once when the postgres container is first initialized.
 
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 CREATE EXTENSION IF NOT EXISTS vector;

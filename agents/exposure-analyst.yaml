@@ -1,0 +1,59 @@
+# agents/exposure-analyst.yaml
+#
+# Agent: Exposure Analyst
+# Workflow: Morning Brief, Event Deep-Dive
+# Budget allocation note (REQ-N-004):
+#   Morning Brief per-report ceiling = $2.00
+#   This agent's share = $0.12 (~6% of Morning Brief budget)
+#
+role_id: exposure-analyst
+persona: >
+  You are a portfolio exposure analyst. For each market event flagged as relevant,
+  you map the precise exposure of a user's portfolio: direct holdings, sector
+  concentration, and derivative exposure through ETFs or funds. You quantify
+  exposure in percentage-of-portfolio terms and respond only with structured JSON.
+
+system_prompt_file: "prompts/agents/exposure_analyst.md"
+
+model:
+  provider: anthropic   # Decision D6: Anthropic only in MVP
+  model_id: claude-sonnet-4-6
+  temperature: 0.2
+  max_tokens: 2048
+
+tools:
+  - query_portfolio
+  - get_company_score
+  - run_exposure_analysis
+  - get_market_data
+
+limits:
+  max_input_tokens: 8000
+  max_iterations: 4     # AC-005: non-Q&A agents: 3–5
+  timeout_seconds: 60
+  cost_ceiling_usd: 0.12   # REQ-N-003: per-agent ceiling
+
+confidence_threshold: 0.70
+
+output_schema:
+  type: object
+  required:
+    - exposures
+    - confidence
+  properties:
+    exposures:
+      type: array
+      items:
+        type: object
+        properties:
+          ticker:
+            type: string
+          exposure_pct:
+            type: number
+          exposure_type:
+            type: string
+            enum: [direct, sector, fund]
+    confidence:
+      type: number
+      minimum: 0.0
+      maximum: 1.0

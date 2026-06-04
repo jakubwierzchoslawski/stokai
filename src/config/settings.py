@@ -1,186 +1,132 @@
-"""Application settings loaded exclusively from environment variables (12-factor, P-06).
-
-VaultProvider abstraction: MVP uses .env via pydantic-settings. Future: Azure Key Vault
-via the same interface — zero code changes required (VAULT decision, OCP).
 """
-from __future__ import annotations
+Centralized configuration for StokAI.
 
-import os
-from typing import Protocol
+All configuration is read exclusively from environment variables (or .env file).
+Required fields have no default — pydantic raises ValidationError on startup
+if any are absent (fail-fast, 12-factor compliant).
+"""
+from datetime import date
+from functools import lru_cache
 
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-# ---------------------------------------------------------------------------
-# VaultProvider abstraction (Open/Closed Principle — extensible without change)
-# ---------------------------------------------------------------------------
-
-class VaultProvider(Protocol):
-    """Protocol for secret retrieval backends (P-06, VAULT decision)."""
-
-    def get_secret(self, key: str) -> str | None:
-        """Return the secret value for *key*, or None if not found."""
-        ...
-
-
-class EnvVaultProvider:
-    """Concrete VaultProvider backed by os.environ / .env (MVP implementation)."""
-
-    def get_secret(self, key: str) -> str | None:
-        return os.environ.get(key)
-
-
-# ---------------------------------------------------------------------------
-# Application settings
-# ---------------------------------------------------------------------------
-
 class Settings(BaseSettings):
-    """Pydantic BaseSettings subclass — all values loaded from env / .env.
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    Required at startup (fail-fast if missing):
-      - JWT_SECRET_KEY
+    # ── Application ──────────────────────────────────────────────────────────
+    ENVIRONMENT: str = "local"        # local | test | staging | production
+    DEBUG: bool = False
+    LOG_LEVEL: str = "INFO"
 
-    Optional with safe defaults:
-      - JWT_ALGORITHM, ACCESS_TOKEN_TTL_MINUTES, REFRESH_TOKEN_TTL_DAYS,
-        BCRYPT_ROUNDS, DATABASE_URL
-    """
+    # ── Database ─────────────────────────────────────────────────────────────
+    DATABASE_URL: str                 # required — no default
+    DATABASE_POOL_SIZE: int = 10
+    DATABASE_MAX_OVERFLOW: int = 5
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=True,
-        extra="ignore",
-    )
+    # ── Redis / Celery ────────────────────────────────────────────────────────
+    REDIS_URL: str                    # required — no default
+    CELERY_BROKER_URL: str = ""       # defaults to REDIS_URL at startup if blank
+    CELERY_RESULT_BACKEND: str = ""   # defaults to REDIS_URL at startup if blank
 
-    # JWT
-    JWT_SECRET_KEY: str = "change-me-in-production"
+    # ── AI Providers ──────────────────────────────────────────────────────────
+    ANTHROPIC_API_KEY: str            # required
+    OPENAI_API_KEY: str               # required (embeddings)
+
+    # ── External Integrations ─────────────────────────────────────────────────
+    FINNHUB_API_KEY: str = ""         # optional; resolved via source_config at runtime
+    FMP_API_KEY: str = ""             # optional
+    SENDGRID_API_KEY: str = ""        # optional; alerts disabled if blank
+    SENDGRID_FROM_EMAIL: str = ""     # optional; must be set when alerts are enabled
+
+    # ── Langfuse Observability ────────────────────────────────────────────────
+    LANGFUSE_SECRET_KEY: str = ""     # optional; no-op if blank
+    LANGFUSE_PUBLIC_KEY: str = ""     # optional
+    LANGFUSE_HOST: str = "http://langfuse-server:3000"
+
+    # ── JWT ───────────────────────────────────────────────────────────────────
+    JWT_SECRET_KEY: str               # required
+    JWT_REFRESH_SECRET_KEY: str       # required
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_TTL_MINUTES: int = 15
-    REFRESH_TOKEN_TTL_DAYS: int = 7
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    # Password hashing — cost factor >= 10 (DEV-STANDARDS §8, REQ-N-007)
+    # ── Security ──────────────────────────────────────────────────────────────
     BCRYPT_ROUNDS: int = 12
 
-    # Database — required; no hardcoded default (P-06, DEV-STANDARDS §8).
-    # Set DATABASE_URL in .env (see .env.example).
-    # In Docker Compose: postgresql+asyncpg://stokai:<pw>@postgres:5432/stokai
-    DATABASE_URL: str = ""
+    # ── Filesystem paths ──────────────────────────────────────────────────────
+    AGENTS_DIR: str = "agents"
+    PROMPTS_DIR: str = "prompts"
 
-    # Provider registry (legacy fields kept for backward compatibility)
-    PROVIDER_REGISTRY_PG_CHANNEL: str = "provider_registry_updates"
-    PROVIDER_CACHE_TTL_SECONDS: int = 300
+    # ── Port binding (12-factor) ──────────────────────────────────────────────
+    PORT: int = 8000
 
-    # Checkpointing (REQ-N-004, PLAN-N-004)
-    # Number of days to retain terminal checkpoint records before archiving.
-    CHECKPOINT_RETENTION_DAYS: int = 30
-    # Maximum hours a workflow can remain in HIL-pending (paused) state.
-    CHECKPOINT_HIL_MAX_PAUSE_HOURS: int = 72
-
-    # ---------------------------------------------------------------------------
-    # Mode A Pipeline — PLAN-F-001
-    # ---------------------------------------------------------------------------
-    # Deduplication window in seconds (Redis SETEX TTL).
-    DEDUP_TTL_SECONDS: int = 3600
-
-    # Celery queue names
-    PIPELINE_QUEUE: str = "event_pipeline"
-    DEEP_DIVE_QUEUE: str = "event_deep_dive"
-
-    # Path to the classify-event agent YAML config (relative to project root).
-    CLASSIFY_MODEL_YAML: str = "agents/classify_event.yaml"
-
-    # Twitter/X toggle — defaults OFF (C-002).
-    # Set to true only when a live adapter is available.
+    # ── Feature flags ─────────────────────────────────────────────────────────
+    # Twitter/X source adapter. Default=false (free-tier plan; enable via env).
+    # GDELT, EDGAR, and price_anomaly are always enabled.
     TWITTER_ENABLED: bool = False
 
-    # Confidence routing thresholds (C-003).
-    AUTO_SEND_THRESHOLD: float = 0.7
-    HIL_THRESHOLD: float = 0.4
+    # ── Memory Subsystem (PLAN-F-015) ─────────────────────────────────────────
+    # Minimum evidence count before a semantic fact is committed (Layer 2).
+    EVIDENCE_GATE_MIN_COUNT: int = 3
+    # Months after which an unconfirmed semantic fact is marked decayed.
+    SEMANTIC_DECAY_MONTHS: int = 6
 
-    # GDELT API endpoint (GDELT_API_URL overrides built-in default).
-    GDELT_API_URL: str = (
-        "https://api.gdeltproject.org/api/v2/doc/doc"
-        "?query=conflict&mode=artlist&maxrecords=250&format=json"
-    )
+    # ── Cold-Start Seeding (PLAN-F-031) ───────────────────────────────────────
+    # Provider to use for historical event ingestion: 'gdelt' or 'acled'.
+    SEEDING_PROVIDER: str = "gdelt"
+    # Start of the historical range to seed (GDELT archive begins 1979-01-01).
+    GDELT_START_DATE: date = Field(default=date(1979, 1, 1))
+    # Number of events per seeding batch (controls memory footprint per batch).
+    SEEDING_BATCH_SIZE: int = 500
+    # Number of parallel OpenAI embedding calls per sub-batch.
+    EMBEDDING_CONCURRENCY: int = 5
+    # ACLED API key — required only when SEEDING_PROVIDER=acled. Never logged.
+    ACLED_API_KEY: str | None = None
 
-    # EDGAR ATOM feed URL.
-    EDGAR_FEED_URL: str = (
-        "https://www.sec.gov/cgi-bin/browse-edgar"
-        "?action=getcurrent&type=10-K&dateb=&owner=include&count=40&output=atom"
-    )
+    # ── Analogy Search (PLAN-F-004) ───────────────────────────────────────────
+    # Number of historical analogies returned by find_historical_analogies step.
+    # Configurable via env var ANALOGY_K. Range: 1–50 (default 5).
+    # pydantic-settings maps this to the ANALOGY_K env var (case-insensitive).
+    ANALOGY_K: int = Field(default=5, ge=1, le=50)
 
-    # EDGAR polling interval in seconds (default 5 minutes — AC-003 < 20 min SLA).
-    EDGAR_POLL_INTERVAL_SECONDS: int = 300
+    # ── AI Recommendation Accuracy Calibration (PLAN-N-010) ──────────────────
+    # Minimum Pearson CORR(confidence, actual_t1d) required for a Healthy pass.
+    # Below this threshold the assessment reads "Warning: CORR below threshold".
+    CALIBRATION_CORR_THRESHOLD: float = Field(default=0.3, ge=0.0001, le=0.9999)
+    # Minimum total recommendations in the rolling window before threshold
+    # enforcement is applied. Fewer rows → assessment "Insufficient data".
+    CALIBRATION_MIN_SAMPLE: int = Field(default=30, ge=1)
 
-    # Alert copy disclaimer (appended to all auto-generated alert text).
-    ALERT_DISCLAIMER: str = (
-        "For informational purposes only. "
-        "Not investment advice. Past analogues do not guarantee future outcomes."
-    )
+    @field_validator("ENVIRONMENT")
+    @classmethod
+    def validate_environment(cls, v: str) -> str:
+        allowed = {"local", "test", "staging", "production"}
+        if v not in allowed:
+            raise ValueError(f"ENVIRONMENT must be one of {allowed}, got {v!r}")
+        return v
 
-    # ---------------------------------------------------------------------------
-    # Langfuse Observability — PLAN-F-013 (ARCHITECTURE.md §12)
-    # All vars validated at startup; fail fast if required vars are absent (P-06).
-    # ---------------------------------------------------------------------------
+    @field_validator("CELERY_BROKER_URL", mode="before")
+    @classmethod
+    def default_broker_to_redis(cls, v: str, info) -> str:
+        if not v:
+            return info.data.get("REDIS_URL", "")
+        return v
 
-    # Base URL of the self-hosted Langfuse server — required (P-06).
-    # In Docker Compose set to: http://langfuse-server:3000
-    # Set LANGFUSE_HOST in .env (see .env.example).
-    LANGFUSE_HOST: str = ""
-
-    # Langfuse project public key (generated by Langfuse on first boot or via UI).
-    LANGFUSE_PUBLIC_KEY: str = "pk-lf-change-me"
-
-    # Langfuse project secret key (sensitive — never log or expose).
-    LANGFUSE_SECRET_KEY: str = "sk-lf-change-me"
-
-    # Deployment environment label forwarded to Langfuse traces.
-    # Valid values: production | staging | development
-    LANGFUSE_ENVIRONMENT: str = "production"
-
-    # Prompt version cache TTL in seconds.
-    # Rollback by re-labelling a version in the Langfuse UI takes effect within
-    # this many seconds (AC-006). Default 60 seconds; no restart needed.
-    LANGFUSE_PROMPT_CACHE_TTL_SECONDS: int = 60
-
-    # ---------------------------------------------------------------------------
-    # Four-Layer Memory System — PLAN-F-011
-    # ---------------------------------------------------------------------------
-    # Semantic fact decay parameters (Architecture D5 formula):
-    #   confidence_t = max(confidence_0 * 0.5^(days/HALF_LIFE_DAYS), DECAY_FLOOR)
-    # Both parameters are read at runtime; no code change required to adjust them.
-    MEMORY_DECAY_HALF_LIFE_DAYS: float = 90.0
-    MEMORY_DECAY_FLOOR: float = 0.1
-
-    # Embedding model for semantic fact promotion.
-    # IMPORTANT: The stored vector dimension is locked to 1536 (ada-002 dimensionality).
-    # Switching to a model with a different output dimension requires a schema migration
-    # to drop and recreate the semantic_facts.embedding column.
-    EMBEDDING_MODEL_ID: str = "text-embedding-ada-002"
-
-    # Maximum number of episodic records processed per extraction job batch.
-    # Larger batches reduce LLM call count; smaller batches limit per-call cost.
-    MEMORY_EXTRACTION_BATCH_SIZE: int = 500
+    @field_validator("CELERY_RESULT_BACKEND", mode="before")
+    @classmethod
+    def default_backend_to_redis(cls, v: str, info) -> str:
+        if not v:
+            return info.data.get("REDIS_URL", "")
+        return v
 
 
+@lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    """Return a cached Settings instance (single read per process)."""
-    return _settings_singleton
+    """Return the singleton Settings instance.
 
-
-# Module-level singleton — instantiated once; env vars read at import time.
-_settings_singleton = Settings()
-
-
-# ---------------------------------------------------------------------------
-# Legacy helpers (kept for backward compatibility with existing callers)
-# ---------------------------------------------------------------------------
-
-def get_provider_registry_pg_channel() -> str:
-    """Return the PostgreSQL LISTEN/NOTIFY channel name for provider registry updates."""
-    return _settings_singleton.PROVIDER_REGISTRY_PG_CHANNEL
-
-
-def get_provider_cache_ttl_seconds() -> int:
-    """Return the Redis TTL (seconds) for non-historical provider data."""
-    return _settings_singleton.PROVIDER_CACHE_TTL_SECONDS
+    Called once at module import; subsequent calls return the cached object.
+    Raises ValidationError on first call if any required variable is missing.
+    """
+    return Settings()

@@ -113,6 +113,29 @@ class Settings(BaseSettings):
     # pydantic-settings maps this to the ANALOGY_K env var (case-insensitive).
     ANALOGY_K: int = Field(default=5, ge=1, le=50)
 
+    # ── Admin Notifications (PLAN-N-005) ──────────────────────────────────────
+    # Email address for admin budget threshold alerts. Required when SendGrid
+    # alerts are enabled. If blank, email alerts are skipped (log only).
+    ADMIN_ALERT_EMAIL: str = ""
+
+    # ── AI Compliance and Auditability (PLAN-N-012) ───────────────────────────
+    # Strict-less-than threshold: recommendations with sample_size < this value
+    # receive the mandatory disclaimer text (AC-003).
+    DISCLAIMER_SAMPLE_SIZE_THRESHOLD: int = 5
+    # Disclaimer text injected by DisclaimerMiddleware and email path.
+    DISCLAIMER_TEXT: str = "Based on fewer than 5 historical cases — treat with caution"
+    # Lookback window for the hourly episodic coverage check Celery task.
+    COMPLIANCE_CHECK_LOOKBACK_DAYS: int = 90
+    # Path prefixes that DisclaimerMiddleware applies disclaimer injection to.
+    # Set to empty list to apply to all JSON endpoints (performance guard).
+    DISCLAIMER_MIDDLEWARE_PATH_PREFIXES: list[str] = [
+        "/recommendation",
+        "/alert",
+        "/brief",
+        "/analysis",
+        "/compliance",
+    ]
+
     # ── AI Recommendation Accuracy Calibration (PLAN-N-010) ──────────────────
     # Minimum Pearson CORR(confidence, actual_t1d) required for a Healthy pass.
     # Below this threshold the assessment reads "Warning: CORR below threshold".

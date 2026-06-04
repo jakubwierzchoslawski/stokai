@@ -40,6 +40,8 @@ def create_celery_app() -> Celery:
             "src.ai.workflows.earnings_brief.hil",  # earnings_hil_fallback_task (PLAN-F-009)
             "src.scoring.geo_modifier_worker",  # scoring.apply_geo_modifier (PLAN-F-018)
             "src.ai.prompts.tasks",  # publish_all_prompts_to_langfuse (PLAN-F-014)
+            "src.compliance",       # run_episodic_coverage_check (PLAN-N-012)
+            "src.admin.tasks",      # check_monthly_budget_task (PLAN-N-005)
         ]
     )
 
@@ -99,6 +101,16 @@ def create_celery_app() -> Celery:
         "morning-brief-dispatch": {
             "task": "morning_brief.dispatch_all_users",
             "schedule": crontab(hour=5, minute=30),
+        },
+        # ── Episodic coverage check — hourly at minute 0 (PLAN-N-012) ─────────
+        "run-episodic-coverage-check-hourly": {
+            "task": "src.compliance.compliance_tasks.run_episodic_coverage_check",
+            "schedule": crontab(hour="*", minute=0),
+        },
+        # ── Monthly budget threshold check — daily 09:00 UTC (PLAN-N-005) ─────
+        "check-monthly-budget": {
+            "task": "admin.check_monthly_budget",
+            "schedule": crontab(hour=9, minute=0),
         },
     }
 

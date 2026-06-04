@@ -4,7 +4,7 @@ slug: infrastructure-budget
 title: MVP Infrastructure and AI Total Budget
 linked_requirement: REQ-N-005
 type: non-functional
-status: ready
+status: done
 blocked_reason:
 complexity: S
 tdd_required: false
@@ -15,7 +15,7 @@ dependencies:
   - { id: PLAN-N-003, reason: "Establishes cost_record writes for Mode A pipeline runs; this plan's monitor queries those rows" }
   - { id: PLAN-N-004, reason: "Establishes cost_record writes for Mode B workflow runs and the cost_limited flag; this plan's monitor queries those rows" }
   - { id: PLAN-F-030, reason: "Admin System Operations plan introduces the cost_record table, ICostRecordRepository, and the admin cost monitor UI skeleton; this plan extends them with infrastructure cost tracking and budget threshold alerting" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-03T00:00:00Z

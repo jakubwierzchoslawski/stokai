@@ -71,6 +71,29 @@ class ICostRecordRepository(ABC):
         """
 
     @abstractmethod
+    async def monthly_total_by_model(
+        self,
+        year: int,
+        month: int,
+        tenant_id: uuid.UUID | None = None,
+    ) -> dict[str, tuple[float, int]]:
+        """Return {model_id: (total_cost_usd, call_count)} for the given calendar month.
+
+        Groups cost_record rows by the ``model`` column (falling back to
+        ``workflow_type`` when ``model`` is NULL).  Any row where both
+        ``model`` and ``workflow_type`` are NULL is grouped under the key
+        ``"unknown"``.
+
+        Aggregates rows where:
+          EXTRACT(year FROM date) = year AND EXTRACT(month FROM date) = month
+
+        If tenant_id is None, aggregates across all tenants (global view for
+        single-tenant MVP).
+
+        Returns an empty dict when no rows exist for the month.
+        """
+
+    @abstractmethod
     async def insert_for_workflow_run(
         self,
         workflow_run_id: uuid.UUID,
@@ -232,6 +255,50 @@ class PostgresCostRecordRepository(ICostRecordRepository):
         )
         result = await self._session.execute(stmt)
         return float(result.scalar_one())
+
+    async def monthly_total_by_model(
+        self,
+        year: int,
+        month: int,
+        tenant_id: uuid.UUID | None = None,
+    ) -> dict[str, tuple[float, int]]:
+        """Return {model_id: (total_cost_usd, call_count)} for the given calendar month.
+
+        Grouping key priority:
+          1. model column (when not NULL)
+          2. workflow_type column (when model is NULL but workflow_type is not NULL)
+          3. "unknown" (when both are NULL)
+
+        Uses COALESCE(model, workflow_type, 'unknown') as the grouping key.
+        """
+        grouping_key = func.coalesce(
+            CostRecord.model, CostRecord.workflow_type, "unknown"
+        ).label("model_id")
+
+        stmt = (
+            select(
+                grouping_key,
+                func.sum(CostRecord.cost_usd).label("total_cost_usd"),
+                func.count(CostRecord.record_id).label("call_count"),
+            )
+            .where(
+                func.extract("year", CostRecord.date) == year,
+                func.extract("month", CostRecord.date) == month,
+            )
+            .group_by(func.coalesce(CostRecord.model, CostRecord.workflow_type, "unknown"))
+            .order_by(func.sum(CostRecord.cost_usd).desc())
+        )
+
+        if tenant_id is not None:
+            stmt = stmt.where(CostRecord.tenant_id == tenant_id)
+
+        result = await self._session.execute(stmt)
+        rows = result.all()
+
+        return {
+            row.model_id: (float(row.total_cost_usd), int(row.call_count))
+            for row in rows
+        }
 
     async def insert_for_workflow_run(
         self,

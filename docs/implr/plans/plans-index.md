@@ -56,7 +56,7 @@
 | PLAN-N-002 | Mode B Workflow Latency | REQ-N-002 | M | true | done | non-functional/PLAN-N-002-mode-b-latency.md |
 | PLAN-N-003 | Mode A Per-Event Cost Ceiling | REQ-N-003 | M | true | done | non-functional/PLAN-N-003-mode-a-cost.md |
 | PLAN-N-004 | Mode B Per-Report Cost Ceiling and User Budget | REQ-N-004 | M | true | done | non-functional/PLAN-N-004-mode-b-cost.md |
-| PLAN-N-005 | MVP Infrastructure and AI Total Budget | REQ-N-005 | S | false | ready | non-functional/PLAN-N-005-infrastructure-budget.md |
+| PLAN-N-005 | MVP Infrastructure and AI Total Budget | REQ-N-005 | S | false | done | non-functional/PLAN-N-005-infrastructure-budget.md |
 | PLAN-N-006 | Multi-Tenancy and Security | REQ-N-006 | L | true | done | non-functional/PLAN-N-006-multitenancy-security.md |
 | PLAN-N-007 | Portability and Self-Hostability | REQ-N-007 | M | true | done | non-functional/PLAN-N-007-portability-self-host.md |
 | PLAN-N-008 | AI Observability via Langfuse | REQ-N-008 | M | true | done | non-functional/PLAN-N-008-ai-observability.md |

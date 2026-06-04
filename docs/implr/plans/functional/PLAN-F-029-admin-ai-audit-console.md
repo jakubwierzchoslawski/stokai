@@ -4,7 +4,7 @@ slug: admin-ai-audit-console
 title: Admin AI Audit Console
 linked_requirement: REQ-F-029
 type: functional
-status: ready
+status: done
 blocked_reason:
 complexity: L
 tdd_required: true
@@ -17,11 +17,11 @@ dependencies:
   - { id: PLAN-F-016, reason: "Calibration dashboard reads calibration_result rows and CalibrationSummary API contract from the Three-Tier Evaluation Framework" }
   - { id: PLAN-F-014, reason: "Prompt version history is backed by prompt_publication table; rollback calls IPromptLabelService.rollback() from the Prompt Management Pipeline" }
   - { id: PLAN-F-015, reason: "Admin override writes user_feedback rows to Layer 4 via IFeedbackRepository; workflow_run history reads IEpisodicRepository" }
-executed_at:
+executed_at: 2026-06-04T00:00:00Z
 reviewed_at:
 review_id:
 created_at: 2026-06-02T00:00:00Z
-updated_at: 2026-06-02T00:00:00Z
+updated_at: 2026-06-04T00:00:00Z
 ---
 
 # PLAN-F-029 — Admin AI Audit Console

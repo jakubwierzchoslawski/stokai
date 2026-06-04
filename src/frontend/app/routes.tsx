@@ -107,3 +107,24 @@ export const BRIEFS_ROUTE_PATHS = {
   list: '/briefs',
   detail: '/briefs/:brief_id',
 } as const;
+
+// ── Admin AI Audit Console routes (PLAN-F-029 TASK-012) ───────────────────────
+//
+// The /admin/ai-audit route must be wrapped in <RequireAdmin> so that
+// non-admin users cannot access any sub-path.
+//
+// Example React Router v6 wiring:
+//
+//   import { RequireAdmin } from '../admin/RequireAdmin';
+//   import { AiAuditConsolePage } from '../admin/ai-audit/AiAuditConsolePage';
+//
+//   <Route
+//     path="/admin/ai-audit"
+//     element={
+//       <RequireAdmin>
+//         <AiAuditConsolePage />
+//       </RequireAdmin>
+//     }
+//   />
+//
+export const ADMIN_AI_AUDIT_ROUTE_PATH = '/admin/ai-audit' as const;

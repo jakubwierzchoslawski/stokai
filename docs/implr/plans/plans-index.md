@@ -43,7 +43,7 @@
 | PLAN-F-026 | Briefs and Reports Reader | REQ-F-026 | M | true | done | functional/PLAN-F-026-briefs-reader.md |
 | PLAN-F-027 | Q&A Chat Interface | REQ-F-027 | M | true | done | functional/PLAN-F-027-qa-chat-interface.md |
 | PLAN-F-028 | Admin Data Source Management | REQ-F-028 | L | true | done | functional/PLAN-F-028-admin-data-source-management.md |
-| PLAN-F-029 | Admin AI Audit Console | REQ-F-029 | L | true | ready | functional/PLAN-F-029-admin-ai-audit-console.md |
+| PLAN-F-029 | Admin AI Audit Console | REQ-F-029 | L | true | done | functional/PLAN-F-029-admin-ai-audit-console.md |
 | PLAN-F-030 | Admin System Operations Panel | REQ-F-030 | L | true | done | functional/PLAN-F-030-admin-system-operations.md |
 | PLAN-F-031 | Cold-Start Data Seeding | REQ-F-031 | M | true | done | functional/PLAN-F-031-cold-start-data-seeding.md |
 | PLAN-F-032 | Cache-or-Fetch Data Access | REQ-F-032 | M | true | done | functional/PLAN-F-032-cache-or-fetch-data-access.md |

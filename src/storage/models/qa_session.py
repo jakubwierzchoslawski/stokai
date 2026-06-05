@@ -16,9 +16,15 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, Float, ForeignKey, Index, String, Text, text
-from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMPTZ, UUID as PG_UUID
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, String, Text, text
+from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+# SQLAlchemy >=2.0.36 removed TIMESTAMPTZ from dialects.postgresql; use DateTime(timezone=True)
+try:
+    from sqlalchemy.dialects.postgresql import TIMESTAMPTZ
+except ImportError:
+    TIMESTAMPTZ = DateTime(timezone=True)  # type: ignore[misc,assignment]
 
 
 class QABase(DeclarativeBase):

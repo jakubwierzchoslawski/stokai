@@ -15,9 +15,14 @@ from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey, String, Float, Integer, Boolean, text
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB, TIMESTAMPTZ
+from sqlalchemy import DateTime, ForeignKey, String, Float, Integer, Boolean, text
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+try:
+    from sqlalchemy.dialects.postgresql import TIMESTAMPTZ
+except ImportError:
+    TIMESTAMPTZ = DateTime(timezone=True)  # type: ignore[misc,assignment]
 
 from src.ai.memory.models.base import MemoryBase
 

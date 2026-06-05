@@ -15,11 +15,17 @@ from enum import Enum
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel
-from sqlalchemy import select, update
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID, TIMESTAMPTZ
+from sqlalchemy import DateTime, select, update
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 import sqlalchemy as sa
+
+# SQLAlchemy >=2.0.36 removed TIMESTAMPTZ from dialects.postgresql
+try:
+    from sqlalchemy.dialects.postgresql import TIMESTAMPTZ
+except ImportError:
+    TIMESTAMPTZ = DateTime(timezone=True)  # type: ignore[misc,assignment]
 
 
 # ── Enum ──────────────────────────────────────────────────────────────────────

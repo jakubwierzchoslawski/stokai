@@ -12,9 +12,14 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import CheckConstraint, String, Text, UniqueConstraint
-from sqlalchemy.dialects.postgresql import TIMESTAMPTZ, UUID as PG_UUID
+from sqlalchemy import CheckConstraint, DateTime, String, Text, UniqueConstraint
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+try:
+    from sqlalchemy.dialects.postgresql import TIMESTAMPTZ
+except ImportError:
+    TIMESTAMPTZ = DateTime(timezone=True)  # type: ignore[misc,assignment]
 
 
 class PromptBase(DeclarativeBase):

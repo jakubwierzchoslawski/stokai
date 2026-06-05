@@ -10,10 +10,14 @@ from typing import Optional
 from uuid import UUID, uuid4
 
 import sqlalchemy as sa
-from sqlalchemy import text
-from sqlalchemy.dialects.postgresql import TIMESTAMPTZ
+from sqlalchemy import DateTime, text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
+
+try:
+    from sqlalchemy.dialects.postgresql import TIMESTAMPTZ
+except ImportError:
+    TIMESTAMPTZ = DateTime(timezone=True)  # type: ignore[misc,assignment]
 
 from src.ai.memory.models.base import MemoryBase
 

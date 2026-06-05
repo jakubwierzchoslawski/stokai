@@ -36,8 +36,9 @@ WORKDIR /app
 
 # Copy application source
 COPY src/ ./src/
-COPY agents/ ./agents/ 2>/dev/null || true
-COPY prompts/ ./prompts/ 2>/dev/null || true
+RUN mkdir -p agents prompts
+COPY agents/ ./agents/
+COPY prompts/ ./prompts/
 
 # Create a non-root user for runtime security
 RUN groupadd --gid 1001 stokai && \

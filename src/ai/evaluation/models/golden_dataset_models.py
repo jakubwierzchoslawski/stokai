@@ -9,9 +9,14 @@ from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, String, text
-from sqlalchemy.dialects.postgresql import JSONB, TIMESTAMPTZ, UUID as PG_UUID
+from sqlalchemy import Boolean, DateTime, String, text
+from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
+
+try:
+    from sqlalchemy.dialects.postgresql import TIMESTAMPTZ
+except ImportError:
+    TIMESTAMPTZ = DateTime(timezone=True)  # type: ignore[misc,assignment]
 
 from src.ai.evaluation.models.base import EvaluationBase
 

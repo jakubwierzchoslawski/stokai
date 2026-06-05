@@ -1,8 +1,8 @@
 ---
 # StokAI — full eight-service stack
-# All credentials and URLs are read from environment variables.
-# Copy .env.example to .env and fill in REPLACE_ME values before running.
+# All credentials and URLs are read from .env via ${VAR} interpolation.
 # No hardcoded IPs, secrets, or connection strings.
+# Copy .env.example to .env and fill in REPLACE_ME values before running.
 
 services:
 
@@ -60,6 +60,9 @@ services:
 
   clickhouse:
     image: clickhouse/clickhouse-server:24
+    environment:
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
     volumes:
       - clickhouse-data:/var/lib/clickhouse
     healthcheck:
@@ -82,13 +85,15 @@ services:
       clickhouse:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://${LANGFUSE_DB_USER}:${LANGFUSE_DB_PASSWORD}@langfuse-db:5432/${LANGFUSE_DB_NAME}
+      DATABASE_URL: ${LANGFUSE_DATABASE_URL}
       NEXTAUTH_URL: http://localhost:3000
       NEXTAUTH_SECRET: ${LANGFUSE_SECRET_KEY}
       LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY}
       LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY}
-      CLICKHOUSE_URL: http://clickhouse:8123
-      CLICKHOUSE_MIGRATION_URL: clickhouse://clickhouse:9000
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      CLICKHOUSE_URL: ${CLICKHOUSE_URL}
+      CLICKHOUSE_MIGRATION_URL: ${CLICKHOUSE_MIGRATION_URL}
       SALT: ${LANGFUSE_SECRET_KEY}
     ports:
       - "3000:3000"
@@ -111,10 +116,6 @@ services:
         condition: service_healthy
     env_file:
       - .env
-    environment:
-      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY}
-      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY}
-      LANGFUSE_HOST: http://langfuse-server:3000
     ports:
       - "${API_PORT:-8000}:${PORT:-8000}"
     healthcheck:
@@ -139,10 +140,6 @@ services:
         condition: service_healthy
     env_file:
       - .env
-    environment:
-      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY}
-      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY}
-      LANGFUSE_HOST: http://langfuse-server:3000
     networks:
       - stokai-net
     restart: unless-stopped
@@ -152,7 +149,7 @@ services:
     command: >
       celery -A src.config.celery_app beat
       --loglevel=info
-      --scheduler celery.schedulers.PersistentScheduler
+      --scheduler celery.beat.PersistentScheduler
     depends_on:
       - worker
     env_file:

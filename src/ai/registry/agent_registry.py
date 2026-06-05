@@ -8,6 +8,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+import yaml
 from pydantic import ValidationError
 
 from src.ai.registry.agent_definition import AgentDefinition, load_agent_definition
@@ -64,11 +65,33 @@ class AgentRegistry:
     # ------------------------------------------------------------------
 
     def _load_and_validate(self) -> None:
-        """Discover YAML files, parse and validate each, check prompt files exist."""
+        """Discover YAML files, parse and validate each, check prompt files exist.
+
+        Skips files without a ``role_id`` key (workflow YAMLs, e.g.
+        ``morning_brief_workflow.yaml``, use ``workflow_id`` instead and are
+        not agent definitions).
+        """
         yaml_paths = sorted(self._agents_dir.glob("*.yaml"))
         failures: list[str] = []
 
         for yaml_path in yaml_paths:
+            # Skip non-agent YAMLs (workflow configs, etc.) by checking for role_id
+            try:
+                raw = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
+            except Exception as exc:
+                failures.append(f"{yaml_path.name}: failed to read — {exc}")
+                continue
+
+            if raw is None or not isinstance(raw, dict):
+                logger.debug("Skipping non-dict YAML: %s", yaml_path.name)
+                continue
+
+            if "role_id" not in raw:
+                logger.debug(
+                    "Skipping non-agent YAML (no role_id): %s", yaml_path.name
+                )
+                continue
+
             try:
                 defn = load_agent_definition(yaml_path)
             except ValidationError as exc:

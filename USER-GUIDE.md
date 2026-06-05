@@ -146,6 +146,10 @@ Event Deep-Dive.
 
 ## First-Time Setup
 
+Follow these steps in order. Each step must complete before moving to the next.
+
+### Step 1 — Clone and configure environment
+
 ```bash
 # 1. Clone the repo (skip if already done)
 git clone <repo-url>
@@ -153,30 +157,109 @@ cd stokai
 
 # 2. Copy the environment template
 cp .env.example .env
-
-# 3. Fill in every REPLACE_ME value in .env (use any editor)
-#    Required fields to fill:
-#      POSTGRES_PASSWORD
-#      ANTHROPIC_API_KEY
-#      OPENAI_API_KEY
-#      LANGFUSE_SECRET_KEY
-#      LANGFUSE_PUBLIC_KEY
-#      LANGFUSE_DB_PASSWORD
-#      JWT_SECRET_KEY            (min 32 random chars)
-#      JWT_REFRESH_SECRET_KEY    (min 32 random chars, different from above)
-#      SEED_ADMIN_EMAIL          (e.g. admin@yourdomain.com)
-#      SEED_ADMIN_PASSWORD       (min 12 chars)
-
-# 4. Generate strong JWT secrets:
-python -c "import secrets; print(secrets.token_hex(32))"
-# Run twice — one value for JWT_SECRET_KEY, another for JWT_REFRESH_SECRET_KEY
 ```
 
-**Langfuse key generation:** On the first `make up`, Langfuse starts at http://localhost:3000.
-Create an account, then go to Settings → API Keys to obtain the public and secret keys.
-Stop the stack, add them to `.env`, and restart.
+### Step 2 — Fill in `.env` values
+
+Open `.env` in any text editor. Find every `REPLACE_ME` placeholder and replace it.
+The minimum set you MUST fill:
+
+| Variable | What to put | How to get it |
+|----------|------------|---------------|
+| `POSTGRES_PASSWORD` | Any strong password | `python -c "import secrets; print(secrets.token_hex(16))"` |
+| `ANTHROPIC_API_KEY` | Your Claude API key | https://console.anthropic.com |
+| `OPENAI_API_KEY` | Your OpenAI API key | https://platform.openai.com |
+| `LANGFUSE_SECRET_KEY` | Any 32+ char random string | `python -c "import secrets; print(secrets.token_hex(32))"` |
+| `LANGFUSE_PUBLIC_KEY` | Another long random string | `python -c "import secrets; print(secrets.token_hex(32))"` |
+| `LANGFUSE_DB_PASSWORD` | Any strong password | Same as POSTGRES_PASSWORD generator |
+| `JWT_SECRET_KEY` | 32+ random chars | `python -c "import secrets; print(secrets.token_hex(32))"` |
+| `JWT_REFRESH_SECRET_KEY` | 32+ random chars (different from above) | Run generator again |
+| `SEED_ADMIN_EMAIL` | Your email address | e.g. `admin@yourdomain.com` |
+| `SEED_ADMIN_PASSWORD` | 12+ character password | Choose a strong password |
+
+> **About Langfuse keys:** For the first boot, use any random strings for `LANGFUSE_SECRET_KEY`
+> and `LANGFUSE_PUBLIC_KEY`. These are placeholders that let Langfuse start. Once Langfuse is
+> running, you will create an account there and get real API keys — see Step 5.
 
 > **Never commit `.env`.** It is already listed in `.gitignore`.
+
+### Step 3 — Start the stack
+
+```bash
+docker compose up -d --build
+```
+
+This builds the application image and starts all eight services. The first build takes
+2–4 minutes (Docker image pulls + Python package install). Subsequent starts are fast.
+
+**Wait for all services to be healthy:**
+
+```bash
+docker compose ps
+```
+
+All 8 services should show `(healthy)` or `Up` status. If any show `Restarting`, check
+the [Troubleshooting](#troubleshooting) section.
+
+### Step 4 — Initialize the database
+
+The application database starts empty. You must run Alembic migrations to create all
+tables, then seed the initial admin user.
+
+```bash
+# Apply all database migrations (creates tables, indexes, extensions)
+docker compose exec api alembic upgrade head
+
+# Seed the initial admin user (reads SEED_ADMIN_* from .env)
+docker compose exec api python -m src.db.seeds.seed_admin
+```
+
+Expected output:
+```
+Admin user created: admin@yourdomain.com (tenant: 00000000-0000-0000-0000-000000000001)
+```
+
+> **Note:** The `seed_admin` script is idempotent. Running it again prints "Admin user
+> already exists, skipping."
+
+### Step 5 — Set up Langfuse (observability)
+
+1. Open **http://localhost:3000** in your browser.
+2. Click **"Sign up"** and create an account with any email and password.
+3. After logging in, go to **Settings → API Keys**.
+4. Click **"Create API Key"** — note the **Public Key** and **Secret Key** displayed.
+5. Open your `.env` file and replace the placeholder values with the real keys:
+   ```
+   LANGFUSE_SECRET_KEY=sk-lf-...   (the Secret Key from Langfuse)
+   LANGFUSE_PUBLIC_KEY=pk-lf-...   (the Public Key from Langfuse)
+   ```
+6. Restart the application containers to pick up the new keys:
+   ```bash
+   docker compose restart api worker beat
+   ```
+
+> **Why this two-step process?** Langfuse uses `LANGFUSE_SECRET_KEY` as its encryption
+> secret (`NEXTAUTH_SECRET`). It needs _some_ value to start, but the real API keys for
+> SDK tracing are generated inside Langfuse after you create an account. The placeholders
+> let it boot; the real keys enable tracing.
+
+### Step 6 — Verify the setup
+
+```bash
+# API health check (no auth required)
+curl http://localhost:8000/health
+# Expected: {"status":"ok"}
+
+# Login with the seeded admin account
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-ID: 00000000-0000-0000-0000-000000000001" \
+  -d '{"email":"admin@yourdomain.com","password":"<SEED_ADMIN_PASSWORD>"}'
+# Expected: {"data":{"access_token":"eyJ...","expires_in":900}}
+```
+
+The application is now ready. Open **http://localhost:8000** for the frontend, or
+**http://localhost:8000/docs** for the interactive API documentation.
 
 ---
 
@@ -249,7 +332,7 @@ celery -A src.config.celery_app worker --loglevel=info
 
 # --- In a third terminal ---
 # Celery beat (scheduled jobs: morning brief, watchlist scan)
-celery -A src.config.celery_app beat --scheduler celery.schedulers.PersistentScheduler
+celery -A src.config.celery_app beat --scheduler celery.beat.PersistentScheduler
 ```
 
 ---
@@ -269,24 +352,23 @@ by design to prevent information leakage.
 
 ### Creating the First Admin
 
-There is no sign-up UI. The initial admin account is created via the seed script using
-environment variables:
+The initial admin account is created during first-time setup via the seed script.
+To create additional admin accounts or re-seed:
 
 ```bash
-# Set these in .env before seeding
+# Set these in .env
 SEED_ADMIN_EMAIL=admin@yourdomain.com
 SEED_ADMIN_PASSWORD=MinTwelveChars!
 SEED_TENANT_ID=00000000-0000-0000-0000-000000000001   # any UUID you choose
 
-# Then run migrations first, then seed
-make migrate
-make shell-api
-# Inside the container:
-python scripts/seed.py
+# Run the seed script inside the api container
+docker compose exec api python -m src.db.seeds.seed_admin
 ```
 
-The seed script hashes the password with bcrypt, inserts a `User` row with `role=admin`,
-and exits. The password is never logged or persisted in plaintext.
+The seed script hashes the password with bcrypt (rounds=12), inserts a `User` row with
+`role=admin`, and exits. The password is never logged or persisted in plaintext. If the
+email already exists for the given tenant, it prints "Admin user already exists, skipping."
+and exits with code 0.
 
 ### Login Flow
 
@@ -1324,23 +1406,32 @@ Prompt History tab.
 
 ## Database Migrations
 
-Migrations are managed with Alembic. Run after any deployment that includes schema changes.
+Migrations are managed with Alembic. The migration files live in `src/db/migrations/versions/`
+and `src/storage/migrations/`. Run after any deployment that includes schema changes.
 
 ```bash
 # Apply all pending migrations
 make migrate
-# or
+# or directly:
 docker compose exec api alembic upgrade head
 
-# Create a new migration after changing SQLAlchemy models
-docker compose exec api alembic revision --autogenerate -m "add_column_x_to_table_y"
+# Check current migration version
+docker compose exec api alembic current
+
+# Show migration history
+docker compose exec api alembic history
 
 # Roll back one step
 docker compose exec api alembic downgrade -1
 
-# Show current migration version
-docker compose exec api alembic current
+# Create a new migration after changing SQLAlchemy models
+docker compose exec api alembic revision --autogenerate -m "add_column_x_to_table_y"
 ```
+
+**When to run migrations:**
+- After first-time setup (tables don't exist yet)
+- After pulling new code that added migration files
+- Never needed for Langfuse — its database is auto-migrated by Prisma on container start
 
 ---
 
@@ -1430,6 +1521,70 @@ npm run test:watch   # watch mode
 # Load tests (Locust or similar — run separately)
 # tests/load/ contains load test scripts
 ```
+
+---
+
+---
+
+## Troubleshooting
+
+### Container keeps restarting
+
+```bash
+# Check which containers are failing
+docker compose ps
+
+# View logs for a specific service
+docker compose logs <service-name> --tail 50
+```
+
+**Common failures and fixes:**
+
+| Symptom | Likely cause | Fix |
+|---------|-------------|-----|
+| `api` restarting with `StartupValidationError` / `Field required` | Agent YAML schema mismatch — a workflow YAML in `agents/` lacks `role_id` | Check that `agents/` directory only contains agent definitions with `role_id` field. Workflow configs with `workflow_id` should be in a separate directory. |
+| `worker` or `beat` restarting with `ImportError: TIMESTAMPTZ` | SQLAlchemy version incompatibility | Ensure `sqlalchemy>=2.0.36` is pinned; files should use `DateTime(timezone=True)` fallback |
+| `beat` restarting with `No module named 'celery.schedulers'` | Celery 5.4+ moved `PersistentScheduler` | Use `--scheduler celery.beat.PersistentScheduler` |
+| `langfuse-server` restarting with `CLICKHOUSE_PASSWORD is not set` | ClickHouse credentials not configured | Ensure `.env` has `CLICKHOUSE_USER`, `CLICKHOUSE_PASSWORD`, `CLICKHOUSE_URL`, `CLICKHOUSE_MIGRATION_URL` set. Run `docker compose down && docker compose up -d` to recreate containers. |
+| `api` healthy but `worker` depends on it, never starts | Worker waits for API healthcheck; API may start but fail healthcheck | Check `docker compose logs api` for startup errors. The healthcheck calls `/health` — ensure the API is fully initialized. |
+| `langfuse-server` restarting with database connection errors | `langfuse-db` not ready or wrong credentials | Verify `LANGFUSE_DB_USER`, `LANGFUSE_DB_PASSWORD`, `LANGFUSE_DB_NAME` match across `.env` and `docker-compose.yml`. Check `docker compose logs langfuse-db`. |
+| All 4 app containers restarting | Missing required `.env` variable (`DATABASE_URL`, `JWT_SECRET_KEY`, etc.) | Run `docker compose config` to check for missing variables. Every `${VAR}` in compose must be present in `.env`. |
+
+### Database not initialized
+
+If you see errors like `relation "user" does not exist`:
+
+```bash
+# Run migrations to create all tables
+docker compose exec api alembic upgrade head
+
+# Verify tables exist
+docker compose exec postgres psql -U stokai -d stokai -c "\dt"
+```
+
+### Langfuse UI shows "Loading" or blank page
+
+This usually means the `LANGFUSE_SECRET_KEY`/`LANGFUSE_PUBLIC_KEY` placeholders don't
+match what was used during the initial Langfuse account creation. Reset:
+
+```bash
+# Remove Langfuse volumes to start fresh
+docker compose down -v langfuse-db-data clickhouse-data
+docker compose up -d langfuse-db clickhouse langfuse-server
+# Then repeat Step 5 of First-Time Setup
+```
+
+### `.env` changes not taking effect
+
+Docker Compose does not automatically restart containers when `.env` changes:
+
+```bash
+docker compose down    # destroy containers
+docker compose up -d   # recreate with fresh env
+```
+
+A simple `docker compose restart` will **not** pick up new env vars — only a full `down` + `up`
+recreates containers with the updated environment.
 
 ---
 

@@ -23,6 +23,9 @@ def create_celery_app() -> Celery:
     app.conf.timezone = "UTC"
     app.conf.enable_utc = True
 
+    # Avoid bind-mount directory collision — use /tmp for the beat schedule DB
+    app.conf.beat_schedule_filename = "/tmp/celerybeat-schedule"
+
     # Auto-discover tasks in all src sub-packages
     app.autodiscover_tasks(
         [

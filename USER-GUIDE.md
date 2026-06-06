@@ -201,10 +201,15 @@ docker compose ps
 All 8 services should show `(healthy)` or `Up` status. If any show `Restarting`, check
 the [Troubleshooting](#troubleshooting) section.
 
-### Step 4 — Initialize the database
+### Step 4 — Initialize the application database
 
-The application database starts empty. You must run Alembic migrations to create all
-tables, then seed the initial admin user.
+The StokAI application database starts empty. You must run Alembic migrations to create
+all tables, then seed the initial admin user.
+
+> **Important:** This step only affects the **application database** (`postgres` container,
+> TimescaleDB). The **Langfuse database** (`langfuse-db` container) is auto-migrated by
+> Prisma when the `langfuse-server` container starts — you never need to run migrations
+> against it.
 
 ```bash
 # Apply all database migrations (creates tables, indexes, extensions)
@@ -1573,6 +1578,11 @@ docker compose down -v langfuse-db-data clickhouse-data
 docker compose up -d langfuse-db clickhouse langfuse-server
 # Then repeat Step 5 of First-Time Setup
 ```
+
+### Database migrations fail with `No 'script_location' key found`
+
+This means the Alembic configuration is missing. Ensure `alembic.ini` and `alembic/env.py`
+exist in the project root — these were recently added. Pull the latest code if missing.
 
 ### `.env` changes not taking effect
 

@@ -8,10 +8,16 @@ from __future__ import annotations
 
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects.postgresql import UUID, TIMESTAMPTZ
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import DateTime
 
-revision = "0056"
-down_revision = "0055"
+try:
+    from sqlalchemy.dialects.postgresql import TIMESTAMPTZ
+except ImportError:
+    TIMESTAMPTZ = lambda: DateTime(timezone=True)  # type: ignore[misc,assignment]
+
+revision = "0056_calibration_review"
+down_revision = "0056_prompt_publication"
 branch_labels = None
 depends_on = None
 

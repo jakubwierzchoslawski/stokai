@@ -25,7 +25,7 @@ import sqlalchemy as sa
 # revision identifiers, used by Alembic
 revision = "0003_credentials_ref_check"
 down_revision = None  # standalone; set to the actual preceding revision in your chain
-branch_labels = None
+branch_labels = ("credentials_check",)
 depends_on = None
 
 _CONSTRAINT_NAME = "ck_source_config_credentials_ref_prefix"

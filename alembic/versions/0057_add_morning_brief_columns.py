@@ -15,16 +15,47 @@ Changes:
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID, TIMESTAMPTZ
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import DateTime
+
+try:
+    from sqlalchemy.dialects.postgresql import TIMESTAMPTZ
+except ImportError:
+    TIMESTAMPTZ = DateTime(timezone=True)  # type: ignore[misc,assignment]
 
 # revision identifiers, used by Alembic.
 revision = "0057"
-down_revision = "0056"
+down_revision = "0056_calibration_review"
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
+    # ── Create brief table (base schema) ────────────────────────────────────
+    op.create_table(
+        "brief",
+        sa.Column("brief_id", UUID(as_uuid=True), primary_key=True,
+                  server_default=sa.text("gen_random_uuid()"), nullable=False),
+        sa.Column("type", sa.String(64), nullable=False,
+                  server_default=sa.text("'event_deep_dive'")),
+        sa.Column("event_id", UUID(as_uuid=True),
+                  sa.ForeignKey("geo_event.event_id", ondelete="SET NULL"),
+                  nullable=True),
+        sa.Column("tenant_id", UUID(as_uuid=True), nullable=False),
+        sa.Column("content", sa.dialects.postgresql.JSONB, nullable=False,
+                  server_default=sa.text("'{}'::jsonb")),
+        sa.Column("confidence", sa.Float(), nullable=True),
+        sa.Column("cost_usd", sa.Float(), nullable=True),
+        sa.Column("cost_limited", sa.Boolean(), nullable=True,
+                  server_default=sa.text("false")),
+        sa.Column("hil_reviewed", sa.Boolean(), nullable=True,
+                  server_default=sa.text("false")),
+        sa.Column("hil_approved", sa.Boolean(), nullable=True),
+        sa.Column("created_at", TIMESTAMPTZ, nullable=False,
+                  server_default=sa.text("now()")),
+    )
+    op.create_index("idx_brief_tenant_event", "brief", ["tenant_id", "event_id"])
+
     # 1. Add brief_type column (backfill as event_deep_dive for existing rows)
     op.add_column(
         "brief",

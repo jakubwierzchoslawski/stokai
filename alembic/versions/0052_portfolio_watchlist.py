@@ -16,8 +16,8 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "0052_portfolio_watchlist"
-down_revision = None  # set to previous migration revision in real project
+revision = "0052"
+down_revision = "0044"
 branch_labels = None
 depends_on = None
 
@@ -52,6 +52,23 @@ def upgrade() -> None:
         "portfolio",
         ["tenant_id", "user_id"],
     )
+
+    # ── company (universe table) ──────────────────────────────────────────────
+    op.create_table(
+        "company",
+        sa.Column(
+            "company_id",
+            postgresql.UUID(as_uuid=True),
+            primary_key=True,
+            server_default=sa.text("gen_random_uuid()"),
+        ),
+        sa.Column("ticker", sa.String(20), nullable=False),
+        sa.Column("name", sa.Text(), nullable=False),
+        sa.Column("is_tracked", sa.Boolean(), nullable=False,
+                  server_default=sa.text("false")),
+        sa.Column("sector_gics", sa.Text(), nullable=True),
+    )
+    op.create_index("ix_company_ticker", "company", ["ticker"], unique=True)
 
     # ── position ───────────────────────────────────────────────────────────────
     op.create_table(

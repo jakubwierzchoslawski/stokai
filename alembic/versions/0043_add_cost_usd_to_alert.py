@@ -14,7 +14,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "0043"
-down_revision = "0042"
+down_revision = "0042_create_alert_table"
 branch_labels = None
 depends_on = None
 

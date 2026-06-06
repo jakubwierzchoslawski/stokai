@@ -18,7 +18,14 @@ by deadline).
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID, TIMESTAMPTZ
+from sqlalchemy.dialects.postgresql import UUID
+
+# SQLAlchemy >=2.0.36 removed TIMESTAMPTZ from dialects.postgresql
+try:
+    from sqlalchemy.dialects.postgresql import TIMESTAMPTZ
+except ImportError:
+    from sqlalchemy import DateTime
+    TIMESTAMPTZ = DateTime(timezone=True)  # type: ignore[misc,assignment]
 
 # revision identifiers, used by Alembic.
 revision = "0044"

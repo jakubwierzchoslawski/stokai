@@ -19,13 +19,6 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Create the user_role PostgreSQL enum type
-    user_role_enum = sa.Enum(
-        "admin", "operator", "end_user",
-        name="user_role",
-    )
-    user_role_enum.create(op.get_bind(), checkfirst=True)
-
     op.create_table(
         "user",
         sa.Column(
@@ -40,7 +33,7 @@ def upgrade() -> None:
         sa.Column("password_hash", sa.String(72), nullable=False),
         sa.Column(
             "role",
-            sa.Enum("admin", "operator", "end_user", name="user_role", create_type=False),
+            sa.Enum("admin", "operator", "end_user", name="user_role"),
             nullable=False,
         ),
         sa.Column(

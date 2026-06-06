@@ -19,7 +19,7 @@ from sqlalchemy.dialects import postgresql
 # revision identifiers
 revision = "017_scoring_engine"
 down_revision = None  # Update to previous migration revision ID
-branch_labels = None
+branch_labels = ("legacy",)
 depends_on = None
 
 

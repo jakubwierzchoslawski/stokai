@@ -16,11 +16,18 @@ Changes:
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID, JSONB, TIMESTAMPTZ
+from sqlalchemy.dialects.postgresql import UUID, JSONB
+
+# SQLAlchemy >=2.0.36 removed TIMESTAMPTZ from dialects.postgresql
+try:
+    from sqlalchemy.dialects.postgresql import TIMESTAMPTZ
+except ImportError:
+    from sqlalchemy import DateTime
+    TIMESTAMPTZ = DateTime(timezone=True)  # type: ignore[misc,assignment]
 
 # revision identifiers, used by Alembic.
 revision = "0040"
-down_revision = "0039"
+down_revision = "0037"  # was "0039" — that revision does not exist; last real rev is 0037
 branch_labels = None
 depends_on = None
 

@@ -9,7 +9,13 @@ from __future__ import annotations
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID, ARRAY, TIMESTAMPTZ, JSONB
+from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
+from sqlalchemy import DateTime
+
+try:
+    from sqlalchemy.dialects.postgresql import TIMESTAMPTZ
+except ImportError:
+    TIMESTAMPTZ = lambda: DateTime(timezone=True)  # type: ignore[misc,assignment]
 
 revision = "0036"
 down_revision = "0035"

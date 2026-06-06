@@ -12,8 +12,8 @@ from __future__ import annotations
 from alembic import op
 import sqlalchemy as sa
 
-revision = "0042"
-down_revision = "0041"
+revision = "0042_create_alert_table"
+down_revision = "0042"
 branch_labels = None
 depends_on = None
 

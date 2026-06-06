@@ -40,6 +40,10 @@ RUN mkdir -p agents prompts
 COPY agents/ ./agents/
 COPY prompts/ ./prompts/
 
+# Copy Alembic migrations and configuration (needed for `alembic upgrade head`)
+COPY alembic.ini ./
+COPY alembic/ ./alembic/
+
 # Create a non-root user for runtime security
 RUN groupadd --gid 1001 stokai && \
     useradd --uid 1001 --gid stokai --shell /bin/bash --create-home stokai

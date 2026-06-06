@@ -16,7 +16,13 @@ Changes:
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID, JSONB, TIMESTAMPTZ
+from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import DateTime
+
+try:
+    from sqlalchemy.dialects.postgresql import TIMESTAMPTZ
+except ImportError:
+    TIMESTAMPTZ = lambda: DateTime(timezone=True)  # type: ignore[misc,assignment]
 
 # revision identifiers, used by Alembic.
 revision = "0064"

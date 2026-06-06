@@ -12,7 +12,7 @@ import sqlalchemy as sa
 # Alembic revision identifiers
 revision = "0031"
 down_revision = None  # Update to previous migration revision when chained
-branch_labels = None
+branch_labels = ("seeding",)
 depends_on = None
 
 

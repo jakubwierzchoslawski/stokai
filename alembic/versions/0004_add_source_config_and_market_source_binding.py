@@ -27,7 +27,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers
 revision: str = "0004"
-down_revision: str | None = "0003"
+down_revision: str | None = "0002"
 branch_labels = None
 depends_on = None
 
@@ -178,7 +178,7 @@ def upgrade() -> None:
                      credentials_ref, config, cost_tier, priority, updated_at)
                 VALUES
                     (:source_id, :interface_type, :display_name, :enabled,
-                     :credentials_ref, :config::jsonb, :cost_tier, :priority, :updated_at)
+                     :credentials_ref, CAST(:config AS jsonb), :cost_tier, :priority, :updated_at)
                 ON CONFLICT (source_id) DO NOTHING
                 """
             ),

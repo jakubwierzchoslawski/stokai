@@ -1,0 +1,70 @@
+/* Design tokens — OKLCH for both themes. */
+
+:root,
+[data-theme="dark"] {
+  --surface-0:      oklch(14% 0.01 250);
+  --surface-1:      oklch(18% 0.012 250);
+  --surface-2:      oklch(22% 0.014 250);
+  --surface-3:      oklch(27% 0.015 250);
+  --border-subtle:  oklch(28% 0.012 250);
+  --border-default: oklch(34% 0.013 250);
+  --border-strong:  oklch(48% 0.015 250);
+
+  --text-primary:   oklch(96% 0.005 250);
+  --text-secondary: oklch(78% 0.008 250);
+  --text-muted:     oklch(58% 0.010 250);
+  --text-disabled:  oklch(42% 0.012 250);
+
+  --signal:         oklch(72% 0.18 230);
+  --signal-fg:      oklch(14% 0.01 250);
+  --signal-soft:    oklch(36% 0.10 230);
+
+  --positive:       oklch(74% 0.16 152);
+  --warning:        oklch(80% 0.16 80);
+  --negative:       oklch(70% 0.20 25);
+  --neutral:        oklch(72% 0.04 250);
+
+  --pulse-low:      var(--positive);
+  --pulse-mid:      var(--warning);
+  --pulse-high:     var(--negative);
+  --pulse-extreme:  oklch(60% 0.24 15);
+
+  --ring:           oklch(78% 0.16 230 / 0.6);
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+
+  --shadow-sm: 0 1px 0 0 oklch(0% 0 0 / 0.4);
+  --shadow-md: 0 4px 12px -2px oklch(0% 0 0 / 0.4),
+               0 0 0 1px var(--border-subtle);
+  --shadow-popover: 0 16px 40px -8px oklch(0% 0 0 / 0.6),
+                    0 0 0 1px var(--border-default);
+}
+
+[data-theme="light"] {
+  --surface-0:      oklch(99% 0.003 250);
+  --surface-1:      oklch(97% 0.004 250);
+  --surface-2:      oklch(94% 0.005 250);
+  --surface-3:      oklch(90% 0.006 250);
+  --border-subtle:  oklch(88% 0.005 250);
+  --border-default: oklch(80% 0.007 250);
+  --border-strong:  oklch(64% 0.010 250);
+
+  --text-primary:   oklch(18% 0.012 250);
+  --text-secondary: oklch(34% 0.013 250);
+  --text-muted:     oklch(50% 0.012 250);
+  --text-disabled:  oklch(70% 0.010 250);
+
+  --signal:         oklch(54% 0.18 230);
+  --signal-fg:      oklch(99% 0.003 250);
+  --signal-soft:    oklch(90% 0.05 230);
+
+  --positive:       oklch(52% 0.16 152);
+  --warning:        oklch(64% 0.16 80);
+  --negative:       oklch(54% 0.20 25);
+  --neutral:        oklch(56% 0.04 250);
+
+  --ring:           oklch(54% 0.18 230 / 0.55);
+}

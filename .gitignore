@@ -19,6 +19,8 @@ pip-wheel-metadata/
 .installed.cfg
 lib/
 lib64/
+# Re-include frontend utility library (not a Python venv lib/)
+!src/frontend/lib/
 parts/
 sdist/
 var/

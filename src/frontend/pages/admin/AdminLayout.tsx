@@ -15,8 +15,9 @@
  */
 
 import React, { useState } from "react";
-import { Drawer } from "../features/shared/layout/Drawer";
-import { useBreakpoint } from "../features/shared/hooks/useBreakpoint";
+import { Outlet } from "react-router-dom";
+import { Drawer } from "@/features/shared/layout/Drawer";
+import { useBreakpoint } from "@/features/shared/hooks/useBreakpoint";
 
 // ── Navigation items ──────────────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ const NAV_ITEMS: NavItem[] = [
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 export interface AdminLayoutProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   /** Active nav item id for highlighting */
   activeSection?: string;
   /** Navigation callback — called instead of window.location for router integration */
@@ -234,7 +235,7 @@ export function AdminLayout({
             padding: "24px",
           }}
         >
-          {children}
+          {children ?? <Outlet />}
         </main>
       </div>
 

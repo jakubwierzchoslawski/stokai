@@ -16,6 +16,7 @@
  */
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api/client';
 
 // ── Types ───────────────────────────────────────────────────────────────────────
 
@@ -52,16 +53,7 @@ export const COST_MONITOR_KEY = ['admin', 'cost-monitor'] as const;
 // ── API helper ────────────────────────────────────────────────────────────────────
 
 async function fetchCostMonitor(): Promise<MonthlyBudgetSummary> {
-  const resp = await fetch('/api/v1/admin/cost-monitor', {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-  });
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw new Error(err?.error?.message ?? `HTTP ${resp.status}`);
-  }
-  const body = await resp.json();
-  return body.data as MonthlyBudgetSummary;
+  return api<MonthlyBudgetSummary>('/v1/admin/cost-monitor');
 }
 
 // ── Budget progress bar ───────────────────────────────────────────────────────────

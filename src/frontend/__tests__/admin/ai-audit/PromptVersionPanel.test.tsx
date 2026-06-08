@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tests for PromptVersionPanel and RollbackConfirmModal.
  *
  * PLAN-F-029 TASK-009
@@ -46,9 +46,9 @@ describe('PromptVersionPanel', () => {
   });
 
   it('renders table rows for each PromptVersionEntry', async () => {
-    const { PromptVersionPanel } = await import('../../../admin/ai-audit/PromptVersionPanel');
+    const { PromptVersionPanel } = await import('../../../pages/admin/ai-audit/PromptVersionPanel');
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(PromptVersionPanel)));
+    render(React.createElement(Wrapper, null, React.createElement(PromptVersionPanel)));
 
     await waitFor(() => {
       expect(screen.getByTestId('prompt-row-sha_newer_1234')).toBeDefined();
@@ -57,9 +57,9 @@ describe('PromptVersionPanel', () => {
   });
 
   it('row with rolled_back_at does not show Rollback button', async () => {
-    const { PromptVersionPanel } = await import('../../../admin/ai-audit/PromptVersionPanel');
+    const { PromptVersionPanel } = await import('../../../pages/admin/ai-audit/PromptVersionPanel');
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(PromptVersionPanel)));
+    render(React.createElement(Wrapper, null, React.createElement(PromptVersionPanel)));
 
     await waitFor(() => screen.getByTestId('prompt-row-sha_older_5678'));
     // Should not have rollback button for rolled-back version
@@ -67,18 +67,18 @@ describe('PromptVersionPanel', () => {
   });
 
   it('row without rolled_back_at shows Rollback button', async () => {
-    const { PromptVersionPanel } = await import('../../../admin/ai-audit/PromptVersionPanel');
+    const { PromptVersionPanel } = await import('../../../pages/admin/ai-audit/PromptVersionPanel');
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(PromptVersionPanel)));
+    render(React.createElement(Wrapper, null, React.createElement(PromptVersionPanel)));
 
     await waitFor(() => screen.getByTestId('rollback-btn-sha_newer_1234'));
     expect(screen.getByTestId('rollback-btn-sha_newer_1234')).toBeDefined();
   });
 
   it('clicking Rollback opens RollbackConfirmModal with correct SHA', async () => {
-    const { PromptVersionPanel } = await import('../../../admin/ai-audit/PromptVersionPanel');
+    const { PromptVersionPanel } = await import('../../../pages/admin/ai-audit/PromptVersionPanel');
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(PromptVersionPanel)));
+    render(React.createElement(Wrapper, null, React.createElement(PromptVersionPanel)));
 
     await waitFor(() => screen.getByTestId('rollback-btn-sha_newer_1234'));
     fireEvent.click(screen.getByTestId('rollback-btn-sha_newer_1234'));
@@ -91,9 +91,9 @@ describe('PromptVersionPanel', () => {
   });
 
   it('displays quality metrics columns when quality_metrics is non-null', async () => {
-    const { PromptVersionPanel } = await import('../../../admin/ai-audit/PromptVersionPanel');
+    const { PromptVersionPanel } = await import('../../../pages/admin/ai-audit/PromptVersionPanel');
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(PromptVersionPanel)));
+    render(React.createElement(Wrapper, null, React.createElement(PromptVersionPanel)));
 
     await waitFor(() => screen.getByTestId('quality-metrics-sha_newer_1234'));
     const metricsCell = screen.getByTestId('quality-metrics-sha_newer_1234');
@@ -103,7 +103,7 @@ describe('PromptVersionPanel', () => {
 
 describe('RollbackConfirmModal', () => {
   it('displays the 60 seconds SLA callout text', async () => {
-    const { RollbackConfirmModal } = await import('../../../admin/ai-audit/RollbackConfirmModal');
+    const { RollbackConfirmModal } = await import('../../../pages/admin/ai-audit/RollbackConfirmModal');
     render(
       React.createElement(RollbackConfirmModal, {
         agentRole: 'narrative_writer',
@@ -118,7 +118,7 @@ describe('RollbackConfirmModal', () => {
   });
 
   it('Cancel does not call the mutation', async () => {
-    const { RollbackConfirmModal } = await import('../../../admin/ai-audit/RollbackConfirmModal');
+    const { RollbackConfirmModal } = await import('../../../pages/admin/ai-audit/RollbackConfirmModal');
     const Wrapper = makeWrapper();
     render(
       React.createElement(

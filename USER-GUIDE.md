@@ -18,14 +18,20 @@ AI workflows operate, and operating the admin console.
 4. [Running the Stack](#running-the-stack)
    - [Full Docker Stack](#full-docker-stack)
    - [Backend Manually (Hot-Reload)](#backend-manually-hot-reload)
-5. [Authentication & Tenant Management](#authentication--tenant-management)
+5. [Frontend Setup & Launch](#frontend-setup--launch)
+   - [Architecture](#frontend-architecture)
+   - [Prerequisites](#frontend-prerequisites)
+   - [First-Time Setup](#frontend-first-time-setup)
+   - [Running the Development Server](#running-the-development-server)
+   - [Building for Production](#building-for-production)
+6. [Authentication & Tenant Management](#authentication--tenant-management)
    - [Tenant Model](#tenant-model)
    - [Creating the First Admin](#creating-the-first-admin)
    - [Login Flow](#login-flow)
    - [Token Lifecycle](#token-lifecycle)
    - [Roles & Permissions](#roles--permissions)
    - [Creating Additional Users](#creating-additional-users)
-6. [External Data Sources](#external-data-sources)
+7. [External Data Sources](#external-data-sources)
    - [Source Architecture](#source-architecture)
    - [GDELT](#gdelt-geopolitical-event-database)
    - [ACLED](#acled-armed-conflict-location--event-data)
@@ -36,7 +42,7 @@ AI workflows operate, and operating the admin console.
    - [SendGrid (Email Delivery)](#sendgrid-email-delivery)
    - [Configuring a Source End-to-End](#configuring-a-source-end-to-end)
    - [Market-Source Bindings](#market-source-bindings)
-7. [Using the Application](#using-the-application)
+8. [Using the Application](#using-the-application)
    - [Onboarding Flow](#onboarding-flow)
    - [Intelligence Map](#intelligence-map)
    - [Company Detail](#company-detail)
@@ -45,7 +51,12 @@ AI workflows operate, and operating the admin console.
    - [Q&A Chat](#qa-chat)
    - [Portfolio & Watchlist](#portfolio--watchlist)
    - [Alerts & Notifications](#alerts--notifications)
-8. [AI Workflows In Depth](#ai-workflows-in-depth)
+9. [Observability & Monitoring](#observability--monitoring)
+   - [Langfuse Dashboard](#langfuse-dashboard)
+   - [ClickHouse — Analytics Backend](#clickhouse--analytics-backend)
+   - [Application Logs](#application-logs)
+   - [Health Checks](#health-checks)
+10. [AI Workflows In Depth](#ai-workflows-in-depth)
    - [Mode A — Reactive Pipeline (12 Steps)](#mode-a--reactive-pipeline-12-steps)
    - [Mode B — LangGraph Workflows](#mode-b--langgraph-workflows)
    - [Morning Brief](#morning-brief-workflow)
@@ -55,20 +66,20 @@ AI workflows operate, and operating the admin console.
    - [Watchlist Scan](#watchlist-scan-workflow)
    - [Cost Controls & Budget Hierarchy](#cost-controls--budget-hierarchy)
    - [Human-in-the-Loop (HIL)](#human-in-the-loop-hil)
-9. [Admin Console](#admin-console)
+11. [Admin Console](#admin-console)
    - [Data Sources Tab](#data-sources-tab)
    - [System Ops Tab](#system-ops-tab)
    - [AI Audit Console](#ai-audit-console)
    - [HIL Queue](#hil-queue)
-10. [Prompt Management](#prompt-management)
-11. [Database Migrations](#database-migrations)
-12. [Seeding Historical Data](#seeding-historical-data)
-13. [Observability](#observability)
-14. [Testing](#testing)
-15. [Service URLs & Ports](#service-urls--ports)
-16. [Environment Variables Reference](#environment-variables-reference)
-17. [Makefile Cheat-Sheet](#makefile-cheat-sheet)
-18. [Backend Module Reference](#backend-module-reference)
+12. [Prompt Management](#prompt-management)
+13. [Database Migrations](#database-migrations)
+14. [Seeding Historical Data](#seeding-historical-data)
+15. [Testing](#testing)
+16. [Troubleshooting](#troubleshooting)
+17. [Service URLs & Ports](#service-urls--ports)
+18. [Environment Variables Reference](#environment-variables-reference)
+19. [Makefile Cheat-Sheet](#makefile-cheat-sheet)
+20. [Backend Module Reference](#backend-module-reference)
 
 ---
 
@@ -263,8 +274,13 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
 # Expected: {"data":{"access_token":"eyJ...","expires_in":900}}
 ```
 
-The application is now ready. Open **http://localhost:8000** for the frontend, or
-**http://localhost:8000/docs** for the interactive API documentation.
+The backend API is now ready at **http://localhost:8000**. The interactive API
+documentation (Swagger UI) is available at **http://localhost:8000/docs**.
+
+To launch the frontend, see the [Frontend Setup & Launch](#frontend-setup--launch)
+chapter. If the frontend build tooling is not yet configured, you can interact with the
+application via the Swagger UI at http://localhost:8000/docs or by calling the REST
+API directly with curl.
 
 ---
 
@@ -339,6 +355,120 @@ celery -A src.config.celery_app worker --loglevel=info
 # Celery beat (scheduled jobs: morning brief, watchlist scan)
 celery -A src.config.celery_app beat --scheduler celery.beat.PersistentScheduler
 ```
+
+---
+
+## Frontend Setup & Launch
+
+### Frontend Architecture
+
+The StokAI frontend is a **React 18 single-page application** built with TypeScript. Source
+files live in `src/frontend/` and are organized by domain:
+
+```
+src/frontend/
+├── app/                 # App bootstrap: router, providers, root component
+├── layout/              # AppShell, AdminLayout, RequireAuth, OnboardingGate
+├── pages/               # Page-level route components (thin orchestration layer)
+│   └── admin/           # Admin route pages (hil, sources, ai-audit, system)
+├── features/            # Domain feature modules (collocated components+hooks+tests)
+│   ├── intelligence-map/  # Globe / event map (MapLibre + Supercluster)
+│   ├── qa/              # Q&A chat interface
+│   ├── screener/        # Stock screener
+│   ├── scoring/         # Scoring indicator display
+│   ├── indicator-builder/ # Custom indicator builder
+│   ├── alerts/          # Alert management
+│   ├── company-detail/  # Company detail panel
+│   └── progressive-disclosure/ # Event side-panel & sparklines
+├── ui/                  # Generic design-system primitives (shadcn/ui + custom)
+├── lib/                 # Shared utilities, API client, constants, types
+│   └── api/             # Typed API client (lib/api/client.ts — only place fetch is allowed)
+└── hooks/               # App-wide React hooks
+```
+
+The API server serves the production build as static files from the FastAPI container.
+During development, the frontend runs as a separate Vite dev server with hot module
+replacement (HMR).
+
+### Frontend Prerequisites
+
+| Tool | Minimum version | Notes |
+|------|----------------|-------|
+| Node.js | 20+ | Required for package management and dev server |
+| npm | 10+ | Bundled with Node.js |
+
+All other dependencies (React, React Router, TanStack Query, Recharts) are declared in
+`package.json` and installed via `npm install`.
+
+### Frontend First-Time Setup
+
+```bash
+# From the project root
+npm install
+```
+
+This installs all runtime and dev dependencies listed in `package.json`.
+
+### Running the Development Server
+
+```bash
+# Start the Vite dev server with hot-reload
+npm run dev
+
+# By default, the dev server runs on http://localhost:5173
+# It proxies API requests to http://localhost:8000 (see vite.config.ts)
+```
+
+The dev server auto-reloads on file changes. API calls are proxied to the FastAPI backend
+running at `http://localhost:8000`. The Docker services (`postgres`, `redis`, etc.) must
+already be running.
+
+### Building for Production
+
+```bash
+# Build optimized static assets
+npm run build
+
+# Output goes to dist/ which is served by FastAPI as static files
+```
+
+After building, the `dist/` directory is copied into the Docker image and served by
+the FastAPI application container. In production, no separate Node.js process is needed —
+the API server handles both REST endpoints and static file serving.
+
+The production build output goes to `dist/frontend/` (configured in `vite.config.ts`).
+
+### Running Tests
+
+The test suite uses **Vitest** with `@testing-library/react`.
+
+```bash
+# Run all tests once
+npm test
+
+# Watch mode (re-runs on file changes)
+npm run test:watch
+
+# With coverage report
+npm run test:coverage
+```
+
+Test files live alongside their subjects inside each feature directory
+(`features/<name>/__tests__/`) or in the top-level `tests/frontend/` tree.
+
+### Linting
+
+```bash
+# Run ESLint (flat config — eslint.config.mjs)
+npx eslint src/frontend
+
+# Auto-fix where possible
+npx eslint src/frontend --fix
+```
+
+Key rules enforced:
+- No direct `fetch` against `/api/…` — use `lib/api/client.ts` instead
+- No inline `style` props — use Tailwind CSS utility classes
 
 ---
 
@@ -833,8 +963,13 @@ Bindings tab in the UI, or directly via `PUT /api/v1/admin/bindings`.
 
 ## Using the Application
 
-The SPA is served by FastAPI at **http://localhost:8000** after running `make up`.
-The Swagger API docs are at **http://localhost:8000/docs**.
+The REST API is served by FastAPI at **http://localhost:8000**. The interactive
+API documentation (Swagger UI) is at **http://localhost:8000/docs**.
+
+The React frontend runs as a separate development server — see
+[Frontend Setup & Launch](#frontend-setup--launch) for instructions. Until the
+frontend dev server is running, you can explore all functionality through the
+Swagger UI or by calling the API endpoints with curl or any HTTP client.
 
 ### Onboarding Flow
 
@@ -1473,35 +1608,183 @@ a 2–3 year window to verify the pipeline, then extend.
 
 ---
 
-## Observability
+## Observability & Monitoring
 
-**Langfuse** is bundled in the Docker stack at **http://localhost:3000**.
+StokAI ships with a fully self-hosted observability stack built on Langfuse and ClickHouse.
+No external SaaS accounts or telemetry subscriptions are required — all trace data stays
+within your infrastructure.
 
-| Signal | What's captured |
-|--------|----------------|
-| Traces | Every Mode A pipeline run and Mode B workflow with full node timings |
-| Spans | Per-agent LLM call with model, tokens, latency, cost |
-| Prompt versions | Each SHA promoted to production with its evaluation scores |
-| Evaluations | Tier-1 LLM-as-Judge scores attached to every generation |
-| Cost tracking | Per-trace token spend and USD cost |
+### Langfuse Dashboard
 
-Log in with the credentials set in `LANGFUSE_DB_*` and the generated
-`LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY`.
+Langfuse is the primary observability interface for all AI operations. It is bundled as
+part of the Docker stack and runs at **http://localhost:3000**.
 
-**Application logs** are structured JSON. Control level with `LOG_LEVEL` (default `INFO`).
+**What Langfuse captures:**
+
+| Signal | What's tracked | Where to find it |
+|--------|---------------|-------------------|
+| **Traces** | Every Mode A pipeline run and Mode B workflow — full node sequence with timing | Traces tab |
+| **Spans** | Per-agent LLM calls: model, token count, latency, cost in USD | Inside any trace |
+| **Generations** | Input prompt, output response, and token usage for each LLM call | Inside any span |
+| **Scores** | Tier-1 LLM-as-Judge evaluations attached to every generation | Scores tab |
+| **Prompt versions** | Each SHA promoted to production with evaluation metrics | Prompts tab |
+| **Cost tracking** | Per-trace and per-agent USD spend, aggregated by workflow type | Dashboard |
+| **Datasets** | Evaluation datasets for regression testing | Datasets tab |
+
+**First-time Langfuse setup:**
+
+1. Open **http://localhost:3000** in your browser.
+2. Click **"Sign up"** and create an account with any email and password.
+   This is your local admin account — no email verification is required in self-hosted mode.
+3. After logging in, navigate to **Settings → API Keys**.
+4. Click **"Create API Key"**. Note the **Public Key** (`pk-lf-...`) and **Secret Key**
+   (`sk-lf-...`).
+5. Update your `.env` file with the real keys:
+
+   ```bash
+   LANGFUSE_SECRET_KEY=sk-lf-...    # Secret Key from Langfuse
+   LANGFUSE_PUBLIC_KEY=pk-lf-...    # Public Key from Langfuse
+   ```
+
+6. Restart the application containers to enable SDK tracing:
+
+   ```bash
+   docker compose restart api worker beat
+   ```
+
+> **Why a two-step key process?** Langfuse uses `LANGFUSE_SECRET_KEY` as both its
+> NextAuth encryption secret (`NEXTAUTH_SECRET`) and for API authentication. The
+> placeholder value in `.env` lets it start; the real keys generated inside Langfuse
+> enable the Python SDK to send traces from the application.
+
+**Navigating the Langfuse dashboard:**
+
+- **Dashboard** — High-level overview: trace count, latency percentiles (p50/p95/p99),
+  cost breakdown by model, error rate.
+- **Traces** — Searchable list of all workflow executions. Click any trace to drill into
+  the full node graph with per-node timing and token counts.
+- **Scores** — All Tier-1 LLM-as-Judge evaluations. Filter by score range to find
+  low-confidence outputs that may need HIL review.
+- **Prompts** — Version history for all 15 canonical prompt roles. Each version shows
+  the prompt text, attached evaluation scores, and promotion labels (staging / canary /
+  production).
+- **Datasets** — Golden dataset management for Tier-2 regression testing. Upload test
+  cases with expected outputs to validate prompt changes before promotion.
+
+### ClickHouse — Analytics Backend
+
+ClickHouse is a high-performance **columnar OLAP database** that serves as Langfuse's
+analytics storage engine. It runs as the `clickhouse` container in the Docker stack.
+
+**Why ClickHouse?**
+
+Langfuse captures large volumes of trace and observation events — every LLM call, every
+pipeline step, every evaluation score. PostgreSQL handles transactional metadata (users,
+projects, API keys), but event-level analytics queries (aggregations over millions of
+rows, percentile calculations, time-series filtering) are poorly suited for a row-oriented
+database.
+
+ClickHouse solves this:
+
+| Property | PostgreSQL | ClickHouse |
+|----------|-----------|------------|
+| Storage model | Row-oriented (heap) | Column-oriented (MergeTree) |
+| Compression | Modest | 5–10× better on repeated string values |
+| Aggregation speed | Linear scan | Vectorized, SIMD-accelerated |
+| Write throughput | Good for OLTP | Excellent for append-only event streams |
+| Use case in StokAI | Users, portfolios, briefs, configs | Trace spans, observations, scores |
+
+**How it's used:**
+
+1. The StokAI Python SDK sends traces to the Langfuse server over HTTP.
+2. Langfuse writes event data to ClickHouse for long-term storage and analytics.
+3. ClickHouse is never queried directly by application code — all interactions go
+   through the Langfuse API.
+
+**Configuration:**
+
+ClickHouse runs in single-node mode for local development (`CLICKHOUSE_CLUSTER_ENABLED:
+false` in the Docker Compose configuration). For production deployments requiring high
+availability, refer to the [ClickHouse clustering documentation](https://clickhouse.com/docs/en/architecture/cluster-deployment).
+
+ClickHouse credentials are configured in `.env`:
 
 ```bash
-make logs                           # all services
-docker compose logs -f api          # API process only
-docker compose logs -f worker       # Celery worker
+CLICKHOUSE_USER=default
+CLICKHOUSE_PASSWORD=<your-password>
+CLICKHOUSE_URL=http://clickhouse:8123
+CLICKHOUSE_MIGRATION_URL=http://clickhouse:8123
+```
+
+> **Troubleshooting:** If `langfuse-server` fails to start with `ON CLUSTER default`,
+> ensure `CLICKHOUSE_CLUSTER_ENABLED` is set to `"false"` in `docker-compose.yml`.
+> Clustering requires an external Zookeeper ensemble and is unnecessary for single-node
+> deployments.
+
+### Application Logs
+
+All application containers emit **structured JSON logs**. Control verbosity with the
+`LOG_LEVEL` environment variable (`DEBUG`, `INFO`, `WARNING`, `ERROR`; default: `INFO`).
+
+```bash
+# Stream all service logs
+make logs
+docker compose logs -f
+
+# Filter to a specific service
+docker compose logs -f api          # FastAPI application
+docker compose logs -f worker       # Celery task worker
 docker compose logs -f beat         # Celery beat scheduler
+docker compose logs -f langfuse-server  # Observability UI
+
+# View recent logs
+docker compose logs api --tail 100
 ```
 
-**Health check** (no auth required):
+**Log structure** (example):
+
+```json
+{
+  "timestamp": "2026-06-06T01:45:30.624Z",
+  "level": "INFO",
+  "logger": "src.ai.workflows.morning_brief",
+  "message": "Morning brief dispatched",
+  "workflow_run_id": "abc-123",
+  "tenant_id": "00000000-0000-0000-0000-000000000001",
+  "cost_usd": 1.23
+}
+```
+
+### Health Checks
+
+Every container exposes a health endpoint or check. Verify the full stack:
 
 ```bash
+# API health (no auth required)
 curl http://localhost:8000/health
+# → {"status":"ok","environment":"local","worker_alive":false}
+
+# Langfuse UI
+curl -I http://localhost:3000
+# → HTTP/1.1 200 OK
+
+# Docker Compose status overview
+docker compose ps
+# All services should show "Up" or "(healthy)"
 ```
+
+**Health check summary:**
+
+| Service | Check type | Mechanism |
+|---------|-----------|-----------|
+| `api` | HTTP | Python `urllib` request to `/health` every 15 s |
+| `postgres` | TCP | `pg_isready` every 10 s |
+| `redis` | TCP | `redis-cli ping` every 10 s |
+| `langfuse-db` | TCP | `pg_isready` every 10 s |
+| `clickhouse` | HTTP | `wget /ping` every 10 s |
+| `langfuse-server` | Process | Container running = healthy (no explicit healthcheck) |
+| `worker` | Process | Celery worker process alive |
+| `beat` | Process | Celery beat scheduler alive |
 
 ---
 
@@ -1602,14 +1885,15 @@ recreates containers with the updated environment.
 
 | Service | URL | Notes |
 |---------|-----|-------|
-| React SPA | http://localhost:8000 | Main application |
-| FastAPI REST | http://localhost:8000/api/v1 | API root |
-| Swagger UI | http://localhost:8000/docs | Interactive API docs |
+| FastAPI REST + Swagger | http://localhost:8000 | API root and interactive docs |
+| Swagger UI | http://localhost:8000/docs | Interactive API documentation |
 | ReDoc | http://localhost:8000/redoc | Alternative API docs |
 | Health check | http://localhost:8000/health | No auth required |
-| Langfuse UI | http://localhost:3000 | AI traces, prompt versions |
-| PostgreSQL | localhost:5432 | Direct DB (local dev only) |
+| Frontend (dev) | http://localhost:5173 | Vite dev server; requires `npm run dev` |
+| Langfuse UI | http://localhost:3000 | AI traces, prompt versions, evaluations |
+| PostgreSQL | localhost:5432 | Direct DB connection (local dev only) |
 | Redis | localhost:6379 | Cache / broker (local dev only) |
+| ClickHouse HTTP | localhost:8123 | ClickHouse HTTP interface (local dev only) |
 
 ---
 

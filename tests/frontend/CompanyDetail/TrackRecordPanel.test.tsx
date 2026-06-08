@@ -1,3 +1,4 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
  * Tests for TrackRecordPanel component.
  *
@@ -67,11 +68,11 @@ describe('TrackRecordPanel', () => {
     expect(screen.getByTestId('track-record-empty')).toBeInTheDocument();
   });
 
-  it('renders "—" for null actual_t1d', () => {
+  it('renders "â€”" for null actual_t1d', () => {
     const items = [makeTrackItem('r1', { actual_t1d: null, correct_t1d: null })];
     render(<TrackRecordPanel trackRecord={items} directionalAccuracyT1d={null} />);
-    // The t1d cell should show "—"
-    expect(screen.getByTestId('correct-t1d-r1').textContent).toBe('—');
+    // The t1d cell should show "â€”"
+    expect(screen.getByTestId('correct-t1d-r1').textContent).toBe('â€”');
   });
 
   it('shows correct/incorrect indicators', () => {
@@ -81,7 +82,7 @@ describe('TrackRecordPanel', () => {
     ];
     render(<TrackRecordPanel trackRecord={items} directionalAccuracyT1d={null} />);
 
-    expect(screen.getByTestId('correct-t1d-r-correct').textContent).toBe('✓');
-    expect(screen.getByTestId('correct-t1d-r-wrong').textContent).toBe('✗');
+    expect(screen.getByTestId('correct-t1d-r-correct').textContent).toBe('âś“');
+    expect(screen.getByTestId('correct-t1d-r-wrong').textContent).toBe('âś—');
   });
 });

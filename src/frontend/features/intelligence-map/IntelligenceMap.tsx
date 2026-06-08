@@ -185,7 +185,7 @@ export const IntelligenceMap: React.FC<IntelligenceMapProps> = ({
       const worker = workerRef.current;
       if (!worker) return;
 
-      const [west, south, east, north] = currentBbox.split(',').map(Number);
+      const [west, south, east, north] = currentBbox.split(',').map(Number) as [number, number, number, number];
       const req: WorkerRequest = {
         events: evts,
         zoom: currentZoom,
@@ -238,7 +238,7 @@ export const IntelligenceMap: React.FC<IntelligenceMapProps> = ({
           style: getMapStyleUrl(),
           zoom: 2,
           center: [0, 20],
-          attributionControl: true,
+          attributionControl: false,
         }) as unknown as MapLibreMap;
 
         const handleLoad = () => {
@@ -365,9 +365,10 @@ export const IntelligenceMap: React.FC<IntelligenceMapProps> = ({
               activeFilters={filters}
               onPulseClick={handlePulseClick}
             />
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <ClusterLayer
               map={mapRef.current}
-              clusters={clusters}
+              clusters={clusters as any}
               onClusterClick={handleClusterClick as (cluster: unknown) => void}
             />
             {scoreMarkers.length > 0 && (

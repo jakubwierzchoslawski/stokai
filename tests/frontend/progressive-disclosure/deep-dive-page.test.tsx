@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
- * deep-dive-page.test.tsx — Tests for DeepDivePage component.
+ * deep-dive-page.test.tsx â€” Tests for DeepDivePage component.
  *
  * PLAN-F-020 TASK-011 (TDD)
  */
@@ -51,7 +52,7 @@ function buildDeepDiveData(overrides: Partial<DeepDiveData> = {}): DeepDiveData 
 }
 
 function mockUseDeepDive(opts: { isLoading?: boolean; data?: DeepDiveData | DeepDivePending }) {
-  jest.spyOn(useDeepDiveModule, 'useDeepDive').mockReturnValue({
+  vi.spyOn(useDeepDiveModule, 'useDeepDive').mockReturnValue({
     data: opts.data,
     isLoading: opts.isLoading ?? false,
     isSuccess: !opts.isLoading && !!opts.data,
@@ -63,7 +64,7 @@ function mockUseDeepDive(opts: { isLoading?: boolean; data?: DeepDiveData | Deep
 
 describe('DeepDivePage', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('shows loading message when status is pending', () => {

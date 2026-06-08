@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
- * AdminLayout.test.tsx — TDD tests for AdminLayout responsive layout.
+ * AdminLayout.test.tsx â€” TDD tests for AdminLayout responsive layout.
  *
  * Tests written first (red phase) per PLAN-N-014 TASK-006.
  */
@@ -8,22 +9,22 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { AdminLayout } from "../../../src/frontend/admin/AdminLayout";
 
-// ── Mock useBreakpoint ────────────────────────────────────────────────────────
+// â”€â”€ Mock useBreakpoint â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-jest.mock("../../../src/frontend/features/shared/hooks/useBreakpoint", () => ({
-  useBreakpoint: jest.fn(),
+vi.mock("../../../src/frontend/features/shared/hooks/useBreakpoint", () => ({
+  useBreakpoint: vi.fn(),
 }));
 
 const { useBreakpoint } = require("../../../src/frontend/features/shared/hooks/useBreakpoint");
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe("AdminLayout", () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
-  it("renders navigation rail and main content in flex row at lg (≥1280px)", () => {
+  it("renders navigation rail and main content in flex row at lg (â‰Ą1280px)", () => {
     useBreakpoint.mockReturnValue("lg");
     render(
       <AdminLayout>

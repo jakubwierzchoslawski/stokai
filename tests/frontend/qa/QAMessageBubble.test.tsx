@@ -1,3 +1,4 @@
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 /**
  * Tests for QAMessageBubble, QASourcesList, QACostLimitNotice, QAChatPanel.
  *
@@ -11,8 +12,8 @@
  *   - QAChatPanel submits question on Enter key
  *   - QASourcesList is collapsed by default and expands on click
  */
-// jsdom does not implement scrollIntoView — mock it globally for all tests
-window.HTMLElement.prototype.scrollIntoView = jest.fn();
+// jsdom does not implement scrollIntoView â€” mock it globally for all tests
+window.HTMLElement.prototype.scrollIntoView = vi.fn();
 
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
@@ -20,46 +21,46 @@ import { QAMessageBubble } from "../../../src/frontend/components/qa/QAMessageBu
 import { QASourcesList } from "../../../src/frontend/components/qa/QASourcesList";
 import { QAChatPanel } from "../../../src/frontend/components/qa/QAChatPanel";
 
-// ── Mock hooks ─────────────────────────────────────────────────────────────────
+// â”€â”€ Mock hooks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-jest.mock("../../../src/frontend/components/qa/useQASession", () => ({
-  useQASession: jest.fn(() => ({
+vi.mock("../../../src/frontend/components/qa/useQASession", () => ({
+  useQASession: vi.fn(() => ({
     sessionId: "test-session-id",
-    createSession: jest.fn().mockResolvedValue("test-session-id"),
+    createSession: vi.fn().mockResolvedValue("test-session-id"),
     isCreating: false,
     error: null,
   })),
 }));
 
-const mockStreamAnswer = jest.fn().mockResolvedValue(undefined);
+const mockStreamAnswer = vi.fn().mockResolvedValue(undefined);
 
-jest.mock("../../../src/frontend/components/qa/useQAStream", () => ({
-  useQAStream: jest.fn(() => ({
+vi.mock("../../../src/frontend/components/qa/useQAStream", () => ({
+  useQAStream: vi.fn(() => ({
     streamAnswer: mockStreamAnswer,
     streamingText: "",
     isStreaming: false,
     answer: null,
     error: null,
-    reset: jest.fn(),
+    reset: vi.fn(),
   })),
 }));
 
-// ── TanStack Query mock ────────────────────────────────────────────────────────
+// â”€â”€ TanStack Query mock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-jest.mock("@tanstack/react-query", () => ({
-  useMutation: jest.fn(() => ({
-    mutateAsync: jest.fn().mockResolvedValue({ session_id: "test-session-id" }),
+vi.mock("@tanstack/react-query", () => ({
+  useMutation: vi.fn(() => ({
+    mutateAsync: vi.fn().mockResolvedValue({ session_id: "test-session-id" }),
     isPending: false,
     error: null,
     data: { session_id: "test-session-id" },
   })),
-  useQueryClient: jest.fn(() => ({
-    setQueryData: jest.fn(),
-    getQueryData: jest.fn(() => "test-session-id"),
+  useQueryClient: vi.fn(() => ({
+    setQueryData: vi.fn(),
+    getQueryData: vi.fn(() => "test-session-id"),
   })),
 }));
 
-// ── Fixtures ───────────────────────────────────────────────────────────────────
+// â”€â”€ Fixtures â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const baseSources = [
   { type: "event", id: "evt-1", description: "AAPL Q1 2026 earnings release" },
@@ -74,7 +75,7 @@ const baseAnswer = {
   cost_limited: false,
 };
 
-// ── QAMessageBubble tests ──────────────────────────────────────────────────────
+// â”€â”€ QAMessageBubble tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe("QAMessageBubble", () => {
   describe("confidence score", () => {
@@ -169,7 +170,7 @@ describe("QAMessageBubble", () => {
   });
 });
 
-// ── QASourcesList tests ────────────────────────────────────────────────────────
+// â”€â”€ QASourcesList tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe("QASourcesList", () => {
   it("is collapsed by default", () => {
@@ -214,7 +215,7 @@ describe("QASourcesList", () => {
   });
 });
 
-// ── QAChatPanel tests ──────────────────────────────────────────────────────────
+// â”€â”€ QAChatPanel tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe("QAChatPanel", () => {
   beforeEach(() => {

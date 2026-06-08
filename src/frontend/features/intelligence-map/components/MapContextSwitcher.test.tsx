@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi } from 'vitest';
 /**
- * MapContextSwitcher.test.tsx — Tests for MapContextSwitcher component.
+ * MapContextSwitcher.test.tsx â€” Tests for MapContextSwitcher component.
  *
  * PLAN-F-019 TASK-009
  */
@@ -14,7 +15,7 @@ describe('MapContextSwitcher', () => {
       <MapContextSwitcher
         mode="global"
         sector={null}
-        onSetMode={jest.fn()}
+        onSetMode={vi.fn()}
       />,
     );
     expect(screen.getByTestId('mode-button-global')).toBeTruthy();
@@ -27,7 +28,7 @@ describe('MapContextSwitcher', () => {
       <MapContextSwitcher
         mode="portfolio"
         sector={null}
-        onSetMode={jest.fn()}
+        onSetMode={vi.fn()}
       />,
     );
     const portfolioBtn = screen.getByTestId('mode-button-portfolio');
@@ -37,7 +38,7 @@ describe('MapContextSwitcher', () => {
   });
 
   it('clicking a mode button calls onSetMode with the correct mode', () => {
-    const onSetMode = jest.fn();
+    const onSetMode = vi.fn();
     render(
       <MapContextSwitcher
         mode="global"
@@ -54,7 +55,7 @@ describe('MapContextSwitcher', () => {
       <MapContextSwitcher
         mode="global"
         sector={null}
-        onSetMode={jest.fn()}
+        onSetMode={vi.fn()}
       />,
     );
     expect(screen.queryByTestId('sector-select')).toBeNull();
@@ -65,20 +66,20 @@ describe('MapContextSwitcher', () => {
       <MapContextSwitcher
         mode="sector"
         sector={null}
-        onSetMode={jest.fn()}
-        onSetSector={jest.fn()}
+        onSetMode={vi.fn()}
+        onSetSector={vi.fn()}
       />,
     );
     expect(screen.getByTestId('sector-select')).toBeTruthy();
   });
 
   it('changing sector select calls onSetSector with the selected value', () => {
-    const onSetSector = jest.fn();
+    const onSetSector = vi.fn();
     render(
       <MapContextSwitcher
         mode="sector"
         sector={null}
-        onSetMode={jest.fn()}
+        onSetMode={vi.fn()}
         onSetSector={onSetSector}
       />,
     );

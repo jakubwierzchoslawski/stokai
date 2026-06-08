@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach , type Mock } from 'vitest';
 /**
  * Tests for FeatureFlagsTab component.
  *
@@ -6,22 +7,22 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-jest.mock(
-  "../../../../frontend/src/pages/admin/system/hooks/useSystemOps",
+vi.mock(
+  "@/pages/admin/system/hooks/useSystemOps",
   () => ({
-    useFeatureFlags: jest.fn(),
-    useUpdateFlag: jest.fn(),
+    useFeatureFlags: vi.fn(),
+    useUpdateFlag: vi.fn(),
   })
 );
 
 import {
   useFeatureFlags,
   useUpdateFlag,
-} from "../../../../frontend/src/pages/admin/system/hooks/useSystemOps";
-import { FeatureFlagsTab } from "../../../../frontend/src/pages/admin/system/FeatureFlagsTab";
+} from "@/pages/admin/system/hooks/useSystemOps";
+import { FeatureFlagsTab } from "@/pages/admin/system/FeatureFlagsTab";
 
-const mockUseFlags = useFeatureFlags as jest.Mock;
-const mockUseUpdate = useUpdateFlag as jest.Mock;
+const mockUseFlags = useFeatureFlags as Mock;
+const mockUseUpdate = useUpdateFlag as Mock;
 
 const MOCK_FLAGS = [
   {
@@ -41,13 +42,13 @@ const MOCK_FLAGS = [
 ];
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe("FeatureFlagsTab", () => {
   it("renders flag list from mock data", () => {
     mockUseFlags.mockReturnValue({ data: MOCK_FLAGS, isLoading: false, isError: false });
-    mockUseUpdate.mockReturnValue({ mutateAsync: jest.fn(), isPending: false });
+    mockUseUpdate.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
 
     render(<FeatureFlagsTab />);
 
@@ -56,7 +57,7 @@ describe("FeatureFlagsTab", () => {
   });
 
   it("toggle switch for morning_brief calls PATCH with enabled=false", async () => {
-    const updateFn = jest.fn().mockResolvedValue({
+    const updateFn = vi.fn().mockResolvedValue({
       flag_id: "morning_brief",
       environment: "production",
       enabled: false,
@@ -78,8 +79,8 @@ describe("FeatureFlagsTab", () => {
   });
 
   it("optimistic toggle reverts on API error", async () => {
-    const updateFn = jest.fn().mockRejectedValue(new Error("Server error"));
-    const alertMock = jest.spyOn(window, "alert").mockImplementation(() => {});
+    const updateFn = vi.fn().mockRejectedValue(new Error("Server error"));
+    const alertMock = vi.spyOn(window, "alert").mockImplementation(() => {});
     mockUseFlags.mockReturnValue({ data: MOCK_FLAGS, isLoading: false, isError: false });
     mockUseUpdate.mockReturnValue({ mutateAsync: updateFn, isPending: false });
 
@@ -101,7 +102,7 @@ describe("FeatureFlagsTab", () => {
 
   it("social_twitter row renders Off by default tooltip", () => {
     mockUseFlags.mockReturnValue({ data: MOCK_FLAGS, isLoading: false, isError: false });
-    mockUseUpdate.mockReturnValue({ mutateAsync: jest.fn(), isPending: false });
+    mockUseUpdate.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
 
     render(<FeatureFlagsTab />);
 

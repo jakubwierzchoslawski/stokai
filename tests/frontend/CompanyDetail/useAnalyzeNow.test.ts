@@ -1,3 +1,4 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
  * Unit tests for useAnalyzeNow hook.
  *
@@ -18,7 +19,7 @@ import { useAnalyzeNow } from '../../../src/frontend/pages/CompanyDetail/hooks/u
 const COMPANY_ID = 'c1c1c1c1-0000-0000-0000-000000000001';
 const RUN_ID = 'run-abc-123';
 
-// ── WebSocket mock ─────────────────────────────────────────────────────────────
+// â”€â”€ WebSocket mock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class MockWebSocket {
   static instances: MockWebSocket[] = [];
@@ -54,7 +55,7 @@ function setupMocks(options: {
   MockWebSocket.instances = [];
   (global as unknown as { WebSocket: unknown }).WebSocket = MockWebSocket;
 
-  global.fetch = jest.fn().mockResolvedValue({
+  global.fetch = vi.fn().mockResolvedValue({
     ok: status < 400,
     status,
     json: async () => responseBody,
@@ -68,7 +69,7 @@ function setupMocks(options: {
 }
 
 afterEach(() => {
-  jest.resetAllMocks();
+  vi.resetAllMocks();
   MockWebSocket.instances = [];
 });
 
@@ -118,7 +119,7 @@ describe('useAnalyzeNow', () => {
 
   it('calls onReportReady on COMPLETED message', async () => {
     setupMocks();
-    const onReportReady = jest.fn();
+    const onReportReady = vi.fn();
     const { result } = renderHook(() =>
       useAnalyzeNow({ companyId: COMPANY_ID, onReportReady }),
     );

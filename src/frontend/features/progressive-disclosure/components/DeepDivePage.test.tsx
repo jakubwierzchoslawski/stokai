@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
- * DeepDivePage.test.tsx — TDD tests for DeepDivePage component.
+ * DeepDivePage.test.tsx â€” TDD tests for DeepDivePage component.
  *
  * PLAN-F-020 TASK-011
  */
@@ -13,7 +14,7 @@ import { DeepDivePage } from './DeepDivePage';
 import * as useDeepDiveModule from '../hooks/useDeepDive';
 import type { DeepDiveData, DeepDivePending } from '../types/disclosure.types';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeWrapper(eventId: string = 'evt-001') {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -56,7 +57,7 @@ function mockUseDeepDive(opts: {
   isLoading?: boolean;
   data?: DeepDiveData | DeepDivePending;
 }) {
-  jest.spyOn(useDeepDiveModule, 'useDeepDive').mockReturnValue({
+  vi.spyOn(useDeepDiveModule, 'useDeepDive').mockReturnValue({
     data: opts.data,
     isLoading: opts.isLoading ?? false,
     isSuccess: !opts.isLoading && !!opts.data,
@@ -66,11 +67,11 @@ function mockUseDeepDive(opts: {
   } as ReturnType<typeof useDeepDiveModule.useDeepDive>);
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('DeepDivePage', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('shows loading message when status is pending', () => {

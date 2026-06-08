@@ -1,8 +1,9 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
  * Tests for FundamentalsPanel component.
  *
  * Tests:
- * - Renders "—" for null values
+ * - Renders "â€”" for null values
  * - Renders numeric values when present
  *
  * PLAN-F-023 TASK-005
@@ -25,24 +26,24 @@ function makeFundamentals(overrides: Partial<FundamentalsPanelData> = {}): Funda
 }
 
 describe('FundamentalsPanel', () => {
-  it('renders "—" for null pe_ratio', () => {
+  it('renders "â€”" for null pe_ratio', () => {
     render(<FundamentalsPanel fundamentals={makeFundamentals({ pe_ratio: null })} />);
-    expect(screen.getByTestId('pe-ratio')).toHaveTextContent('—');
+    expect(screen.getByTestId('pe-ratio')).toHaveTextContent('â€”');
   });
 
-  it('renders "—" for null eps', () => {
+  it('renders "â€”" for null eps', () => {
     render(<FundamentalsPanel fundamentals={makeFundamentals({ eps: null })} />);
-    expect(screen.getByTestId('eps')).toHaveTextContent('—');
+    expect(screen.getByTestId('eps')).toHaveTextContent('â€”');
   });
 
-  it('renders "—" for null revenue', () => {
+  it('renders "â€”" for null revenue', () => {
     render(<FundamentalsPanel fundamentals={makeFundamentals({ revenue: null })} />);
-    expect(screen.getByTestId('revenue')).toHaveTextContent('—');
+    expect(screen.getByTestId('revenue')).toHaveTextContent('â€”');
   });
 
-  it('renders "—" for null debt_to_equity', () => {
+  it('renders "â€”" for null debt_to_equity', () => {
     render(<FundamentalsPanel fundamentals={makeFundamentals({ debt_to_equity: null })} />);
-    expect(screen.getByTestId('debt-to-equity')).toHaveTextContent('—');
+    expect(screen.getByTestId('debt-to-equity')).toHaveTextContent('â€”');
   });
 
   it('renders numeric pe_ratio when present', () => {

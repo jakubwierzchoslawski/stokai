@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 /**
- * map-websocket.test.tsx — Integration tests: WebSocket live event push.
+ * map-websocket.test.tsx â€” Integration tests: WebSocket live event push.
  *
  * Verifies:
  *  - WS-pushed event is merged into the event list without a new HTTP fetch.
@@ -14,51 +15,51 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { IntelligenceMap } from '../../../src/frontend/features/intelligence-map/IntelligenceMap';
 
-// ── MapLibre mock ─────────────────────────────────────────────────────────────
+// â”€â”€ MapLibre mock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-jest.mock('maplibre-gl', () => {
-  const MockMap = jest.fn().mockImplementation(() => ({
-    on: jest.fn((event: string, cb: (...args: unknown[]) => void) => {
+vi.mock('maplibre-gl', () => {
+  const MockMap = vi.fn().mockImplementation(() => ({
+    on: vi.fn((event: string, cb: (...args: unknown[]) => void) => {
       if (event === 'load') setTimeout(() => cb(), 0);
     }),
-    off: jest.fn(),
-    getZoom: jest.fn(() => 2),
-    getBounds: jest.fn(() => ({ toArray: () => [[-180, -85], [180, 85]] })),
-    flyTo: jest.fn(),
-    addLayer: jest.fn(),
-    removeLayer: jest.fn(),
-    getLayer: jest.fn(() => undefined),
-    addSource: jest.fn(),
-    removeSource: jest.fn(),
-    getSource: jest.fn(() => undefined),
-    remove: jest.fn(),
+    off: vi.fn(),
+    getZoom: vi.fn(() => 2),
+    getBounds: vi.fn(() => ({ toArray: () => [[-180, -85], [180, 85]] })),
+    flyTo: vi.fn(),
+    addLayer: vi.fn(),
+    removeLayer: vi.fn(),
+    getLayer: vi.fn(() => undefined),
+    addSource: vi.fn(),
+    removeSource: vi.fn(),
+    getSource: vi.fn(() => undefined),
+    remove: vi.fn(),
   }));
   return { default: { Map: MockMap }, Map: MockMap };
 });
 
-global.Worker = jest.fn().mockImplementation(() => ({
-  postMessage: jest.fn(),
-  terminate: jest.fn(),
+global.Worker = vi.fn().mockImplementation(() => ({
+  postMessage: vi.fn(),
+  terminate: vi.fn(),
   onmessage: null,
 })) as unknown as typeof Worker;
 
-// ── WebSocket mock with message capture ───────────────────────────────────────
+// â”€â”€ WebSocket mock with message capture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 let capturedMessageListener: ((e: MessageEvent) => void) | null = null;
-const wsClose = jest.fn();
+const wsClose = vi.fn();
 
 beforeEach(() => {
   capturedMessageListener = null;
   wsClose.mockClear();
-  global.WebSocket = jest.fn().mockImplementation(() => ({
-    addEventListener: jest.fn((event: string, cb: (e: MessageEvent) => void) => {
+  global.WebSocket = vi.fn().mockImplementation(() => ({
+    addEventListener: vi.fn((event: string, cb: (e: MessageEvent) => void) => {
       if (event === 'message') capturedMessageListener = cb;
     }),
     close: wsClose,
   })) as unknown as typeof WebSocket;
 });
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildEvent(i: number) {
   return {
@@ -87,7 +88,7 @@ function renderAtRoot() {
   );
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('map-websocket integration', () => {
   const originalFetch = global.fetch;
@@ -95,7 +96,7 @@ describe('map-websocket integration', () => {
 
   it('WS event push adds to event count without a new HTTP fetch', async () => {
     const initialEvents = Array.from({ length: 10 }, (_, i) => buildEvent(i));
-    const fetchMock = jest.fn().mockResolvedValue({
+    const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: initialEvents }),
     } as unknown as Response);
@@ -120,7 +121,7 @@ describe('map-websocket integration', () => {
   });
 
   it('malformed WS message does not crash the component', async () => {
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: [] }),
     } as unknown as Response);

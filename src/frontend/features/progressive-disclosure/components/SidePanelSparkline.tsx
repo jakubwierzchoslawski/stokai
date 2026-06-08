@@ -29,7 +29,7 @@ export interface SidePanelSparklineProps {
 export function SidePanelSparkline({ ticker, ohlcv_7d }: SidePanelSparklineProps) {
   const isPositive = useMemo(() => {
     if (ohlcv_7d.length === 0) return true;
-    return ohlcv_7d[ohlcv_7d.length - 1].close >= ohlcv_7d[0].close;
+    return ohlcv_7d[ohlcv_7d.length - 1]!.close >= ohlcv_7d[0]!.close;
   }, [ohlcv_7d]);
 
   const dotColor = isPositive ? '#16a34a' : '#dc2626';
@@ -56,7 +56,7 @@ export function SidePanelSparkline({ ticker, ohlcv_7d }: SidePanelSparklineProps
     );
   }
 
-  const lastPoint = ohlcv_7d[ohlcv_7d.length - 1];
+  const lastPoint = ohlcv_7d[ohlcv_7d.length - 1]!;
 
   return (
     <div

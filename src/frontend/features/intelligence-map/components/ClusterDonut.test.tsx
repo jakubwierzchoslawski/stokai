@@ -1,5 +1,6 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
- * ClusterDonut.test.tsx — TDD tests for the ClusterDonut component.
+ * ClusterDonut.test.tsx â€” TDD tests for the ClusterDonut component.
  *
  * PLAN-F-019 TASK-005
  */

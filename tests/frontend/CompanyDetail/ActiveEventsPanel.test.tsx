@@ -1,3 +1,4 @@
+import { describe, it, expect, vi , type Mock } from 'vitest';
 /**
  * Tests for ActiveEventsPanel component.
  *
@@ -39,7 +40,7 @@ describe('ActiveEventsPanel', () => {
   });
 
   it('clicking an event calls onNavigate with /?eventId={event_id}', () => {
-    const onNavigate = jest.fn();
+    const onNavigate = vi.fn();
     const events = [makeEvent('event-abc-123')];
     render(<ActiveEventsPanel events={events} onNavigate={onNavigate} />);
 
@@ -50,7 +51,7 @@ describe('ActiveEventsPanel', () => {
   });
 
   it('encodes special characters in event_id in the navigation URL', () => {
-    const onNavigate = jest.fn();
+    const onNavigate = vi.fn();
     const events = [makeEvent('event with spaces')];
     render(<ActiveEventsPanel events={events} onNavigate={onNavigate} />);
 
@@ -58,7 +59,7 @@ describe('ActiveEventsPanel', () => {
     fireEvent.click(btn);
 
     // URL should encode spaces
-    const calledUrl = (onNavigate as jest.Mock).mock.calls[0][0] as string;
+    const calledUrl = (onNavigate as Mock).mock.calls[0][0] as string;
     expect(calledUrl).toContain('eventId=');
     expect(calledUrl).not.toContain(' ');
   });

@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach , type Mock } from 'vitest';
 /**
  * Tests for IngestionJobsTab component.
  *
@@ -7,19 +8,19 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
 // Mock the hooks module
-jest.mock(
-  "../../../../frontend/src/pages/admin/system/hooks/useSystemOps",
+vi.mock(
+  "@/pages/admin/system/hooks/useSystemOps",
   () => ({
-    useIngestionJobs: jest.fn(),
-    useTriggerJob: jest.fn(),
+    useIngestionJobs: vi.fn(),
+    useTriggerJob: vi.fn(),
   })
 );
 
-import { useIngestionJobs, useTriggerJob } from "../../../../frontend/src/pages/admin/system/hooks/useSystemOps";
-import { IngestionJobsTab } from "../../../../frontend/src/pages/admin/system/IngestionJobsTab";
+import { useIngestionJobs, useTriggerJob } from "@/pages/admin/system/hooks/useSystemOps";
+import { IngestionJobsTab } from "@/pages/admin/system/IngestionJobsTab";
 
-const mockUseIngestionJobs = useIngestionJobs as jest.Mock;
-const mockUseTriggerJob = useTriggerJob as jest.Mock;
+const mockUseIngestionJobs = useIngestionJobs as Mock;
+const mockUseTriggerJob = useTriggerJob as Mock;
 
 const MOCK_JOBS = [
   {
@@ -46,10 +47,10 @@ const MOCK_JOBS = [
   },
 ];
 
-const mockTriggerFn = jest.fn();
+const mockTriggerFn = vi.fn();
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
   mockUseTriggerJob.mockReturnValue({
     mutateAsync: mockTriggerFn,
     isPending: false,
@@ -92,7 +93,7 @@ describe("IngestionJobsTab", () => {
 
     mockTriggerFn.mockResolvedValue({ job_id: "job-001", task_id: "task-abc", status: "running" });
     // mock alert
-    const alertMock = jest.spyOn(window, "alert").mockImplementation(() => {});
+    const alertMock = vi.spyOn(window, "alert").mockImplementation(() => {});
 
     render(<IngestionJobsTab />);
 

@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach , type Mock } from 'vitest';
 /**
  * Tests for CacheInspectionTab component.
  *
@@ -6,22 +7,22 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-jest.mock(
-  "../../../../frontend/src/pages/admin/system/hooks/useSystemOps",
+vi.mock(
+  "@/pages/admin/system/hooks/useSystemOps",
   () => ({
-    useCacheStats: jest.fn(),
-    useRefreshCache: jest.fn(),
+    useCacheStats: vi.fn(),
+    useRefreshCache: vi.fn(),
   })
 );
 
 import {
   useCacheStats,
   useRefreshCache,
-} from "../../../../frontend/src/pages/admin/system/hooks/useSystemOps";
-import { CacheInspectionTab } from "../../../../frontend/src/pages/admin/system/CacheInspectionTab";
+} from "@/pages/admin/system/hooks/useSystemOps";
+import { CacheInspectionTab } from "@/pages/admin/system/CacheInspectionTab";
 
-const mockUseStats = useCacheStats as jest.Mock;
-const mockUseRefresh = useRefreshCache as jest.Mock;
+const mockUseStats = useCacheStats as Mock;
+const mockUseRefresh = useRefreshCache as Mock;
 
 const MOCK_STATS = {
   price_bars_count: 12,
@@ -31,13 +32,13 @@ const MOCK_STATS = {
 };
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe("CacheInspectionTab", () => {
   it("renders key counts for all data types", () => {
     mockUseStats.mockReturnValue({ data: MOCK_STATS, isLoading: false, isError: false });
-    mockUseRefresh.mockReturnValue({ mutateAsync: jest.fn(), isPending: false });
+    mockUseRefresh.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
 
     render(<CacheInspectionTab />);
 
@@ -47,8 +48,8 @@ describe("CacheInspectionTab", () => {
   });
 
   it("Force Refresh button for price_bars calls cache/refresh with correct payload", async () => {
-    const refreshFn = jest.fn().mockResolvedValue({ data_type: "price_bars", keys_deleted: 12 });
-    const alertMock = jest.spyOn(window, "alert").mockImplementation(() => {});
+    const refreshFn = vi.fn().mockResolvedValue({ data_type: "price_bars", keys_deleted: 12 });
+    const alertMock = vi.spyOn(window, "alert").mockImplementation(() => {});
 
     mockUseStats.mockReturnValue({ data: MOCK_STATS, isLoading: false, isError: false });
     mockUseRefresh.mockReturnValue({ mutateAsync: refreshFn, isPending: false });
@@ -66,8 +67,8 @@ describe("CacheInspectionTab", () => {
   });
 
   it("Force Refresh for embeddings uses correct pattern", async () => {
-    const refreshFn = jest.fn().mockResolvedValue({ data_type: "embeddings", keys_deleted: 7 });
-    const alertMock = jest.spyOn(window, "alert").mockImplementation(() => {});
+    const refreshFn = vi.fn().mockResolvedValue({ data_type: "embeddings", keys_deleted: 7 });
+    const alertMock = vi.spyOn(window, "alert").mockImplementation(() => {});
 
     mockUseStats.mockReturnValue({ data: MOCK_STATS, isLoading: false, isError: false });
     mockUseRefresh.mockReturnValue({ mutateAsync: refreshFn, isPending: false });

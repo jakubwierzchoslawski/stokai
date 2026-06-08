@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi } from 'vitest';
 /**
- * TimeModeToolbar.test.tsx — TDD tests for TimeModeToolbar + DateRangeSlider.
+ * TimeModeToolbar.test.tsx â€” TDD tests for TimeModeToolbar + DateRangeSlider.
  *
  * PLAN-F-021 TASK-007
  */
@@ -15,8 +16,8 @@ describe('TimeModeToolbar', () => {
       <TimeModeToolbar
         timeMode="live"
         dateRange={null}
-        onSetTimeMode={jest.fn()}
-        onSetDateRange={jest.fn()}
+        onSetTimeMode={vi.fn()}
+        onSetDateRange={vi.fn()}
       />,
     );
     expect(screen.getByTestId('time-mode-btn-live')).toBeTruthy();
@@ -25,38 +26,38 @@ describe('TimeModeToolbar', () => {
   });
 
   it('clicking "Historical" calls onSetTimeMode("historical")', () => {
-    const onSetTimeMode = jest.fn();
+    const onSetTimeMode = vi.fn();
     render(
       <TimeModeToolbar
         timeMode="live"
         dateRange={null}
         onSetTimeMode={onSetTimeMode}
-        onSetDateRange={jest.fn()}
+        onSetDateRange={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByTestId('time-mode-btn-historical'));
     expect(onSetTimeMode).toHaveBeenCalledWith('historical');
   });
 
-  it('timeMode="live" → DateRangeSlider not present in the DOM', () => {
+  it('timeMode="live" â†’ DateRangeSlider not present in the DOM', () => {
     render(
       <TimeModeToolbar
         timeMode="live"
         dateRange={null}
-        onSetTimeMode={jest.fn()}
-        onSetDateRange={jest.fn()}
+        onSetTimeMode={vi.fn()}
+        onSetDateRange={vi.fn()}
       />,
     );
     expect(screen.queryByTestId('date-range-slider')).toBeNull();
   });
 
-  it('timeMode="historical" → DateRangeSlider is present in the DOM', () => {
+  it('timeMode="historical" â†’ DateRangeSlider is present in the DOM', () => {
     render(
       <TimeModeToolbar
         timeMode="historical"
         dateRange={null}
-        onSetTimeMode={jest.fn()}
-        onSetDateRange={jest.fn()}
+        onSetTimeMode={vi.fn()}
+        onSetDateRange={vi.fn()}
       />,
     );
     expect(screen.getByTestId('date-range-slider')).toBeTruthy();
@@ -67,8 +68,8 @@ describe('TimeModeToolbar', () => {
       <TimeModeToolbar
         timeMode="historical"
         dateRange={null}
-        onSetTimeMode={jest.fn()}
-        onSetDateRange={jest.fn()}
+        onSetTimeMode={vi.fn()}
+        onSetDateRange={vi.fn()}
       />,
     );
     expect(screen.getByTestId('time-mode-btn-historical').getAttribute('aria-pressed')).toBe('true');
@@ -77,8 +78,8 @@ describe('TimeModeToolbar', () => {
 });
 
 describe('DateRangeSlider', () => {
-  it('with from_date > to_date → Load button disabled and error visible', () => {
-    const onSetRange = jest.fn();
+  it('with from_date > to_date â†’ Load button disabled and error visible', () => {
+    const onSetRange = vi.fn();
     render(
       <DateRangeSlider
         from_date="2025-01-31"
@@ -90,8 +91,8 @@ describe('DateRangeSlider', () => {
     expect(screen.getByTestId('date-range-error')).toBeTruthy();
   });
 
-  it('with valid range → Load enabled; clicking calls onSetRange', () => {
-    const onSetRange = jest.fn();
+  it('with valid range â†’ Load enabled; clicking calls onSetRange', () => {
+    const onSetRange = vi.fn();
     render(
       <DateRangeSlider
         from_date="2025-01-01"
@@ -105,12 +106,12 @@ describe('DateRangeSlider', () => {
     expect(onSetRange).toHaveBeenCalledWith({ from_date: '2025-01-01', to_date: '2025-01-31' });
   });
 
-  it('with range > 365 days → Load disabled with "1 year" message', () => {
+  it('with range > 365 days â†’ Load disabled with "1 year" message', () => {
     render(
       <DateRangeSlider
         from_date="2024-01-01"
         to_date="2025-12-31"
-        onSetRange={jest.fn()}
+        onSetRange={vi.fn()}
       />,
     );
     expect(screen.getByTestId('date-range-load')).toBeDisabled();

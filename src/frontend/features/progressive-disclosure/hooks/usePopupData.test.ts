@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
- * usePopupData.test.ts — TDD tests for the usePopupData hook.
+ * usePopupData.test.ts â€” TDD tests for the usePopupData hook.
  *
  * PLAN-F-020 TASK-005
  */
@@ -12,7 +13,7 @@ import * as disclosureApi from '../api/disclosure.api';
 import { usePopupData } from './usePopupData';
 import type { PopupData } from '../types/disclosure.types';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeWrapper() {
   const qc = new QueryClient({
@@ -41,16 +42,16 @@ function buildPopupData(overrides: Partial<PopupData> = {}): PopupData {
   };
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('usePopupData', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('populates data when eventId is provided and fetch resolves', async () => {
     const data = buildPopupData();
-    jest.spyOn(disclosureApi, 'fetchPopupData').mockResolvedValue(data);
+    vi.spyOn(disclosureApi, 'fetchPopupData').mockResolvedValue(data);
 
     const { result } = renderHook(() => usePopupData('evt-001'), {
       wrapper: makeWrapper(),
@@ -61,13 +62,13 @@ describe('usePopupData', () => {
   });
 
   it('does not fire the query when eventId is null', async () => {
-    const spy = jest.spyOn(disclosureApi, 'fetchPopupData');
+    const spy = vi.spyOn(disclosureApi, 'fetchPopupData');
 
     const { result } = renderHook(() => usePopupData(null), {
       wrapper: makeWrapper(),
     });
 
-    // Query should stay idle — no request made
+    // Query should stay idle â€” no request made
     expect(result.current.isLoading).toBe(false);
     expect(result.current.data).toBeUndefined();
     expect(spy).not.toHaveBeenCalled();
@@ -75,7 +76,7 @@ describe('usePopupData', () => {
 
   it('sets isLoading while the fetch is in-flight', async () => {
     // Never resolves
-    jest.spyOn(disclosureApi, 'fetchPopupData').mockReturnValue(new Promise(() => {}));
+    vi.spyOn(disclosureApi, 'fetchPopupData').mockReturnValue(new Promise(() => {}));
 
     const { result } = renderHook(() => usePopupData('evt-001'), {
       wrapper: makeWrapper(),

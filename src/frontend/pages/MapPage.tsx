@@ -10,7 +10,7 @@
  * PLAN-F-025 TASK-012
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { EventPopup } from '../features/map/EventPopup';
+import { EventPopup } from '../features/progressive-disclosure/components/EventPopup';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -130,7 +130,7 @@ export function MapPage(): React.ReactElement {
               <span>Loading event…</span>
             </div>
           ) : popupEvent ? (
-            <EventPopup event={popupEvent} onClose={handlePopupClose} />
+            <EventPopup eventId={popupEvent.event_id} onExpand={() => {}} onClose={handlePopupClose} />
           ) : null}
         </div>
       )}

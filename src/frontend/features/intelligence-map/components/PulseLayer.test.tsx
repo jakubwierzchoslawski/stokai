@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi } from 'vitest';
 /**
- * PulseLayer.test.tsx — TDD tests for PulseLayer.
+ * PulseLayer.test.tsx â€” TDD tests for PulseLayer.
  *
  * MapLibre is mocked. WebGL context is mocked to count buffer upload calls.
  *
@@ -18,7 +19,7 @@ import {
 import type { EventPulse } from '../types/map.types';
 import { computePulseState } from '../lib/pulse-animation';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildEvent(overrides: Partial<EventPulse> = {}): EventPulse {
   const base: EventPulse = {
@@ -45,23 +46,23 @@ function makeMockMap() {
   const listeners: Record<string, ((e: unknown) => void)[]> = {};
 
   return {
-    addLayer: jest.fn((layer: { id: string; onAdd?: (m: unknown, gl: unknown) => void }) => {
+    addLayer: vi.fn((layer: { id: string; onAdd?: (m: unknown, gl: unknown) => void }) => {
       layers[layer.id] = layer;
     }),
-    removeLayer: jest.fn((id: string) => { delete layers[id]; }),
-    getLayer: jest.fn((id: string) => layers[id]),
-    on: jest.fn((event: string, _layer: string, cb: (e: unknown) => void) => {
+    removeLayer: vi.fn((id: string) => { delete layers[id]; }),
+    getLayer: vi.fn((id: string) => layers[id]),
+    on: vi.fn((event: string, _layer: string, cb: (e: unknown) => void) => {
       if (!listeners[event]) listeners[event] = [];
       listeners[event].push(cb);
     }),
-    off: jest.fn(),
+    off: vi.fn(),
     _trigger: (event: string, e: unknown) => {
       (listeners[event] ?? []).forEach((cb) => cb(e));
     },
   };
 }
 
-// ── applyFilters unit tests ───────────────────────────────────────────────────
+// â”€â”€ applyFilters unit tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('applyFilters', () => {
   it('passes events matching active category and intensity', () => {
@@ -99,7 +100,7 @@ describe('applyFilters', () => {
   });
 });
 
-// ── computePulseState integration ─────────────────────────────────────────────
+// â”€â”€ computePulseState integration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('computePulseState integration with PulseLayer', () => {
   it('event 30% into its window has expected opacity', () => {
@@ -120,7 +121,7 @@ describe('computePulseState integration with PulseLayer', () => {
   });
 });
 
-// ── Shader snapshot test ──────────────────────────────────────────────────────
+// â”€â”€ Shader snapshot test â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('Shader source strings', () => {
   it('vertex shader snapshot is stable', () => {
@@ -132,13 +133,13 @@ describe('Shader source strings', () => {
   });
 });
 
-// ── PulseLayer component — onPulseClick ──────────────────────────────────────
+// â”€â”€ PulseLayer component â€” onPulseClick â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-describe('PulseLayer — onPulseClick', () => {
+describe('PulseLayer â€” onPulseClick', () => {
   it('fires onPulseClick with the closest EventPulse on map click', () => {
     const map = makeMockMap();
     const events = [buildEvent({ event_id: 'target', lon: 0, lat: 0 })];
-    const clickFn = jest.fn();
+    const clickFn = vi.fn();
 
     render(
       <PulseLayer
@@ -157,7 +158,7 @@ describe('PulseLayer — onPulseClick', () => {
   it('does not fire onPulseClick when click is far from all events', () => {
     const map = makeMockMap();
     const events = [buildEvent({ lon: 0, lat: 0 })];
-    const clickFn = jest.fn();
+    const clickFn = vi.fn();
 
     render(
       <PulseLayer
@@ -173,10 +174,10 @@ describe('PulseLayer — onPulseClick', () => {
   });
 });
 
-// ── PulseLayer renders null (no DOM) ─────────────────────────────────────────
+// â”€â”€ PulseLayer renders null (no DOM) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-describe('PulseLayer — rendering', () => {
-  it('renders null — no DOM elements produced', () => {
+describe('PulseLayer â€” rendering', () => {
+  it('renders null â€” no DOM elements produced', () => {
     const map = makeMockMap();
     const { container } = render(
       <PulseLayer map={map} events={[]} activeFilters={ALL_FILTERS} />,

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tests for CalibrationDashboard component and useCalibration hook.
  *
  * PLAN-F-029 TASK-010
@@ -70,9 +70,9 @@ describe('CalibrationDashboard', () => {
 
   it('renders warning banner when below_threshold=true', async () => {
     setupMocks(MOCK_SUMMARY_BELOW);
-    const { CalibrationDashboard } = await import('../../../admin/ai-audit/CalibrationDashboard');
+    const { CalibrationDashboard } = await import('../../../pages/admin/ai-audit/CalibrationDashboard');
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(CalibrationDashboard)));
+    render(React.createElement(Wrapper, null, React.createElement(CalibrationDashboard)));
 
     await waitFor(() => {
       expect(screen.getByTestId('below-threshold-banner')).toBeDefined();
@@ -81,9 +81,9 @@ describe('CalibrationDashboard', () => {
 
   it('does NOT render warning banner when below_threshold=false', async () => {
     setupMocks(MOCK_SUMMARY_ABOVE);
-    const { CalibrationDashboard } = await import('../../../admin/ai-audit/CalibrationDashboard');
+    const { CalibrationDashboard } = await import('../../../pages/admin/ai-audit/CalibrationDashboard');
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(CalibrationDashboard)));
+    render(React.createElement(Wrapper, null, React.createElement(CalibrationDashboard)));
 
     await waitFor(() => {
       expect(screen.getByTestId('per-signal-table')).toBeDefined();
@@ -93,9 +93,9 @@ describe('CalibrationDashboard', () => {
 
   it('renders per-signal accuracy table with one row per signal', async () => {
     setupMocks(MOCK_SUMMARY_ABOVE);
-    const { CalibrationDashboard } = await import('../../../admin/ai-audit/CalibrationDashboard');
+    const { CalibrationDashboard } = await import('../../../pages/admin/ai-audit/CalibrationDashboard');
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(CalibrationDashboard)));
+    render(React.createElement(Wrapper, null, React.createElement(CalibrationDashboard)));
 
     await waitFor(() => {
       expect(screen.getByTestId('signal-row-HOLD')).toBeDefined();
@@ -115,9 +115,9 @@ describe('CalibrationDashboard', () => {
         json: async () => ({ data: MOCK_SUMMARY_ABOVE, error: null }),
       } as Response);
 
-    const { CalibrationDashboard } = await import('../../../admin/ai-audit/CalibrationDashboard');
+    const { CalibrationDashboard } = await import('../../../pages/admin/ai-audit/CalibrationDashboard');
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(CalibrationDashboard)));
+    render(React.createElement(Wrapper, null, React.createElement(CalibrationDashboard)));
 
     // Wait for initial load
     await waitFor(() => screen.getByTestId('lookback-60'));

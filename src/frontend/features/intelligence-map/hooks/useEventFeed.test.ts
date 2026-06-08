@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
- * useEventFeed.test.ts — TDD tests for the useEventFeed hook.
+ * useEventFeed.test.ts â€” TDD tests for the useEventFeed hook.
  *
  * Uses @testing-library/react renderHook, MSW for HTTP mocking, and a fake
  * WebSocket implementation to test WS push behavior.
@@ -13,7 +14,7 @@ import React from 'react';
 import { fetchEvents, EventFetchError } from '../api/events.api';
 import type { EventPulse } from '../types/map.types';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildEvent(overrides: Partial<EventPulse> = {}): EventPulse {
   return {
@@ -39,7 +40,7 @@ function makeWrapper() {
   return Wrapper;
 }
 
-// ── fetchEvents tests ─────────────────────────────────────────────────────────
+// â”€â”€ fetchEvents tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('fetchEvents', () => {
   const originalFetch = global.fetch;
@@ -49,7 +50,7 @@ describe('fetchEvents', () => {
 
   it('returns an array of EventPulse on success', async () => {
     const events = [buildEvent(), buildEvent({ event_id: 'evt-002' })];
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: events, meta: {}, error: null }),
     } as unknown as Response);
@@ -60,7 +61,7 @@ describe('fetchEvents', () => {
   });
 
   it('throws EventFetchError with code UNAUTHORIZED on HTTP 401', async () => {
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 401,
       json: async () => ({}),
@@ -73,7 +74,7 @@ describe('fetchEvents', () => {
 
   it('throws EventFetchError with code SCHEMA_VIOLATION on malformed event (missing lat)', async () => {
     const malformed = { event_id: 'x', category: [], intensity: 3, headline: 'h', timestamp: 't', lon: 1, relevance_window_end: 'e', affected_companies: [] };
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: [malformed] }),
     } as unknown as Response);
@@ -91,15 +92,15 @@ describe('fetchEvents', () => {
   });
 });
 
-// ── useEventFeed hook tests ───────────────────────────────────────────────────
+// â”€â”€ useEventFeed hook tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // We test the hook's WebSocket behavior by mocking subscribeToEventChannel.
-jest.mock('../hooks/useEventFeed', () => {
-  const actual = jest.requireActual('../hooks/useEventFeed') as typeof import('./useEventFeed');
-  return actual;
+vi.mock('../hooks/useEventFeed', async () => {
+  const actual = await vi.importActual('../hooks/useEventFeed');
+  return actual as object;
 });
 
-describe('useEventFeed — initial fetch', () => {
+describe('useEventFeed â€” initial fetch', () => {
   const originalFetch = global.fetch;
   afterEach(() => {
     global.fetch = originalFetch;
@@ -107,15 +108,15 @@ describe('useEventFeed — initial fetch', () => {
 
   it('returns 3 events after isLoading resolves', async () => {
     const events = [buildEvent(), buildEvent({ event_id: 'e2' }), buildEvent({ event_id: 'e3' })];
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: events }),
     } as unknown as Response);
 
     // Mock WebSocket so it never sends messages in this test.
-    const wsClose = jest.fn();
-    global.WebSocket = jest.fn().mockImplementation(() => ({
-      addEventListener: jest.fn(),
+    const wsClose = vi.fn();
+    global.WebSocket = vi.fn().mockImplementation(() => ({
+      addEventListener: vi.fn(),
       close: wsClose,
     })) as unknown as typeof WebSocket;
 
@@ -130,22 +131,22 @@ describe('useEventFeed — initial fetch', () => {
   });
 });
 
-describe('useEventFeed — WebSocket push', () => {
+describe('useEventFeed â€” WebSocket push', () => {
   it('appends a WS-pushed event without re-fetching', async () => {
     const initialEvents = Array.from({ length: 3 }, (_, i) =>
       buildEvent({ event_id: `e${i}` }),
     );
-    const fetchMock = jest.fn().mockResolvedValue({
+    const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: initialEvents }),
     } as unknown as Response);
     global.fetch = fetchMock;
 
     let capturedMessageListener: ((e: MessageEvent) => void) | null = null;
-    const wsClose = jest.fn();
-    global.WebSocket = jest.fn().mockImplementation(() => {
+    const wsClose = vi.fn();
+    global.WebSocket = vi.fn().mockImplementation(() => {
       return {
-        addEventListener: jest.fn((event: string, cb: (e: MessageEvent) => void) => {
+        addEventListener: vi.fn((event: string, cb: (e: MessageEvent) => void) => {
           if (event === 'message') capturedMessageListener = cb;
         }),
         close: wsClose,
@@ -171,16 +172,16 @@ describe('useEventFeed — WebSocket push', () => {
   });
 });
 
-describe('useEventFeed — unmount unsubscribes', () => {
+describe('useEventFeed â€” unmount unsubscribes', () => {
   it('calls ws.close() exactly once on unmount', async () => {
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: [] }),
     } as unknown as Response);
 
-    const wsClose = jest.fn();
-    global.WebSocket = jest.fn().mockImplementation(() => ({
-      addEventListener: jest.fn(),
+    const wsClose = vi.fn();
+    global.WebSocket = vi.fn().mockImplementation(() => ({
+      addEventListener: vi.fn(),
       close: wsClose,
     })) as unknown as typeof WebSocket;
 

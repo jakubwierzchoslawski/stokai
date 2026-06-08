@@ -116,14 +116,14 @@ export const ClusterLayer: React.FC<ClusterLayerProps> = ({
     const handleClick = (e: unknown) => {
       const evt = e as { features?: GeoJSONFeature[]; originalEvent?: MouseEvent };
       if (evt.features && evt.features.length > 0 && onClusterClick) {
-        onClusterClick(evt.features[0]);
+        onClusterClick(evt.features[0]!);
       }
     };
 
     const handleMouseEnter = (e: unknown) => {
       const evt = e as { features?: GeoJSONFeature[]; point?: { x: number; y: number } };
       if (evt.features && evt.features.length > 0) {
-        setHoveredCluster(evt.features[0]);
+        setHoveredCluster(evt.features[0]!);
         if (evt.point) setTooltipPos(evt.point);
       }
     };

@@ -1,3 +1,4 @@
+﻿import { describe, test, expect, vi } from 'vitest';
 /**
  * tests/frontend/portfolio/PortfolioCard.test.tsx
  *
@@ -55,7 +56,7 @@ describe('PortfolioCard', () => {
   });
 
   test('calls onDelete when delete button clicked', async () => {
-    const onDelete = jest.fn();
+    const onDelete = vi.fn();
     render(
       <PortfolioCard
         portfolioId="p-1"

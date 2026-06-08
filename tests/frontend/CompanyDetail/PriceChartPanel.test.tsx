@@ -1,3 +1,4 @@
+﻿import { describe, it, expect, vi } from 'vitest';
 /**
  * Tests for PriceChartPanel component.
  *
@@ -15,7 +16,7 @@ import { PriceChartPanel } from '../../../src/frontend/pages/CompanyDetail/Price
 import type { PriceBar } from '../../../src/frontend/pages/CompanyDetail/types';
 
 // Mock Recharts to avoid canvas rendering issues in jsdom
-jest.mock('recharts', () => {
+vi.mock('recharts', () => {
   const MockChart = ({ children, 'data-testid': testId }: { children?: React.ReactNode; 'data-testid'?: string }) =>
     React.createElement('div', { 'data-testid': testId ?? 'recharts-chart' }, children);
   return {

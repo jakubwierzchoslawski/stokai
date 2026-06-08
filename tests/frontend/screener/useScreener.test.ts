@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach, afterEach , type Mock } from 'vitest';
 /**
  * Unit tests for useScreener hook (TDD).
  *
@@ -10,7 +11,7 @@ import { screenerQueryKey } from "../../../src/frontend/features/screener/useScr
 import type { ScreenerRequest } from "../../../src/frontend/features/screener/screenerTypes";
 
 // ---------------------------------------------------------------------------
-// screenerQueryKey tests (pure — no React hooks needed)
+// screenerQueryKey tests (pure â€” no React hooks needed)
 // ---------------------------------------------------------------------------
 
 function baseRequest(): ScreenerRequest {
@@ -54,7 +55,7 @@ describe("screenerQueryKey", () => {
   it("excludes cursor from the key", () => {
     const withCursor = screenerQueryKey({ ...baseRequest(), cursor: "abc123" });
     const withoutCursor = screenerQueryKey(baseRequest());
-    // Both should produce the same key — cursor is per-page, not per-query
+    // Both should produce the same key â€” cursor is per-page, not per-query
     expect(JSON.stringify(withCursor)).toBe(JSON.stringify(withoutCursor));
   });
 
@@ -71,14 +72,14 @@ describe("screenerQueryKey", () => {
 });
 
 // ---------------------------------------------------------------------------
-// POST body serialisation test (unit — mock fetch)
+// POST body serialisation test (unit â€” mock fetch)
 // ---------------------------------------------------------------------------
 
 describe("fetchScreenerPage (via fetch mock)", () => {
   const originalFetch = global.fetch;
 
   beforeEach(() => {
-    global.fetch = jest.fn();
+    global.fetch = vi.fn();
   });
 
   afterEach(() => {
@@ -97,7 +98,7 @@ describe("fetchScreenerPage (via fetch mock)", () => {
       error: null,
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
+    (global.fetch as Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => mockResponse,
     });

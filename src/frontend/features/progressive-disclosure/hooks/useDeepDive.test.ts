@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 /**
- * useDeepDive.test.ts — TDD tests for the useDeepDive hook.
+ * useDeepDive.test.ts â€” TDD tests for the useDeepDive hook.
  *
  * PLAN-F-020 TASK-005
  */
@@ -34,17 +35,17 @@ function buildDeepDiveData(): DeepDiveData {
 
 describe('useDeepDive', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
-    jest.restoreAllMocks();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it('returns pending state when API returns 202 pending', async () => {
     const pending: DeepDivePending = { status: 'pending' };
-    jest.spyOn(disclosureApi, 'fetchDeepDive').mockResolvedValue(pending);
+    vi.spyOn(disclosureApi, 'fetchDeepDive').mockResolvedValue(pending);
 
     const { result } = renderHook(() => useDeepDive('evt-001', true), {
       wrapper: makeWrapper(),
@@ -56,7 +57,7 @@ describe('useDeepDive', () => {
 
   it('does not refetch when API returns completed DeepDiveData', async () => {
     const data = buildDeepDiveData();
-    const spy = jest
+    const spy = vi
       .spyOn(disclosureApi, 'fetchDeepDive')
       .mockResolvedValue(data);
 
@@ -67,9 +68,9 @@ describe('useDeepDive', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(data);
 
-    // Advance time — should NOT re-fetch since data is not pending
+    // Advance time â€” should NOT re-fetch since data is not pending
     act(() => {
-      jest.advanceTimersByTime(10_000);
+      vi.advanceTimersByTime(10_000);
     });
 
     // Still only called once
@@ -81,7 +82,7 @@ describe('useDeepDive', () => {
     const data = buildDeepDiveData();
 
     let callCount = 0;
-    jest.spyOn(disclosureApi, 'fetchDeepDive').mockImplementation(async () => {
+    vi.spyOn(disclosureApi, 'fetchDeepDive').mockImplementation(async () => {
       callCount++;
       return callCount === 1 ? pending : data;
     });
@@ -96,7 +97,7 @@ describe('useDeepDive', () => {
 
     // Advance timer to trigger refetch
     act(() => {
-      jest.advanceTimersByTime(5_000);
+      vi.advanceTimersByTime(5_000);
     });
 
     // Second call should return data

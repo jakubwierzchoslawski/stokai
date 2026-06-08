@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 /**
- * Drawer.test.tsx — TDD tests for the Drawer component.
+ * Drawer.test.tsx â€” TDD tests for the Drawer component.
  *
  * Tests written first (red phase) per PLAN-N-014 TASK-003.
  */
@@ -9,7 +10,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { Drawer } from "../../../../src/frontend/features/shared/layout/Drawer";
 
 describe("Drawer", () => {
-  const noop = jest.fn();
+  const noop = vi.fn();
 
   beforeEach(() => {
     noop.mockClear();
@@ -77,7 +78,7 @@ describe("Drawer", () => {
       </Drawer>,
     );
 
-    // Initially open — aria-hidden should not be 'true'
+    // Initially open â€” aria-hidden should not be 'true'
     let panel = screen.getByRole("dialog");
     expect(panel).not.toHaveAttribute("aria-hidden", "true");
 

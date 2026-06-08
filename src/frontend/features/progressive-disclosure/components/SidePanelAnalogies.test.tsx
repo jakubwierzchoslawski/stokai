@@ -1,5 +1,6 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
- * SidePanelAnalogies.test.tsx — TDD tests for SidePanelAnalogies component.
+ * SidePanelAnalogies.test.tsx â€” TDD tests for SidePanelAnalogies component.
  *
  * PLAN-F-020 TASK-008
  */
@@ -46,7 +47,7 @@ describe('SidePanelAnalogies', () => {
     const longHeadline = 'A'.repeat(100);
     render(<SidePanelAnalogies analogies={[buildAnalogy({ headline: longHeadline })]} />);
     const headlineEl = screen.getByTestId('analogy-headline-0');
-    // Truncated headline is 79 chars + ellipsis = 80 rendered chars visible (≤80)
+    // Truncated headline is 79 chars + ellipsis = 80 rendered chars visible (â‰¤80)
     expect(headlineEl.textContent!.length).toBeLessThanOrEqual(80);
   });
 

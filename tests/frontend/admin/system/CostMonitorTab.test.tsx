@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach , type Mock } from 'vitest';
 /**
  * Tests for CostMonitorTab component.
  *
@@ -6,24 +7,24 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-jest.mock(
-  "../../../../frontend/src/pages/admin/system/hooks/useSystemOps",
+vi.mock(
+  "@/pages/admin/system/hooks/useSystemOps",
   () => ({
-    useCostSummary: jest.fn(),
-    useUpdateThreshold: jest.fn(),
+    useCostSummary: vi.fn(),
+    useUpdateThreshold: vi.fn(),
   })
 );
 
-import { useCostSummary, useUpdateThreshold } from "../../../../frontend/src/pages/admin/system/hooks/useSystemOps";
-import { CostMonitorTab } from "../../../../frontend/src/pages/admin/system/CostMonitorTab";
+import { useCostSummary, useUpdateThreshold } from "@/pages/admin/system/hooks/useSystemOps";
+import { CostMonitorTab } from "@/pages/admin/system/CostMonitorTab";
 
-const mockUseCostSummary = useCostSummary as jest.Mock;
-const mockUseUpdateThreshold = useUpdateThreshold as jest.Mock;
+const mockUseCostSummary = useCostSummary as Mock;
+const mockUseUpdateThreshold = useUpdateThreshold as Mock;
 
-const mockUpdateFn = jest.fn();
+const mockUpdateFn = vi.fn();
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
   mockUseUpdateThreshold.mockReturnValue({
     mutateAsync: mockUpdateFn,
     isPending: false,
@@ -87,7 +88,7 @@ describe("CostMonitorTab", () => {
     });
 
     mockUpdateFn.mockResolvedValue({ threshold_usd: 80.0 });
-    const alertMock = jest.spyOn(window, "alert").mockImplementation(() => {});
+    const alertMock = vi.spyOn(window, "alert").mockImplementation(() => {});
 
     render(<CostMonitorTab />);
 

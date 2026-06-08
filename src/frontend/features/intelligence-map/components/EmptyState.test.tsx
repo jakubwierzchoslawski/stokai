@@ -1,5 +1,6 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
- * EmptyState.test.tsx — TDD tests for EmptyState component.
+ * EmptyState.test.tsx â€” TDD tests for EmptyState component.
  *
  * PLAN-F-019 TASK-010
  */

@@ -1,5 +1,6 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
- * playback-engine.test.ts — TDD tests for PlaybackEngine.
+ * playback-engine.test.ts â€” TDD tests for PlaybackEngine.
  *
  * PLAN-F-021 TASK-003
  */
@@ -27,14 +28,14 @@ const EVENT_T30 = makeEvent('e2', new Date(BASE_MS + 1_800_000).toISOString());
 const EVENT_T60 = makeEvent('e3', new Date(BASE_MS + 3_600_000).toISOString());
 
 describe('PlaybackEngine', () => {
-  it('tick(0) at 1x → 1 event visible (T+0 only)', () => {
+  it('tick(0) at 1x â†’ 1 event visible (T+0 only)', () => {
     const engine = new PlaybackEngine([EVENT_T0, EVENT_T30, EVENT_T60], '1x');
     const { visibleEvents } = engine.tick(0);
     expect(visibleEvents).toHaveLength(1);
     expect(visibleEvents[0].event_id).toBe('e1');
   });
 
-  it('tick(1_800_000) at 1x → 2 events visible (T+0 and T+30)', () => {
+  it('tick(1_800_000) at 1x â†’ 2 events visible (T+0 and T+30)', () => {
     const engine = new PlaybackEngine([EVENT_T0, EVENT_T30, EVENT_T60], '1x');
     const { visibleEvents } = engine.tick(1_800_000);
     expect(visibleEvents).toHaveLength(2);
@@ -42,26 +43,26 @@ describe('PlaybackEngine', () => {
     expect(ids).toEqual(['e1', 'e2']);
   });
 
-  it('tick(3_600_000) at 1x → all 3 events; virtualNow equals virtualWindowEnd', () => {
+  it('tick(3_600_000) at 1x â†’ all 3 events; virtualNow equals virtualWindowEnd', () => {
     const engine = new PlaybackEngine([EVENT_T0, EVENT_T30, EVENT_T60], '1x');
     const { visibleEvents, virtualNow } = engine.tick(3_600_000);
     expect(visibleEvents).toHaveLength(3);
     expect(virtualNow.getTime()).toBe(new Date(EVENT_T60.timestamp).getTime());
   });
 
-  it('16× speed: tick(225_000) → all 3 events visible — AC-003', () => {
+  it('16Ă— speed: tick(225_000) â†’ all 3 events visible â€” AC-003', () => {
     const engine = new PlaybackEngine([EVENT_T0, EVENT_T30, EVENT_T60], '16x');
     const { visibleEvents } = engine.tick(225_000);
     expect(visibleEvents).toHaveLength(3);
   });
 
-  it('4× speed: tick(900_000) → all 3 events visible', () => {
+  it('4Ă— speed: tick(900_000) â†’ all 3 events visible', () => {
     const engine = new PlaybackEngine([EVENT_T0, EVENT_T30, EVENT_T60], '4x');
     const { visibleEvents } = engine.tick(900_000);
     expect(visibleEvents).toHaveLength(3);
   });
 
-  it('reset() after tick(3_600_000) → next tick(0) returns 1 event', () => {
+  it('reset() after tick(3_600_000) â†’ next tick(0) returns 1 event', () => {
     const engine = new PlaybackEngine([EVENT_T0, EVENT_T30, EVENT_T60], '1x');
     engine.tick(3_600_000);
     engine.reset();
@@ -70,7 +71,7 @@ describe('PlaybackEngine', () => {
     expect(visibleEvents[0].event_id).toBe('e1');
   });
 
-  it('empty events array → tick(any) returns { visibleEvents: [], virtualNow: epoch }', () => {
+  it('empty events array â†’ tick(any) returns { visibleEvents: [], virtualNow: epoch }', () => {
     const engine = new PlaybackEngine([], '1x');
     const { visibleEvents, virtualNow } = engine.tick(5_000_000);
     expect(visibleEvents).toHaveLength(0);

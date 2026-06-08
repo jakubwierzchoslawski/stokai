@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 /**
- * map-time-mode.test.tsx — Integration tests for time-mode wiring.
+ * map-time-mode.test.tsx â€” Integration tests for time-mode wiring.
  *
  * Verifies:
  *  - TimeModeToolbar is rendered
@@ -16,35 +17,35 @@ import { render, screen, waitFor, act, fireEvent } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { IntelligenceMap } from '../../../src/frontend/features/intelligence-map/IntelligenceMap';
 
-// ── Global mocks ──────────────────────────────────────────────────────────────
+// â”€â”€ Global mocks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-jest.mock('maplibre-gl', () => {
-  const MockMap = jest.fn().mockImplementation(() => ({
-    on: jest.fn((event: string, cb: (...args: unknown[]) => void) => {
+vi.mock('maplibre-gl', () => {
+  const MockMap = vi.fn().mockImplementation(() => ({
+    on: vi.fn((event: string, cb: (...args: unknown[]) => void) => {
       if (event === 'load') setTimeout(() => cb(), 0);
     }),
-    off: jest.fn(),
-    getZoom: jest.fn(() => 2),
-    getBounds: jest.fn(() => ({ toArray: () => [[-180, -85], [180, 85]] })),
-    flyTo: jest.fn(),
-    remove: jest.fn(),
+    off: vi.fn(),
+    getZoom: vi.fn(() => 2),
+    getBounds: vi.fn(() => ({ toArray: () => [[-180, -85], [180, 85]] })),
+    flyTo: vi.fn(),
+    remove: vi.fn(),
   }));
   return { default: { Map: MockMap }, Map: MockMap };
 });
 
-global.Worker = jest.fn().mockImplementation(() => ({
-  postMessage: jest.fn(),
-  terminate: jest.fn(),
+global.Worker = vi.fn().mockImplementation(() => ({
+  postMessage: vi.fn(),
+  terminate: vi.fn(),
   onmessage: null,
 })) as unknown as typeof Worker;
 
-global.WebSocket = jest.fn().mockImplementation(() => ({
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-  close: jest.fn(),
+global.WebSocket = vi.fn().mockImplementation(() => ({
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  close: vi.fn(),
 })) as unknown as typeof WebSocket;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -52,13 +53,13 @@ function makeWrapper() {
     React.createElement(QueryClientProvider, { client: qc }, children);
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-describe('IntelligenceMap — time-mode wiring', () => {
+describe('IntelligenceMap â€” time-mode wiring', () => {
   const originalFetch = global.fetch;
 
   beforeEach(() => {
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: [], meta: {}, error: null }),
     } as unknown as Response);
@@ -110,7 +111,7 @@ describe('IntelligenceMap — time-mode wiring', () => {
     });
   });
 
-  it('switching Historical → Live removes DateRangeSlider', async () => {
+  it('switching Historical â†’ Live removes DateRangeSlider', async () => {
     render(<IntelligenceMap />, { wrapper: makeWrapper() });
     await waitFor(() => expect(screen.getByTestId('time-mode-btn-historical')).toBeTruthy());
 
@@ -123,7 +124,7 @@ describe('IntelligenceMap — time-mode wiring', () => {
     });
   });
 
-  it('live mode with 0 events → EmptyState shows "Markets are quiet" (regression)', async () => {
+  it('live mode with 0 events â†’ EmptyState shows "Markets are quiet" (regression)', async () => {
     render(<IntelligenceMap />, { wrapper: makeWrapper() });
     await waitFor(() => {
       const emptyState = screen.queryByTestId('empty-state');

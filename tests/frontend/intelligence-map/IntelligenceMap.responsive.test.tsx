@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
- * IntelligenceMap.responsive.test.tsx — TDD tests for responsive Intelligence Map layout.
+ * IntelligenceMap.responsive.test.tsx â€” TDD tests for responsive Intelligence Map layout.
  *
  * Tests written first (red phase) per PLAN-N-014 TASK-005.
  *
@@ -20,7 +21,7 @@ import { Drawer } from "../../../src/frontend/features/shared/layout/Drawer";
 import { useBreakpoint } from "../../../src/frontend/features/shared/hooks/useBreakpoint";
 import { renderHook } from "@testing-library/react";
 
-// ── Mock matchMedia for useBreakpoint ─────────────────────────────────────────
+// â”€â”€ Mock matchMedia for useBreakpoint â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function setupMatchMedia(matchingQueries: string[]) {
   const queries = [
@@ -35,23 +36,23 @@ function setupMatchMedia(matchingQueries: string[]) {
 
   Object.defineProperty(window, "matchMedia", {
     writable: true,
-    value: jest.fn((q: string) => ({
+    value: vi.fn((q: string) => ({
       matches: mqls[q]?.matches ?? false,
       media: q,
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      dispatchEvent: jest.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
     })),
   });
 }
 
-// ── Tests: Desktop-first layout contracts ─────────────────────────────────────
+// â”€â”€ Tests: Desktop-first layout contracts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe("IntelligenceMap responsive layout contracts", () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   /**
@@ -59,7 +60,7 @@ describe("IntelligenceMap responsive layout contracts", () => {
    * The actual component integration is verified via Playwright E2E.
    */
 
-  it("useBreakpoint returns 'lg' at 1280px — side panel shown inline", () => {
+  it("useBreakpoint returns 'lg' at 1280px â€” side panel shown inline", () => {
     setupMatchMedia(["(min-width: 768px)", "(min-width: 1280px)"]);
     const { result } = renderHook(() => useBreakpoint());
     expect(result.current).toBe("lg");
@@ -67,7 +68,7 @@ describe("IntelligenceMap responsive layout contracts", () => {
     expect(result.current !== "sm").toBe(true);
   });
 
-  it("useBreakpoint returns 'sm' below 768px — side panel goes into Drawer", () => {
+  it("useBreakpoint returns 'sm' below 768px â€” side panel goes into Drawer", () => {
     setupMatchMedia([]);
     const { result } = renderHook(() => useBreakpoint());
     expect(result.current).toBe("sm");
@@ -77,7 +78,7 @@ describe("IntelligenceMap responsive layout contracts", () => {
 
   it("Drawer with side='right' slides in from the right side", () => {
     render(
-      <Drawer open={true} onClose={jest.fn()} side="right">
+      <Drawer open={true} onClose={vi.fn()} side="right">
         <div data-testid="side-panel-content">FilterPanel</div>
       </Drawer>,
     );
@@ -91,7 +92,7 @@ describe("IntelligenceMap responsive layout contracts", () => {
 
   it("Drawer at open=false hides the side panel content from interactive use", () => {
     render(
-      <Drawer open={false} onClose={jest.fn()} side="right">
+      <Drawer open={false} onClose={vi.fn()} side="right">
         <div data-testid="side-panel-content">FilterPanel</div>
       </Drawer>,
     );
@@ -100,7 +101,7 @@ describe("IntelligenceMap responsive layout contracts", () => {
     expect(panel).toHaveAttribute("aria-hidden", "true");
   });
 
-  it("map layout component tracks drawer open state — toggle opens, backdrop closes", () => {
+  it("map layout component tracks drawer open state â€” toggle opens, backdrop closes", () => {
     // Simulate the IntelligenceMap toggle behavior using the Drawer component directly
     function TestMapLayout() {
       const [drawerOpen, setDrawerOpen] = useState(false);

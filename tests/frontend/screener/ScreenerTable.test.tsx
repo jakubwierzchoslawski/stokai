@@ -1,3 +1,4 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
  * Unit tests for ScreenerTable component (TDD).
  *
@@ -31,14 +32,14 @@ const DEFAULT_PROPS = {
   rows: [makeRow()],
   sortColumn: "custom_score" as const,
   sortDir: "desc" as const,
-  onSortChange: jest.fn(),
+  onSortChange: vi.fn(),
   hasNextPage: false,
   isFetchingNextPage: false,
-  onLoadMore: jest.fn(),
+  onLoadMore: vi.fn(),
 };
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe("ScreenerTable", () => {
@@ -59,7 +60,7 @@ describe("ScreenerTable", () => {
 
   describe("sort interaction", () => {
     it("calls onSortChange with the clicked column and 'desc' when not currently sorted", () => {
-      const onSortChange = jest.fn();
+      const onSortChange = vi.fn();
       render(
         <ScreenerTable
           {...DEFAULT_PROPS}
@@ -76,7 +77,7 @@ describe("ScreenerTable", () => {
     });
 
     it("calls onSortChange with 'asc' when clicking the active sort column sorted desc", () => {
-      const onSortChange = jest.fn();
+      const onSortChange = vi.fn();
       render(
         <ScreenerTable
           {...DEFAULT_PROPS}
@@ -86,14 +87,14 @@ describe("ScreenerTable", () => {
         />,
       );
 
-      // Click the active column header — should toggle to asc
+      // Click the active column header â€” should toggle to asc
       fireEvent.click(screen.getByText(/Custom Score/));
 
       expect(onSortChange).toHaveBeenCalledWith("custom_score", "asc");
     });
 
     it("calls onSortChange with 'desc' when clicking the active sort column sorted asc", () => {
-      const onSortChange = jest.fn();
+      const onSortChange = vi.fn();
       render(
         <ScreenerTable
           {...DEFAULT_PROPS}
@@ -103,7 +104,7 @@ describe("ScreenerTable", () => {
         />,
       );
 
-      // Click the active column header — should toggle to desc
+      // Click the active column header â€” should toggle to desc
       fireEvent.click(screen.getByText("Name"));
 
       expect(onSortChange).toHaveBeenCalledWith("name", "desc");
@@ -116,7 +117,7 @@ describe("ScreenerTable", () => {
 
       // The active header should contain a down arrow indicator
       const header = screen.getByText(/Custom Score/);
-      expect(header.textContent).toContain("↓");
+      expect(header.textContent).toContain("â†“");
     });
 
     it("shows ascending sort indicator on active column", () => {
@@ -125,7 +126,7 @@ describe("ScreenerTable", () => {
       );
 
       const header = screen.getByText(/Custom Score/);
-      expect(header.textContent).toContain("↑");
+      expect(header.textContent).toContain("â†‘");
     });
   });
 
@@ -141,7 +142,7 @@ describe("ScreenerTable", () => {
     });
 
     it("calls onLoadMore when Load more is clicked", () => {
-      const onLoadMore = jest.fn();
+      const onLoadMore = vi.fn();
       render(
         <ScreenerTable {...DEFAULT_PROPS} hasNextPage={true} onLoadMore={onLoadMore} />,
       );

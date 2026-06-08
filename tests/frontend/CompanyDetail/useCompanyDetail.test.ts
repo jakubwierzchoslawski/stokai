@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach , type Mock } from 'vitest';
 /**
  * Unit tests for useCompanyDetail hook.
  *
@@ -12,7 +13,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import { useCompanyDetail, companyDetailQueryKey } from '../../../src/frontend/pages/CompanyDetail/hooks/useCompanyDetail';
 
-// ── Fixtures ───────────────────────────────────────────────────────────────────
+// â”€â”€ Fixtures â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const COMPANY_ID = 'c1c1c1c1-0000-0000-0000-000000000001';
 const PROFILE_ID = 'aaaaaaaa-0000-0000-0000-000000000001';
@@ -38,7 +39,7 @@ const MOCK_DETAIL = {
   directional_accuracy_t1d: null,
 };
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function createWrapper() {
   const queryClient = new QueryClient({
@@ -50,15 +51,15 @@ function createWrapper() {
   return { Wrapper, queryClient };
 }
 
-// ── Tests ──────────────────────────────────────────────────────────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('useCompanyDetail', () => {
   beforeEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   it('makes GET request to the company detail endpoint', async () => {
-    global.fetch = jest.fn().mockResolvedValueOnce({
+    global.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       json: async () => MOCK_DETAIL,
     } as Response);
@@ -78,7 +79,7 @@ describe('useCompanyDetail', () => {
   });
 
   it('includes profile_id in URL when provided', async () => {
-    global.fetch = jest.fn().mockResolvedValueOnce({
+    global.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       json: async () => MOCK_DETAIL,
     } as Response);
@@ -91,7 +92,7 @@ describe('useCompanyDetail', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    const calledUrl = (global.fetch as jest.Mock).mock.calls[0][0] as string;
+    const calledUrl = (global.fetch as Mock).mock.calls[0][0] as string;
     expect(calledUrl).toContain(`profile_id=${PROFILE_ID}`);
   });
 
@@ -103,7 +104,7 @@ describe('useCompanyDetail', () => {
   });
 
   it('returns data from the API response', async () => {
-    global.fetch = jest.fn().mockResolvedValueOnce({
+    global.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       json: async () => MOCK_DETAIL,
     } as Response);
@@ -121,7 +122,7 @@ describe('useCompanyDetail', () => {
   });
 
   it('is disabled when companyId is empty', async () => {
-    global.fetch = jest.fn();
+    global.fetch = vi.fn();
 
     const { Wrapper } = createWrapper();
     const { result } = renderHook(

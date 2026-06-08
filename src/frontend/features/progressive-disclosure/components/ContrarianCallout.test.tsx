@@ -1,5 +1,6 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
- * ContrarianCallout.test.tsx — Tests for ContrarianCallout component.
+ * ContrarianCallout.test.tsx â€” Tests for ContrarianCallout component.
  *
  * PLAN-F-020 TASK-007
  */

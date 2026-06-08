@@ -1,5 +1,6 @@
+import { describe, it, expect, vi, beforeEach , type Mock } from 'vitest';
 /**
- * SourcesPage and SourceList tests — PLAN-F-028 TASK-007
+ * SourcesPage and SourceList tests â€” PLAN-F-028 TASK-007
  *
  * Uses msw to mock the /api/v1/admin/sources endpoint.
  *
@@ -16,27 +17,27 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// ── Mocks ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Mocks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-jest.mock("../../../hooks/useCurrentUser", () => ({
-  useCurrentUser: jest.fn(),
+vi.mock("../../../hooks/useCurrentUser", () => ({
+  useCurrentUser: vi.fn(),
 }));
 
-jest.mock("./SocialSourcesPanel", () => ({
+vi.mock("./SocialSourcesPanel", () => ({
   SocialSourcesPanel: () =>
     React.createElement("div", { "data-testid": "social-panel" }),
 }));
 
-jest.mock("./BindingsPanel", () => ({
+vi.mock("./BindingsPanel", () => ({
   BindingsPanel: () =>
     React.createElement("div", { "data-testid": "bindings-panel" }),
 }));
 
 import { useCurrentUser } from "../../../hooks/useCurrentUser";
 
-const mockUseCurrentUser = useCurrentUser as jest.Mock;
+const mockUseCurrentUser = useCurrentUser as Mock;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeSource(overrides: Partial<Record<string, unknown>> = {}) {
   return {
@@ -58,7 +59,7 @@ function makeSource(overrides: Partial<Record<string, unknown>> = {}) {
 }
 
 function makeFetchMock(data: unknown, ok = true) {
-  return jest.fn().mockResolvedValue({
+  return vi.fn().mockResolvedValue({
     ok,
     status: ok ? 200 : 500,
     json: async () => (ok ? { data, error: null } : { data: null, error: { code: "ERR", message: "fail" } }),
@@ -78,11 +79,11 @@ function renderWithProviders(ui: React.ReactElement) {
   );
 }
 
-// ── SourceList tests ──────────────────────────────────────────────────────────
+// â”€â”€ SourceList tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe("SourceList", () => {
   beforeEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
     mockUseCurrentUser.mockReturnValue({
       user: { user_id: "u1", tenant_id: "t1", role: "admin", email: "a@test.com" },
       isLoading: false,

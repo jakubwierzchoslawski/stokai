@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
- * EventPopup.test.tsx — TDD tests for EventPopup component.
+ * EventPopup.test.tsx â€” TDD tests for EventPopup component.
  *
  * PLAN-F-020 TASK-006
  */
@@ -12,7 +13,7 @@ import { EventPopup } from './EventPopup';
 import * as usePopupDataModule from '../hooks/usePopupData';
 import type { PopupData } from '../types/disclosure.types';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -46,7 +47,7 @@ function mockUsePopupData(overrides: {
   isLoading?: boolean;
   data?: PopupData;
 }) {
-  jest.spyOn(usePopupDataModule, 'usePopupData').mockReturnValue({
+  vi.spyOn(usePopupDataModule, 'usePopupData').mockReturnValue({
     data: overrides.data,
     isLoading: overrides.isLoading ?? false,
     isSuccess: !overrides.isLoading && !!overrides.data,
@@ -55,18 +56,18 @@ function mockUsePopupData(overrides: {
   } as ReturnType<typeof usePopupDataModule.usePopupData>);
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('EventPopup', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('renders skeleton while isLoading=true', () => {
     mockUsePopupData({ isLoading: true });
 
     render(
-      <EventPopup eventId="evt-001" onExpand={jest.fn()} onClose={jest.fn()} />,
+      <EventPopup eventId="evt-001" onExpand={vi.fn()} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -78,7 +79,7 @@ describe('EventPopup', () => {
     mockUsePopupData({ data: buildPopupData() });
 
     render(
-      <EventPopup eventId="evt-001" onExpand={jest.fn()} onClose={jest.fn()} />,
+      <EventPopup eventId="evt-001" onExpand={vi.fn()} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -97,7 +98,7 @@ describe('EventPopup', () => {
     mockUsePopupData({ data: buildPopupData() });
 
     render(
-      <EventPopup eventId="evt-001" onExpand={jest.fn()} onClose={jest.fn()} />,
+      <EventPopup eventId="evt-001" onExpand={vi.fn()} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -105,23 +106,23 @@ describe('EventPopup', () => {
     expect(aaplTicker).toHaveTextContent('+2.5');
   });
 
-  it('renders negative delta with "−" prefix', () => {
+  it('renders negative delta with "â’" prefix', () => {
     mockUsePopupData({ data: buildPopupData() });
 
     render(
-      <EventPopup eventId="evt-001" onExpand={jest.fn()} onClose={jest.fn()} />,
+      <EventPopup eventId="evt-001" onExpand={vi.fn()} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
     const msftTicker = screen.getByTestId('ticker-MSFT');
-    expect(msftTicker).toHaveTextContent('−1.0');
+    expect(msftTicker).toHaveTextContent('â’1.0');
   });
 
   it('shows LowSampleDisclaimer when low_sample=true', () => {
     mockUsePopupData({ data: buildPopupData({ low_sample: true }) });
 
     render(
-      <EventPopup eventId="evt-001" onExpand={jest.fn()} onClose={jest.fn()} />,
+      <EventPopup eventId="evt-001" onExpand={vi.fn()} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -132,7 +133,7 @@ describe('EventPopup', () => {
     mockUsePopupData({ data: buildPopupData({ low_sample: false }) });
 
     render(
-      <EventPopup eventId="evt-001" onExpand={jest.fn()} onClose={jest.fn()} />,
+      <EventPopup eventId="evt-001" onExpand={vi.fn()} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -141,10 +142,10 @@ describe('EventPopup', () => {
 
   it('calls onExpand exactly once when Expand is clicked', () => {
     mockUsePopupData({ data: buildPopupData() });
-    const onExpand = jest.fn();
+    const onExpand = vi.fn();
 
     render(
-      <EventPopup eventId="evt-001" onExpand={onExpand} onClose={jest.fn()} />,
+      <EventPopup eventId="evt-001" onExpand={onExpand} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -154,10 +155,10 @@ describe('EventPopup', () => {
 
   it('calls onClose exactly once when close button is clicked', () => {
     mockUsePopupData({ data: buildPopupData() });
-    const onClose = jest.fn();
+    const onClose = vi.fn();
 
     render(
-      <EventPopup eventId="evt-001" onExpand={jest.fn()} onClose={onClose} />,
+      <EventPopup eventId="evt-001" onExpand={vi.fn()} onClose={onClose} />,
       { wrapper: makeWrapper() },
     );
 

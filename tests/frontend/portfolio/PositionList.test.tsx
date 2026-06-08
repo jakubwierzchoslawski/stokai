@@ -1,3 +1,4 @@
+﻿import { describe, test, expect, vi } from 'vitest';
 /**
  * tests/frontend/portfolio/PositionList.test.tsx
  *
@@ -26,7 +27,7 @@ const POSITIONS: Position[] = [
 ];
 
 describe('PositionList', () => {
-  test('test_position_list_renders_rows: 2 positions → 2 rows', () => {
+  test('test_position_list_renders_rows: 2 positions â†’ 2 rows', () => {
     render(
       <PositionList portfolioId="p-1" positions={POSITIONS} />,
       { wrapper }
@@ -47,7 +48,7 @@ describe('PositionList', () => {
   });
 
   test('test_delete_position_calls_api_and_invalidates', async () => {
-    const onDeletePosition = jest.fn().mockResolvedValue(undefined);
+    const onDeletePosition = vi.fn().mockResolvedValue(undefined);
 
     render(
       <PositionList

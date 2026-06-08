@@ -1,5 +1,6 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
- * ProgressiveDisclosureProvider.test.tsx — TDD tests for state machine.
+ * ProgressiveDisclosureProvider.test.tsx â€” TDD tests for state machine.
  *
  * PLAN-F-020 TASK-012
  */
@@ -15,7 +16,7 @@ import {
 } from './ProgressiveDisclosureProvider';
 import type { EventPulse } from '../intelligence-map/types/map.types';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -68,7 +69,7 @@ function TestConsumer() {
   );
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('ProgressiveDisclosureProvider', () => {
   it('initialises with all state false and selectedEventId null', () => {
@@ -133,7 +134,7 @@ describe('ProgressiveDisclosureProvider', () => {
 
     expect(screen.getByTestId('side-panel-open')).toHaveTextContent('false');
     expect(screen.getByTestId('audit-trail-open')).toHaveTextContent('false');
-    // popup was open before closeSidePanel — it should remain open
+    // popup was open before closeSidePanel â€” it should remain open
     expect(screen.getByTestId('popup-open')).toHaveTextContent('true');
   });
 

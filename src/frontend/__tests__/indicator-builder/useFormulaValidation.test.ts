@@ -1,11 +1,11 @@
-/**
- * Tests for useFormulaValidation hook (TDD — written before implementation).
+﻿/**
+ * Tests for useFormulaValidation hook (TDD â€” written before implementation).
  *
  * Uses vitest + @testing-library/react-hooks.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useFormulaValidation } from "../../components/indicator-builder/hooks/useFormulaValidation";
+import { useFormulaValidation } from "../../features/indicator-builder/hooks/useFormulaValidation";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -68,7 +68,7 @@ describe("useFormulaValidation", () => {
       result.current.validate("revenue * 0.5");
     });
 
-    // Before debounce — should not have called yet
+    // Before debounce â€” should not have called yet
     expect(mockFetch).not.toHaveBeenCalled();
 
     // Advance past debounce window
@@ -85,7 +85,7 @@ describe("useFormulaValidation", () => {
     );
   });
 
-  it("debounces rapid consecutive calls — only last call fires", async () => {
+  it("debounces rapid consecutive calls â€” only last call fires", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ data: { valid: true, errors: [] } }),
@@ -115,7 +115,7 @@ describe("useFormulaValidation", () => {
       vi.advanceTimersByTime(350);
     });
 
-    // Only one call — the last one
+    // Only one call â€” the last one
     expect(mockFetch).toHaveBeenCalledTimes(1);
     expect(mockFetch).toHaveBeenCalledWith(
       "/api/v1/indicators/validate",

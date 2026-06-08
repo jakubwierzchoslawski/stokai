@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi } from 'vitest';
 /**
- * supercluster.worker.test.ts — TDD tests for the Supercluster Web Worker logic.
+ * supercluster.worker.test.ts â€” TDD tests for the Supercluster Web Worker logic.
  *
  * Because jsdom does not support real Web Workers, we test the worker logic
  * inline by importing the Supercluster clustering logic directly. A separate
@@ -12,12 +13,12 @@
 import type { EventPulse, WorkerRequest, WorkerResponse } from '../types/map.types';
 import { buildEventProperties } from '../lib/cluster-properties';
 
-// ── Minimal Supercluster import for inline tests ──────────────────────────────
+// â”€â”€ Minimal Supercluster import for inline tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const Supercluster = require('supercluster') as typeof import('supercluster').default;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildEvent(overrides: Partial<EventPulse> = {}): EventPulse {
   return {
@@ -74,10 +75,10 @@ function runWorkerLogic(req: WorkerRequest): WorkerResponse {
   };
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-describe('Supercluster worker logic — basic clustering', () => {
-  it('5 events within a small bbox at zoom=2 → returns 1 cluster with event_count=5', () => {
+describe('Supercluster worker logic â€” basic clustering', () => {
+  it('5 events within a small bbox at zoom=2 â†’ returns 1 cluster with event_count=5', () => {
     const events = Array.from({ length: 5 }, (_, i) =>
       buildEvent({ event_id: `e${i}`, lat: 51.5 + i * 0.001, lon: -0.1 }),
     );
@@ -91,8 +92,8 @@ describe('Supercluster worker logic — basic clustering', () => {
   });
 });
 
-describe('Supercluster worker logic — intensity-5 punch-through', () => {
-  it('1 intensity-5 + 4 intensity-3 at zoom=2 → intensity-5 in individualEvents, cluster count=4', () => {
+describe('Supercluster worker logic â€” intensity-5 punch-through', () => {
+  it('1 intensity-5 + 4 intensity-3 at zoom=2 â†’ intensity-5 in individualEvents, cluster count=4', () => {
     const intensity5 = buildEvent({ event_id: 'high', intensity: 5, lat: 51.5, lon: -0.1 });
     const others = Array.from({ length: 4 }, (_, i) =>
       buildEvent({ event_id: `low${i}`, intensity: 3, lat: 51.5 + i * 0.001, lon: -0.1 }),
@@ -110,7 +111,7 @@ describe('Supercluster worker logic — intensity-5 punch-through', () => {
   });
 });
 
-describe('Supercluster worker logic — max_intensity in clusters', () => {
+describe('Supercluster worker logic â€” max_intensity in clusters', () => {
   it('cluster max_intensity equals the highest intensity among members', () => {
     const events = [
       buildEvent({ intensity: 2, lat: 51.5, lon: -0.1 }),
@@ -129,7 +130,7 @@ describe('Supercluster worker logic — max_intensity in clusters', () => {
   });
 });
 
-describe('Supercluster worker logic — zoom=7 all individual', () => {
+describe('Supercluster worker logic â€” zoom=7 all individual', () => {
   it('at zoom=7, all events go to individualEvents (no clusters)', () => {
     const events = Array.from({ length: 5 }, (_, i) =>
       buildEvent({ event_id: `e${i}`, intensity: 2 }),
@@ -140,7 +141,7 @@ describe('Supercluster worker logic — zoom=7 all individual', () => {
   });
 });
 
-describe('Supercluster worker logic — categories sum', () => {
+describe('Supercluster worker logic â€” categories sum', () => {
   it('cluster categories sums counts correctly', () => {
     const events = [
       buildEvent({ category: ['CONFLICT'], intensity: 2, lat: 51.5, lon: -0.1 }),
@@ -163,10 +164,10 @@ describe('Worker instantiation', () => {
     // This test verifies the worker instantiation pattern used in IntelligenceMap.
     // The actual Worker() call is in IntelligenceMap.tsx, not the worker file itself.
     // Here we simply assert the test harness can instantiate a Worker-like object.
-    const MockWorker = jest.fn().mockImplementation(() => ({
-      postMessage: jest.fn(),
+    const MockWorker = vi.fn().mockImplementation(() => ({
+      postMessage: vi.fn(),
       onmessage: null,
-      terminate: jest.fn(),
+      terminate: vi.fn(),
     }));
     const worker = new MockWorker('supercluster.worker.ts', { type: 'module' });
     expect(MockWorker).toHaveBeenCalledTimes(1);

@@ -1,5 +1,6 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
- * HilQueueTable tests — PLAN-F-013 TASK-008
+ * HilQueueTable tests â€” PLAN-F-013 TASK-008
  *
  * Covers:
  *   - Items rendered sorted by scheduled_send_at

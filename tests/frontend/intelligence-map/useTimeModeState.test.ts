@@ -1,5 +1,6 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
- * useTimeModeState.test.ts — TDD tests for the time-mode state hook.
+ * useTimeModeState.test.ts â€” TDD tests for the time-mode state hook.
  *
  * PLAN-F-021 TASK-002
  */

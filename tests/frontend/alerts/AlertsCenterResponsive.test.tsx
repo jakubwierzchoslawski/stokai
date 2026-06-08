@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi } from 'vitest';
 /**
- * AlertsCenterResponsive.test.tsx — TDD tests for Alerts Center mobile-first layout.
+ * AlertsCenterResponsive.test.tsx â€” TDD tests for Alerts Center mobile-first layout.
  *
  * Tests written first (red phase) per PLAN-N-014 TASK-007.
  */
@@ -9,7 +10,7 @@ import { render, screen } from "@testing-library/react";
 import { AlertListRow } from "../../../src/frontend/components/alerts/AlertListRow";
 import { AlertRuleCard } from "../../../src/frontend/components/alerts/AlertRuleCard";
 
-// ── Mock data ─────────────────────────────────────────────────────────────────
+// â”€â”€ Mock data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const mockAlertItem = {
   alert_id: "alert-1",
@@ -39,10 +40,10 @@ const mockRule = {
   per_ticker_interval_hours: 24,
 };
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe("AlertListRow mobile-first responsive (AC-001)", () => {
-  it("row element has min-h-[44px] class or inline minHeight ≥ 44px for touch target", () => {
+  it("row element has min-h-[44px] class or inline minHeight â‰Ą 44px for touch target", () => {
     render(
       <table>
         <tbody>
@@ -58,7 +59,7 @@ describe("AlertListRow mobile-first responsive (AC-001)", () => {
     expect(hasClass || hasStyle).toBe(true);
   });
 
-  it("action signal badge has inline-flex display and minHeight ≥ 44px", () => {
+  it("action signal badge has inline-flex display and minHeight â‰Ą 44px", () => {
     render(
       <table>
         <tbody>
@@ -94,13 +95,13 @@ describe("AlertListRow mobile-first responsive (AC-001)", () => {
 });
 
 describe("AlertRuleCard mobile-first responsive (AC-001)", () => {
-  it("toggle label has minHeight ≥ 44px for touch target", () => {
+  it("toggle label has minHeight â‰Ą 44px for touch target", () => {
     render(
       <AlertRuleCard
         rule={mockRule}
-        onEdit={jest.fn()}
-        onToggleEnabled={jest.fn()}
-        onDelete={jest.fn()}
+        onEdit={vi.fn()}
+        onToggleEnabled={vi.fn()}
+        onDelete={vi.fn()}
       />,
     );
 
@@ -110,13 +111,13 @@ describe("AlertRuleCard mobile-first responsive (AC-001)", () => {
     expect(minH).toBeGreaterThanOrEqual(44);
   });
 
-  it("edit button has minHeight ≥ 44px for touch target", () => {
+  it("edit button has minHeight â‰Ą 44px for touch target", () => {
     render(
       <AlertRuleCard
         rule={mockRule}
-        onEdit={jest.fn()}
-        onToggleEnabled={jest.fn()}
-        onDelete={jest.fn()}
+        onEdit={vi.fn()}
+        onToggleEnabled={vi.fn()}
+        onDelete={vi.fn()}
       />,
     );
 
@@ -125,13 +126,13 @@ describe("AlertRuleCard mobile-first responsive (AC-001)", () => {
     expect(minH).toBeGreaterThanOrEqual(44);
   });
 
-  it("delete button has minHeight ≥ 44px for touch target", () => {
+  it("delete button has minHeight â‰Ą 44px for touch target", () => {
     render(
       <AlertRuleCard
         rule={mockRule}
-        onEdit={jest.fn()}
-        onToggleEnabled={jest.fn()}
-        onDelete={jest.fn()}
+        onEdit={vi.fn()}
+        onToggleEnabled={vi.fn()}
+        onDelete={vi.fn()}
       />,
     );
 
@@ -144,9 +145,9 @@ describe("AlertRuleCard mobile-first responsive (AC-001)", () => {
     render(
       <AlertRuleCard
         rule={mockRule}
-        onEdit={jest.fn()}
-        onToggleEnabled={jest.fn()}
-        onDelete={jest.fn()}
+        onEdit={vi.fn()}
+        onToggleEnabled={vi.fn()}
+        onDelete={vi.fn()}
       />,
     );
 

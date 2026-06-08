@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
- * useSidePanelData.test.ts — TDD tests for the useSidePanelData hook.
+ * useSidePanelData.test.ts â€” TDD tests for the useSidePanelData hook.
  *
  * PLAN-F-020 TASK-005
  */
@@ -49,11 +50,11 @@ function buildSidePanelData(): SidePanelData {
 
 describe('useSidePanelData', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('does not fire when enabled=false', async () => {
-    const spy = jest.spyOn(disclosureApi, 'fetchSidePanelData');
+    const spy = vi.spyOn(disclosureApi, 'fetchSidePanelData');
 
     const { result } = renderHook(() => useSidePanelData('evt-001', false), {
       wrapper: makeWrapper(),
@@ -66,7 +67,7 @@ describe('useSidePanelData', () => {
 
   it('fires exactly once when enabled=true', async () => {
     const data = buildSidePanelData();
-    const spy = jest
+    const spy = vi
       .spyOn(disclosureApi, 'fetchSidePanelData')
       .mockResolvedValue(data);
 

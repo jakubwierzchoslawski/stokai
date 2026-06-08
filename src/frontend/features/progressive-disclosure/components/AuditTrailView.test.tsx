@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
- * AuditTrailView.test.tsx — TDD tests for AuditTrailView component.
+ * AuditTrailView.test.tsx â€” TDD tests for AuditTrailView component.
  *
  * PLAN-F-020 TASK-010
  */
@@ -50,7 +51,7 @@ function mockUseAuditTrail(opts: {
   isLoading?: boolean;
   data?: AuditTrailData;
 }) {
-  jest.spyOn(useAuditTrailModule, 'useAuditTrail').mockReturnValue({
+  vi.spyOn(useAuditTrailModule, 'useAuditTrail').mockReturnValue({
     data: opts.data,
     isLoading: opts.isLoading ?? false,
     isSuccess: !opts.isLoading && !!opts.data,
@@ -59,18 +60,18 @@ function mockUseAuditTrail(opts: {
   } as ReturnType<typeof useAuditTrailModule.useAuditTrail>);
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('AuditTrailView', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('does not render when isOpen=false', () => {
-    const spy = jest.spyOn(useAuditTrailModule, 'useAuditTrail');
+    const spy = vi.spyOn(useAuditTrailModule, 'useAuditTrail');
 
     render(
-      <AuditTrailView eventId="evt-001" isOpen={false} onClose={jest.fn()} />,
+      <AuditTrailView eventId="evt-001" isOpen={false} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -82,7 +83,7 @@ describe('AuditTrailView', () => {
     mockUseAuditTrail({ data: buildAuditTrailData() });
 
     render(
-      <AuditTrailView eventId="evt-001" isOpen={true} onClose={jest.fn()} />,
+      <AuditTrailView eventId="evt-001" isOpen={true} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -94,7 +95,7 @@ describe('AuditTrailView', () => {
     mockUseAuditTrail({ data: buildAuditTrailData() });
 
     render(
-      <AuditTrailView eventId="evt-001" isOpen={true} onClose={jest.fn()} />,
+      <AuditTrailView eventId="evt-001" isOpen={true} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -108,11 +109,11 @@ describe('AuditTrailView', () => {
     mockUseAuditTrail({ data: buildAuditTrailData() });
 
     render(
-      <AuditTrailView eventId="evt-001" isOpen={true} onClose={jest.fn()} />,
+      <AuditTrailView eventId="evt-001" isOpen={true} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
-    // Scores are 0.92 → 92% and 0.78 → 78%
+    // Scores are 0.92 â†’ 92% and 0.78 â†’ 78%
     expect(screen.getByText('92%')).toBeInTheDocument();
     expect(screen.getByText('78%')).toBeInTheDocument();
   });
@@ -121,7 +122,7 @@ describe('AuditTrailView', () => {
     mockUseAuditTrail({ data: buildAuditTrailData() });
 
     render(
-      <AuditTrailView eventId="evt-001" isOpen={true} onClose={jest.fn()} />,
+      <AuditTrailView eventId="evt-001" isOpen={true} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -136,7 +137,7 @@ describe('AuditTrailView', () => {
     mockUseAuditTrail({ data: buildAuditTrailData({ langfuse_trace_url: '' }) });
 
     render(
-      <AuditTrailView eventId="evt-001" isOpen={true} onClose={jest.fn()} />,
+      <AuditTrailView eventId="evt-001" isOpen={true} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -145,7 +146,7 @@ describe('AuditTrailView', () => {
 
   it('calls onClose when close button is clicked', () => {
     mockUseAuditTrail({ data: buildAuditTrailData() });
-    const onClose = jest.fn();
+    const onClose = vi.fn();
 
     render(
       <AuditTrailView eventId="evt-001" isOpen={true} onClose={onClose} />,

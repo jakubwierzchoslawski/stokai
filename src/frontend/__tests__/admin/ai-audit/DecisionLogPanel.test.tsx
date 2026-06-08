@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tests for DecisionLogPanel and DecisionDetailDrawer components.
  *
  * PLAN-F-029 TASK-007
@@ -44,9 +44,9 @@ describe('DecisionLogPanel', () => {
         json: async () => ({ data: [MOCK_ROW], next_cursor: null, error: null }),
       } as Response);
 
-    const { DecisionLogPanel } = await import('../../../admin/ai-audit/DecisionLogPanel');
+    const { DecisionLogPanel } = await import('../../../pages/admin/ai-audit/DecisionLogPanel');
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(DecisionLogPanel)));
+    render(React.createElement(Wrapper, null, React.createElement(DecisionLogPanel)));
 
     await waitFor(() => {
       expect(screen.getByTestId(`decision-row-dec-001`)).toBeDefined();
@@ -71,9 +71,9 @@ describe('DecisionLogPanel', () => {
         json: async () => ({ data: DETAIL, error: null }),
       } as Response);
 
-    const { DecisionLogPanel } = await import('../../../admin/ai-audit/DecisionLogPanel');
+    const { DecisionLogPanel } = await import('../../../pages/admin/ai-audit/DecisionLogPanel');
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(DecisionLogPanel)));
+    render(React.createElement(Wrapper, null, React.createElement(DecisionLogPanel)));
 
     await waitFor(() => screen.getByTestId('decision-row-dec-001'));
     fireEvent.click(screen.getByTestId('decision-row-dec-001'));
@@ -86,7 +86,7 @@ describe('DecisionLogPanel', () => {
 
 describe('DecisionDetailDrawer', () => {
   it('renders langfuse_trace_url as anchor with target=_blank', async () => {
-    const { DecisionDetailDrawer } = await import('../../../admin/ai-audit/DecisionDetailDrawer');
+    const { DecisionDetailDrawer } = await import('../../../pages/admin/ai-audit/DecisionDetailDrawer');
 
     const detail = {
       decision_id: 'dec-001',
@@ -125,7 +125,7 @@ describe('DecisionLogFilter', () => {
     const onApply = vi.fn();
     const onClear = vi.fn();
 
-    const { DecisionLogFilter } = await import('../../../admin/ai-audit/DecisionLogFilter');
+    const { DecisionLogFilter } = await import('../../../pages/admin/ai-audit/DecisionLogFilter');
     render(React.createElement(DecisionLogFilter, { onApply, onClear }));
 
     // Set a filter value

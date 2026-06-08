@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
- * disclosure-components.test.tsx — Tests for LowSampleDisclaimer, ContrarianCallout,
+ * disclosure-components.test.tsx â€” Tests for LowSampleDisclaimer, ContrarianCallout,
  * SidePanelAnalogies, and AuditTrailView components.
  *
  * PLAN-F-020 TASK-007, TASK-008, TASK-010 (TDD)
@@ -23,7 +24,7 @@ function makeWrapper() {
   return Wrapper;
 }
 
-// ── LowSampleDisclaimer ───────────────────────────────────────────────────────
+// â”€â”€ LowSampleDisclaimer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('LowSampleDisclaimer', () => {
   it('renders the disclaimer text with role=alert', () => {
@@ -35,7 +36,7 @@ describe('LowSampleDisclaimer', () => {
   });
 });
 
-// ── ContrarianCallout ─────────────────────────────────────────────────────────
+// â”€â”€ ContrarianCallout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('ContrarianCallout', () => {
   it('renders passed text with "History says" label', () => {
@@ -51,7 +52,7 @@ describe('ContrarianCallout', () => {
   });
 });
 
-// ── SidePanelAnalogies ────────────────────────────────────────────────────────
+// â”€â”€ SidePanelAnalogies â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildAnalogy(id: string, score: number): AnalogSummary {
   return { event_id: id, headline: `Event ${id}`, occurred_at: '2020-01-01', similarity_score: score };
@@ -75,7 +76,7 @@ describe('SidePanelAnalogies', () => {
     expect(screen.getByTestId('analogy-score-0')).toHaveTextContent('87%');
   });
 
-  it('truncates headline to ≤80 chars', () => {
+  it('truncates headline to â‰¤80 chars', () => {
     render(
       <SidePanelAnalogies analogies={[buildAnalogy('1', 0.5)].map((a) => ({
         ...a,
@@ -87,7 +88,7 @@ describe('SidePanelAnalogies', () => {
   });
 });
 
-// ── AuditTrailView ────────────────────────────────────────────────────────────
+// â”€â”€ AuditTrailView â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildAuditTrailData(): AuditTrailData {
   return {
@@ -106,19 +107,19 @@ function buildAuditTrailData(): AuditTrailData {
 
 describe('AuditTrailView', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('does not render when isOpen=false', () => {
     render(
-      <AuditTrailView eventId="evt-001" isOpen={false} onClose={jest.fn()} />,
+      <AuditTrailView eventId="evt-001" isOpen={false} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
     expect(screen.queryByTestId('audit-trail-view')).not.toBeInTheDocument();
   });
 
   it('renders prompt SHA, reasoning steps, and Langfuse link when open', () => {
-    jest.spyOn(useAuditTrailModule, 'useAuditTrail').mockReturnValue({
+    vi.spyOn(useAuditTrailModule, 'useAuditTrail').mockReturnValue({
       data: buildAuditTrailData(),
       isLoading: false,
       isSuccess: true,
@@ -127,7 +128,7 @@ describe('AuditTrailView', () => {
     } as ReturnType<typeof useAuditTrailModule.useAuditTrail>);
 
     render(
-      <AuditTrailView eventId="evt-001" isOpen={true} onClose={jest.fn()} />,
+      <AuditTrailView eventId="evt-001" isOpen={true} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -140,7 +141,7 @@ describe('AuditTrailView', () => {
   });
 
   it('omits Langfuse link when langfuse_trace_url is empty', () => {
-    jest.spyOn(useAuditTrailModule, 'useAuditTrail').mockReturnValue({
+    vi.spyOn(useAuditTrailModule, 'useAuditTrail').mockReturnValue({
       data: { ...buildAuditTrailData(), langfuse_trace_url: '' },
       isLoading: false,
       isSuccess: true,
@@ -149,7 +150,7 @@ describe('AuditTrailView', () => {
     } as ReturnType<typeof useAuditTrailModule.useAuditTrail>);
 
     render(
-      <AuditTrailView eventId="evt-001" isOpen={true} onClose={jest.fn()} />,
+      <AuditTrailView eventId="evt-001" isOpen={true} onClose={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -157,7 +158,7 @@ describe('AuditTrailView', () => {
   });
 
   it('calls onClose when close button is clicked', () => {
-    jest.spyOn(useAuditTrailModule, 'useAuditTrail').mockReturnValue({
+    vi.spyOn(useAuditTrailModule, 'useAuditTrail').mockReturnValue({
       data: buildAuditTrailData(),
       isLoading: false,
       isSuccess: true,
@@ -165,7 +166,7 @@ describe('AuditTrailView', () => {
       error: null,
     } as ReturnType<typeof useAuditTrailModule.useAuditTrail>);
 
-    const onClose = jest.fn();
+    const onClose = vi.fn();
     render(
       <AuditTrailView eventId="evt-001" isOpen={true} onClose={onClose} />,
       { wrapper: makeWrapper() },

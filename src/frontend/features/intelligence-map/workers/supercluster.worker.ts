@@ -16,8 +16,8 @@ import { buildEventProperties } from '../lib/cluster-properties';
 
 // Supercluster is a CommonJS module; import the default export.
 // When bundled by Vite the named import resolves correctly.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const Supercluster = require('supercluster') as typeof import('supercluster').default;
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
+const Supercluster = (require('supercluster') as any).default ?? require('supercluster');
 
 const MIN_ZOOM = 0;
 const MAX_ZOOM = 7;
@@ -67,7 +67,8 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
   const response: WorkerResponse = {
     clusters: {
       type: 'FeatureCollection',
-      features: clusters as unknown as GeoJSON.Feature[],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      features: clusters as unknown as any[],
     },
     individualEvents,
   };

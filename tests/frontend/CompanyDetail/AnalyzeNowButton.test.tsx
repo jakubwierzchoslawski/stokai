@@ -1,3 +1,4 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
  * Tests for AnalyzeNowButton component.
  *
@@ -17,7 +18,7 @@ import { AnalyzeNowButton } from '../../../src/frontend/pages/CompanyDetail/Anal
 const COMPANY_ID = 'c1c1c1c1-0000-0000-0000-000000000001';
 const RUN_ID = 'run-xyz-999';
 
-// ── WebSocket mock ─────────────────────────────────────────────────────────────
+// â”€â”€ WebSocket mock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class MockWebSocket {
   static instances: MockWebSocket[] = [];
@@ -47,7 +48,7 @@ function setupFetch(options: { status?: number } = {}) {
   MockWebSocket.instances = [];
   (global as unknown as { WebSocket: unknown }).WebSocket = MockWebSocket;
 
-  global.fetch = jest.fn().mockResolvedValue({
+  global.fetch = vi.fn().mockResolvedValue({
     ok: status < 400,
     status,
     json: async () => ({
@@ -64,7 +65,7 @@ function setupFetch(options: { status?: number } = {}) {
 }
 
 afterEach(() => {
-  jest.resetAllMocks();
+  vi.resetAllMocks();
   MockWebSocket.instances = [];
 });
 
@@ -134,7 +135,7 @@ describe('AnalyzeNowButton', () => {
 
   it('calls onReportReady when analysis COMPLETED', async () => {
     setupFetch();
-    const onReportReady = jest.fn();
+    const onReportReady = vi.fn();
     render(<AnalyzeNowButton companyId={COMPANY_ID} onReportReady={onReportReady} />);
 
     fireEvent.click(screen.getByTestId('analyze-now-btn'));

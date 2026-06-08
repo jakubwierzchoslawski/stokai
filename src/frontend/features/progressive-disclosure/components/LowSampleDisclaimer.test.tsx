@@ -1,5 +1,6 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
- * LowSampleDisclaimer.test.tsx — Tests for LowSampleDisclaimer component.
+ * LowSampleDisclaimer.test.tsx â€” Tests for LowSampleDisclaimer component.
  *
  * PLAN-F-020 TASK-007
  */

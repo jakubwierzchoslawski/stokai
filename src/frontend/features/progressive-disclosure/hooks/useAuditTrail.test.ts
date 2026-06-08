@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
- * useAuditTrail.test.ts — TDD tests for the useAuditTrail hook.
+ * useAuditTrail.test.ts â€” TDD tests for the useAuditTrail hook.
  *
  * PLAN-F-020 TASK-005
  */
@@ -46,12 +47,12 @@ function buildAuditTrailData(): AuditTrailData {
 
 describe('useAuditTrail', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('returns reasoning_steps as non-empty array when enabled=true', async () => {
     const data = buildAuditTrailData();
-    jest.spyOn(disclosureApi, 'fetchAuditTrail').mockResolvedValue(data);
+    vi.spyOn(disclosureApi, 'fetchAuditTrail').mockResolvedValue(data);
 
     const { result } = renderHook(() => useAuditTrail('evt-001', true), {
       wrapper: makeWrapper(),
@@ -63,7 +64,7 @@ describe('useAuditTrail', () => {
   });
 
   it('does not fire when enabled=false', async () => {
-    const spy = jest.spyOn(disclosureApi, 'fetchAuditTrail');
+    const spy = vi.spyOn(disclosureApi, 'fetchAuditTrail');
 
     const { result } = renderHook(() => useAuditTrail('evt-001', false), {
       wrapper: makeWrapper(),

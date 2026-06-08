@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
- * side-panel.test.tsx — Tests for SidePanel component.
+ * side-panel.test.tsx â€” Tests for SidePanel component.
  *
  * PLAN-F-020 TASK-009 (TDD)
  */
@@ -53,7 +54,7 @@ function buildSidePanelData(overrides: Partial<SidePanelData> = {}): SidePanelDa
 }
 
 function mockUseSidePanelData(opts: { isLoading?: boolean; data?: SidePanelData }) {
-  jest.spyOn(useSidePanelDataModule, 'useSidePanelData').mockReturnValue({
+  vi.spyOn(useSidePanelDataModule, 'useSidePanelData').mockReturnValue({
     data: opts.data,
     isLoading: opts.isLoading ?? false,
     isSuccess: !opts.isLoading && !!opts.data,
@@ -64,11 +65,11 @@ function mockUseSidePanelData(opts: { isLoading?: boolean; data?: SidePanelData 
 
 describe('SidePanel', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('is off-screen when isOpen=false', () => {
-    jest.spyOn(useSidePanelDataModule, 'useSidePanelData').mockReturnValue({
+    vi.spyOn(useSidePanelDataModule, 'useSidePanelData').mockReturnValue({
       data: undefined,
       isLoading: false,
       isSuccess: false,
@@ -77,7 +78,7 @@ describe('SidePanel', () => {
     } as ReturnType<typeof useSidePanelDataModule.useSidePanelData>);
 
     render(
-      <SidePanel eventId="evt-001" isOpen={false} onClose={jest.fn()} onOpenAuditTrail={jest.fn()} onOpenDeepDive={jest.fn()} />,
+      <SidePanel eventId="evt-001" isOpen={false} onClose={vi.fn()} onOpenAuditTrail={vi.fn()} onOpenDeepDive={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -90,7 +91,7 @@ describe('SidePanel', () => {
     mockUseSidePanelData({ data: buildSidePanelData() });
 
     render(
-      <SidePanel eventId="evt-001" isOpen={true} onClose={jest.fn()} onOpenAuditTrail={jest.fn()} onOpenDeepDive={jest.fn()} />,
+      <SidePanel eventId="evt-001" isOpen={true} onClose={vi.fn()} onOpenAuditTrail={vi.fn()} onOpenDeepDive={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -111,7 +112,7 @@ describe('SidePanel', () => {
     });
 
     render(
-      <SidePanel eventId="evt-001" isOpen={true} onClose={jest.fn()} onOpenAuditTrail={jest.fn()} onOpenDeepDive={jest.fn()} />,
+      <SidePanel eventId="evt-001" isOpen={true} onClose={vi.fn()} onOpenAuditTrail={vi.fn()} onOpenDeepDive={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -129,7 +130,7 @@ describe('SidePanel', () => {
     mockUseSidePanelData({ data: buildSidePanelData({ is_contrarian: false }) });
 
     render(
-      <SidePanel eventId="evt-001" isOpen={true} onClose={jest.fn()} onOpenAuditTrail={jest.fn()} onOpenDeepDive={jest.fn()} />,
+      <SidePanel eventId="evt-001" isOpen={true} onClose={vi.fn()} onOpenAuditTrail={vi.fn()} onOpenDeepDive={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -140,7 +141,7 @@ describe('SidePanel', () => {
     mockUseSidePanelData({ data: buildSidePanelData({ low_sample: true }) });
 
     render(
-      <SidePanel eventId="evt-001" isOpen={true} onClose={jest.fn()} onOpenAuditTrail={jest.fn()} onOpenDeepDive={jest.fn()} />,
+      <SidePanel eventId="evt-001" isOpen={true} onClose={vi.fn()} onOpenAuditTrail={vi.fn()} onOpenDeepDive={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -155,7 +156,7 @@ describe('SidePanel', () => {
     });
 
     render(
-      <SidePanel eventId="evt-001" isOpen={true} onClose={jest.fn()} onOpenAuditTrail={jest.fn()} onOpenDeepDive={jest.fn()} />,
+      <SidePanel eventId="evt-001" isOpen={true} onClose={vi.fn()} onOpenAuditTrail={vi.fn()} onOpenDeepDive={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -163,11 +164,11 @@ describe('SidePanel', () => {
     expect(screen.getByText('Breaking news')).toBeInTheDocument();
   });
 
-  it('social_posts null → no Triggering posts section', () => {
+  it('social_posts null â†’ no Triggering posts section', () => {
     mockUseSidePanelData({ data: buildSidePanelData({ social_posts: null }) });
 
     render(
-      <SidePanel eventId="evt-001" isOpen={true} onClose={jest.fn()} onOpenAuditTrail={jest.fn()} onOpenDeepDive={jest.fn()} />,
+      <SidePanel eventId="evt-001" isOpen={true} onClose={vi.fn()} onOpenAuditTrail={vi.fn()} onOpenDeepDive={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -176,10 +177,10 @@ describe('SidePanel', () => {
 
   it('calls onOpenAuditTrail when "Why this read?" is clicked', () => {
     mockUseSidePanelData({ data: buildSidePanelData() });
-    const onOpenAuditTrail = jest.fn();
+    const onOpenAuditTrail = vi.fn();
 
     render(
-      <SidePanel eventId="evt-001" isOpen={true} onClose={jest.fn()} onOpenAuditTrail={onOpenAuditTrail} onOpenDeepDive={jest.fn()} />,
+      <SidePanel eventId="evt-001" isOpen={true} onClose={vi.fn()} onOpenAuditTrail={onOpenAuditTrail} onOpenDeepDive={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 
@@ -189,10 +190,10 @@ describe('SidePanel', () => {
 
   it('calls onOpenDeepDive when "Full Analysis" is clicked', () => {
     mockUseSidePanelData({ data: buildSidePanelData() });
-    const onOpenDeepDive = jest.fn();
+    const onOpenDeepDive = vi.fn();
 
     render(
-      <SidePanel eventId="evt-001" isOpen={true} onClose={jest.fn()} onOpenAuditTrail={jest.fn()} onOpenDeepDive={onOpenDeepDive} />,
+      <SidePanel eventId="evt-001" isOpen={true} onClose={vi.fn()} onOpenAuditTrail={vi.fn()} onOpenDeepDive={onOpenDeepDive} />,
       { wrapper: makeWrapper() },
     );
 
@@ -202,10 +203,10 @@ describe('SidePanel', () => {
 
   it('calls onClose when close button is clicked', () => {
     mockUseSidePanelData({ data: buildSidePanelData() });
-    const onClose = jest.fn();
+    const onClose = vi.fn();
 
     render(
-      <SidePanel eventId="evt-001" isOpen={true} onClose={onClose} onOpenAuditTrail={jest.fn()} onOpenDeepDive={jest.fn()} />,
+      <SidePanel eventId="evt-001" isOpen={true} onClose={onClose} onOpenAuditTrail={vi.fn()} onOpenDeepDive={vi.fn()} />,
       { wrapper: makeWrapper() },
     );
 

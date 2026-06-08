@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tests for OverrideModal component and useAdminOverride hook.
  *
  * PLAN-F-029 TASK-008
@@ -40,7 +40,7 @@ describe('OverrideModal', () => {
   });
 
   async function renderModal(onClose = vi.fn(), onSuccess = vi.fn()) {
-    const { OverrideModal } = await import('../../../admin/ai-audit/OverrideModal');
+    const { OverrideModal } = await import('../../../pages/admin/ai-audit/OverrideModal');
     const Wrapper = makeWrapper();
     render(
       React.createElement(

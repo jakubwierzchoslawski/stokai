@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tests for WorkflowHistoryPanel and WorkflowDetailDrawer.
  *
  * PLAN-F-029 TASK-011
@@ -69,10 +69,10 @@ describe('WorkflowHistoryPanel', () => {
 
   it('renders one table row per WorkflowRunSummary', async () => {
     const { WorkflowHistoryPanel } = await import(
-      '../../../admin/ai-audit/WorkflowHistoryPanel'
+      '../../../pages/admin/ai-audit/WorkflowHistoryPanel'
     );
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(WorkflowHistoryPanel)));
+    render(React.createElement(Wrapper, null, React.createElement(WorkflowHistoryPanel)));
 
     await waitFor(() => {
       expect(screen.getByTestId(`workflow-row-${WORKFLOW_ID}`)).toBeDefined();
@@ -86,10 +86,10 @@ describe('WorkflowHistoryPanel', () => {
     } as Response);
 
     const { WorkflowHistoryPanel } = await import(
-      '../../../admin/ai-audit/WorkflowHistoryPanel'
+      '../../../pages/admin/ai-audit/WorkflowHistoryPanel'
     );
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(WorkflowHistoryPanel)));
+    render(React.createElement(Wrapper, null, React.createElement(WorkflowHistoryPanel)));
 
     await waitFor(() => screen.getByTestId(`workflow-row-${WORKFLOW_ID}`));
     fireEvent.click(screen.getByTestId(`workflow-row-${WORKFLOW_ID}`));
@@ -101,10 +101,10 @@ describe('WorkflowHistoryPanel', () => {
 
   it('Re-run button shows confirmation popover before mutation', async () => {
     const { WorkflowHistoryPanel } = await import(
-      '../../../admin/ai-audit/WorkflowHistoryPanel'
+      '../../../pages/admin/ai-audit/WorkflowHistoryPanel'
     );
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(WorkflowHistoryPanel)));
+    render(React.createElement(Wrapper, null, React.createElement(WorkflowHistoryPanel)));
 
     await waitFor(() => screen.getByTestId(`rerun-btn-${WORKFLOW_ID}`));
     fireEvent.click(screen.getByTestId(`rerun-btn-${WORKFLOW_ID}`));
@@ -129,10 +129,10 @@ describe('WorkflowHistoryPanel', () => {
     } as Response);
 
     const { WorkflowHistoryPanel } = await import(
-      '../../../admin/ai-audit/WorkflowHistoryPanel'
+      '../../../pages/admin/ai-audit/WorkflowHistoryPanel'
     );
     const Wrapper = makeWrapper();
-    render(React.createElement(Wrapper, {}, React.createElement(WorkflowHistoryPanel)));
+    render(React.createElement(Wrapper, null, React.createElement(WorkflowHistoryPanel)));
 
     await waitFor(() => screen.getByTestId(`rerun-btn-${WORKFLOW_ID}`));
     fireEvent.click(screen.getByTestId(`rerun-btn-${WORKFLOW_ID}`));
@@ -147,7 +147,7 @@ describe('WorkflowHistoryPanel', () => {
 describe('WorkflowDetailDrawer', () => {
   it('renders one accordion per AgentInvocationSummary', async () => {
     const { WorkflowDetailDrawer } = await import(
-      '../../../admin/ai-audit/WorkflowDetailDrawer'
+      '../../../pages/admin/ai-audit/WorkflowDetailDrawer'
     );
     render(
       React.createElement(WorkflowDetailDrawer, {
@@ -162,7 +162,7 @@ describe('WorkflowDetailDrawer', () => {
 
   it('renders tool calls nested under parent invocation', async () => {
     const { WorkflowDetailDrawer } = await import(
-      '../../../admin/ai-audit/WorkflowDetailDrawer'
+      '../../../pages/admin/ai-audit/WorkflowDetailDrawer'
     );
     render(
       React.createElement(WorkflowDetailDrawer, {

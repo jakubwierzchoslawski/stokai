@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 /**
- * BindingsPanel tests — PLAN-F-028 TASK-010
+ * BindingsPanel tests â€” PLAN-F-028 TASK-010
  *
  * Tests cover:
  *   - Renders loading state while fetching.
@@ -11,7 +12,7 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// ── Mocks ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Mocks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeClient() {
   return new QueryClient({
@@ -23,7 +24,7 @@ function makeClient() {
 }
 
 function makeFetch(bindingsData: unknown, sourcesData: unknown) {
-  return jest.fn().mockImplementation((url: string) => {
+  return vi.fn().mockImplementation((url: string) => {
     if (url.includes("/bindings")) {
       return Promise.resolve({
         ok: true,
@@ -54,16 +55,16 @@ function renderPanel() {
   );
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe("BindingsPanel", () => {
   beforeEach(() => {
-    jest.resetModules();
-    jest.resetAllMocks();
+    vi.resetModules();
+    vi.resetAllMocks();
   });
 
   it("shows loading state initially", () => {
-    (global as any).fetch = jest.fn().mockReturnValue(new Promise(() => {})); // never resolves
+    (global as any).fetch = vi.fn().mockReturnValue(new Promise(() => {})); // never resolves
     renderPanel();
     expect(screen.getByTestId("bindings-loading")).toBeTruthy();
   });
@@ -104,7 +105,7 @@ describe("BindingsPanel", () => {
       { source_id: "src-002", display_name: "Polygon", interface_type: "PriceProvider", enabled: true, config: {}, cost_tier: "medium", priority: 0, health: null },
     ];
 
-    (global as any).fetch = jest.fn().mockImplementation((url: string, opts?: RequestInit) => {
+    (global as any).fetch = vi.fn().mockImplementation((url: string, opts?: RequestInit) => {
       if ((opts?.method === "PUT") || url.includes("/bindings") && opts?.method === "PUT") {
         return Promise.resolve({
           ok: true,

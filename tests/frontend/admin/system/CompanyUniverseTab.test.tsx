@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach , type Mock } from 'vitest';
 /**
  * Tests for CompanyUniverseTab component.
  *
@@ -6,13 +7,13 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-jest.mock(
-  "../../../../frontend/src/pages/admin/system/hooks/useSystemOps",
+vi.mock(
+  "@/pages/admin/system/hooks/useSystemOps",
   () => ({
-    useTrackedCompanies: jest.fn(),
-    useUntrackCompany: jest.fn(),
-    useTrackCompany: jest.fn(),
-    useSearchCompanies: jest.fn(),
+    useTrackedCompanies: vi.fn(),
+    useUntrackCompany: vi.fn(),
+    useTrackCompany: vi.fn(),
+    useSearchCompanies: vi.fn(),
   })
 );
 
@@ -21,13 +22,13 @@ import {
   useUntrackCompany,
   useTrackCompany,
   useSearchCompanies,
-} from "../../../../frontend/src/pages/admin/system/hooks/useSystemOps";
-import { CompanyUniverseTab } from "../../../../frontend/src/pages/admin/system/CompanyUniverseTab";
+} from "@/pages/admin/system/hooks/useSystemOps";
+import { CompanyUniverseTab } from "@/pages/admin/system/CompanyUniverseTab";
 
-const mockUseTracked = useTrackedCompanies as jest.Mock;
-const mockUseUntrack = useUntrackCompany as jest.Mock;
-const mockUseTrack = useTrackCompany as jest.Mock;
-const mockUseSearch = useSearchCompanies as jest.Mock;
+const mockUseTracked = useTrackedCompanies as Mock;
+const mockUseUntrack = useUntrackCompany as Mock;
+const mockUseTrack = useTrackCompany as Mock;
+const mockUseSearch = useSearchCompanies as Mock;
 
 const COMPANY_ID = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
 
@@ -47,9 +48,9 @@ const MOCK_LIST = {
 };
 
 beforeEach(() => {
-  jest.clearAllMocks();
-  mockUseUntrack.mockReturnValue({ mutateAsync: jest.fn(), isPending: false });
-  mockUseTrack.mockReturnValue({ mutateAsync: jest.fn(), isPending: false });
+  vi.clearAllMocks();
+  mockUseUntrack.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
+  mockUseTrack.mockReturnValue({ mutateAsync: vi.fn(), isPending: false });
   mockUseSearch.mockReturnValue({ data: [], isLoading: false });
 });
 
@@ -67,7 +68,7 @@ describe("CompanyUniverseTab", () => {
   });
 
   it("Remove button calls DELETE /track for the company", async () => {
-    const untrackFn = jest.fn().mockResolvedValue({ company_id: COMPANY_ID, is_tracked: false });
+    const untrackFn = vi.fn().mockResolvedValue({ company_id: COMPANY_ID, is_tracked: false });
     mockUseUntrack.mockReturnValue({ mutateAsync: untrackFn, isPending: false });
     mockUseTracked.mockReturnValue({ data: MOCK_LIST, isLoading: false });
 
@@ -90,7 +91,7 @@ describe("CompanyUniverseTab", () => {
     const input = screen.getByTestId("company-search-input");
     fireEvent.change(input, { target: { value: "Tesla" } });
 
-    // The hook is called with debounced query — we verify it renders the input
+    // The hook is called with debounced query â€” we verify it renders the input
     expect(input).toBeTruthy();
   });
 
@@ -108,7 +109,7 @@ describe("CompanyUniverseTab", () => {
     // Simulate typing to trigger debouncedQuery set
     const input = screen.getByTestId("company-search-input");
     fireEvent.change(input, { target: { value: "Tes" } });
-    // Force the debouncedQuery via direct state — not possible in React without act
+    // Force the debouncedQuery via direct state â€” not possible in React without act
     // Just verify dropdown logic works with pre-populated query
     // The component conditionally renders dropdown only when debouncedQuery is set
     // This is a smoke test ensuring no render errors occur

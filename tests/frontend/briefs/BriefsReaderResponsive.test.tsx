@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
- * BriefsReaderResponsive.test.tsx — TDD tests for Briefs Reader mobile-first layout.
+ * BriefsReaderResponsive.test.tsx â€” TDD tests for Briefs Reader mobile-first layout.
  *
  * Tests written first (red phase) per PLAN-N-014 TASK-008.
  *
@@ -11,17 +12,17 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
-// ── Mock dependencies ─────────────────────────────────────────────────────────
+// â”€â”€ Mock dependencies â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-jest.mock("../../../src/frontend/features/briefs/hooks/useBriefDetail", () => ({
-  useBriefDetail: jest.fn(),
+vi.mock("../../../src/frontend/features/briefs/hooks/useBriefDetail", () => ({
+  useBriefDetail: vi.fn(),
 }));
 
-jest.mock("../../../src/frontend/features/briefs/FeedbackWidget", () => ({
+vi.mock("../../../src/frontend/features/briefs/FeedbackWidget", () => ({
   FeedbackWidget: () => <div data-testid="feedback-widget" />,
 }));
 
-jest.mock("../../../src/frontend/features/briefs/SafeHtmlRenderer", () => ({
+vi.mock("../../../src/frontend/features/briefs/SafeHtmlRenderer", () => ({
   SafeHtmlRenderer: ({ html, className }: { html: string; className?: string }) => (
     <div
       data-testid="safe-html-renderer"
@@ -35,13 +36,13 @@ const { useBriefDetail } = require("../../../src/frontend/features/briefs/hooks/
 
 import { BriefDetailPage } from "../../../src/frontend/features/briefs/BriefDetailPage";
 
-// ── Mock data ─────────────────────────────────────────────────────────────────
+// â”€â”€ Mock data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const longReport = {
   brief_id: "brief-1",
   type: "morning_brief" as const,
   date: "2026-06-04",
-  headline: "Morning Brief — 4 June 2026",
+  headline: "Morning Brief â€” 4 June 2026",
   confidence: 0.85,
   sample_size: 12,
   low_sample: false,
@@ -72,11 +73,11 @@ function renderBriefDetailPage() {
   );
 }
 
-// ── Tests ─────────────────────────────────────────────────name────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€nameâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe("BriefDetailPage mobile-first responsive (AC-002)", () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("root article element has overflow-x-hidden constraint", () => {

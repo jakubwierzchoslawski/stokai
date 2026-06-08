@@ -1,10 +1,11 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
- * time-mode-types.test.ts — Tests for time-mode type definitions (TASK-001).
+ * time-mode-types.test.ts â€” Tests for time-mode type definitions (TASK-001).
  *
  * PLAN-F-021 TASK-001
  */
 
-// Type-level tests — just confirm the barrel export works.
+// Type-level tests â€” just confirm the barrel export works.
 import type {
   TimeMode,
   PlaybackSpeed,

@@ -1,3 +1,4 @@
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 /**
  * Tests for AlertRulesPanel, AlertRuleCard, AlertRuleFormModal.
  *
@@ -11,23 +12,21 @@ import { AlertRuleFormModal } from '../../../src/frontend/components/alerts/Aler
 import type { AlertRule } from '../../../src/frontend/hooks/useAlertRules';
 
 // Mock hooks
-jest.mock('../../../src/frontend/hooks/useAlertRules', () => ({
-  useAlertRules: jest.fn(),
+vi.mock('../../../src/frontend/hooks/useAlertRules', () => ({
+  useAlertRules: vi.fn(),
   ALERT_RULES_QUERY_KEY: ['alert-rules'],
 }));
 
-jest.mock('../../../src/frontend/hooks/useMutateAlertRule', () => ({
-  useMutateAlertRule: jest.fn(),
+vi.mock('../../../src/frontend/hooks/useMutateAlertRule', () => ({
+  useMutateAlertRule: vi.fn(),
 }));
 
-jest.mock('@tanstack/react-query', () => ({
-  useQuery: jest.fn(),
-  useMutation: jest.fn(),
-  useQueryClient: jest.fn(() => ({ invalidateQueries: jest.fn() })),
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: vi.fn(),
+  useMutation: vi.fn(),
+  useQueryClient: vi.fn(() => ({ invalidateQueries: vi.fn() })),
 }));
 
-const { useAlertRules } = jest.requireMock('../../../src/frontend/hooks/useAlertRules');
-const { useMutateAlertRule } = jest.requireMock('../../../src/frontend/hooks/useMutateAlertRule');
 
 const makeRule = (overrides: Partial<AlertRule> = {}): AlertRule => ({
   rule_id: 'rule-1',
@@ -45,12 +44,12 @@ const makeRule = (overrides: Partial<AlertRule> = {}): AlertRule => ({
 });
 
 const noopMutations = {
-  createRule: { mutate: jest.fn(), mutateAsync: jest.fn() },
-  updateRule: { mutate: jest.fn(), mutateAsync: jest.fn() },
-  deleteRule: { mutate: jest.fn(), mutateAsync: jest.fn() },
+  createRule: { mutate: vi.fn(), mutateAsync: vi.fn() },
+  updateRule: { mutate: vi.fn(), mutateAsync: vi.fn() },
+  deleteRule: { mutate: vi.fn(), mutateAsync: vi.fn() },
 };
 
-// ── AlertRulesPanel ────────────────────────────────────────────────────────────
+// â”€â”€ AlertRulesPanel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('AlertRulesPanel', () => {
   beforeEach(() => {
@@ -73,17 +72,17 @@ describe('AlertRulesPanel', () => {
   });
 });
 
-// ── AlertRuleCard ──────────────────────────────────────────────────────────────
+// â”€â”€ AlertRuleCard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('AlertRuleCard', () => {
   it('enabled toggle calls onToggleEnabled with { enabled: false } when toggling off enabled rule', () => {
-    const onToggleEnabled = jest.fn();
+    const onToggleEnabled = vi.fn();
     render(
       <AlertRuleCard
         rule={makeRule({ enabled: true })}
-        onEdit={jest.fn()}
+        onEdit={vi.fn()}
         onToggleEnabled={onToggleEnabled}
-        onDelete={jest.fn()}
+        onDelete={vi.fn()}
       />
     );
     fireEvent.click(screen.getByTestId('enabled-toggle'));
@@ -94,9 +93,9 @@ describe('AlertRuleCard', () => {
     render(
       <AlertRuleCard
         rule={makeRule()}
-        onEdit={jest.fn()}
-        onToggleEnabled={jest.fn()}
-        onDelete={jest.fn()}
+        onEdit={vi.fn()}
+        onToggleEnabled={vi.fn()}
+        onDelete={vi.fn()}
       />
     );
     fireEvent.click(screen.getByTestId('delete-button'));
@@ -104,12 +103,12 @@ describe('AlertRuleCard', () => {
   });
 
   it('Delete confirms and calls onDelete with the correct rule_id', () => {
-    const onDelete = jest.fn();
+    const onDelete = vi.fn();
     render(
       <AlertRuleCard
         rule={makeRule({ rule_id: 'rule-99' })}
-        onEdit={jest.fn()}
-        onToggleEnabled={jest.fn()}
+        onEdit={vi.fn()}
+        onToggleEnabled={vi.fn()}
         onDelete={onDelete}
       />
     );
@@ -119,16 +118,16 @@ describe('AlertRuleCard', () => {
   });
 });
 
-// ── AlertRuleFormModal ─────────────────────────────────────────────────────────
+// â”€â”€ AlertRuleFormModal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('AlertRuleFormModal', () => {
   it('submit with intensity_min=6 shows validation error and does not call createRule', () => {
-    const onCreateRule = jest.fn();
+    const onCreateRule = vi.fn();
     render(
       <AlertRuleFormModal
         onCreateRule={onCreateRule}
-        onUpdateRule={jest.fn()}
-        onClose={jest.fn()}
+        onUpdateRule={vi.fn()}
+        onClose={vi.fn()}
       />
     );
     fireEvent.change(screen.getByTestId('field-name'), { target: { value: 'Test' } });
@@ -140,12 +139,12 @@ describe('AlertRuleFormModal', () => {
   });
 
   it('submit with valid data calls createRule with correct payload', () => {
-    const onCreateRule = jest.fn();
+    const onCreateRule = vi.fn();
     render(
       <AlertRuleFormModal
         onCreateRule={onCreateRule}
-        onUpdateRule={jest.fn()}
-        onClose={jest.fn()}
+        onUpdateRule={vi.fn()}
+        onClose={vi.fn()}
       />
     );
     fireEvent.change(screen.getByTestId('field-name'), { target: { value: 'My Rule' } });
@@ -165,9 +164,9 @@ describe('AlertRuleFormModal', () => {
     render(
       <AlertRuleFormModal
         initialRule={rule}
-        onCreateRule={jest.fn()}
-        onUpdateRule={jest.fn()}
-        onClose={jest.fn()}
+        onCreateRule={vi.fn()}
+        onUpdateRule={vi.fn()}
+        onClose={vi.fn()}
       />
     );
     expect(screen.getByTestId('field-name')).toHaveValue('Existing Rule');
@@ -176,15 +175,15 @@ describe('AlertRuleFormModal', () => {
   });
 
   it('in edit mode calls updateRule (not createRule) on submit', () => {
-    const onCreateRule = jest.fn();
-    const onUpdateRule = jest.fn();
+    const onCreateRule = vi.fn();
+    const onUpdateRule = vi.fn();
     const rule = makeRule();
     render(
       <AlertRuleFormModal
         initialRule={rule}
         onCreateRule={onCreateRule}
         onUpdateRule={onUpdateRule}
-        onClose={jest.fn()}
+        onClose={vi.fn()}
       />
     );
     fireEvent.click(screen.getByTestId('submit-button'));

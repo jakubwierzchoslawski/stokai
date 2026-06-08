@@ -1,3 +1,4 @@
+﻿import { describe, it, expect, vi } from 'vitest';
 /**
  * Tests for AlertsListPanel, AlertListRow, AlertFilterBar.
  *
@@ -10,22 +11,21 @@ import { AlertFilterBar } from '../../../src/frontend/components/alerts/AlertFil
 import { AlertsListPanel } from '../../../src/frontend/components/alerts/AlertsListPanel';
 
 // Mock useAlerts hook
-jest.mock('../../../src/frontend/hooks/useAlerts', () => ({
-  useAlerts: jest.fn(),
+vi.mock('../../../src/frontend/hooks/useAlerts', () => ({
+  useAlerts: vi.fn(),
 }));
 
-const { useAlerts } = jest.requireMock('../../../src/frontend/hooks/useAlerts');
 
 // Mock TanStack Query
-jest.mock('@tanstack/react-query', () => ({
-  useQuery: jest.fn(),
-  useMutation: jest.fn(),
-  useQueryClient: jest.fn(() => ({ invalidateQueries: jest.fn() })),
-  QueryClient: jest.fn(),
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: vi.fn(),
+  useMutation: vi.fn(),
+  useQueryClient: vi.fn(() => ({ invalidateQueries: vi.fn() })),
+  QueryClient: vi.fn(),
   QueryClientProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-// ── buildEventLink ─────────────────────────────────────────────────────────────
+// â”€â”€ buildEventLink â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { buildEventLink } from '../../../src/frontend/lib/alertDeepLink';
 
@@ -35,7 +35,7 @@ describe('buildEventLink', () => {
   });
 });
 
-// ── AlertListRow ───────────────────────────────────────────────────────────────
+// â”€â”€ AlertListRow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const baseItem = {
   alert_id: 'a1',
@@ -88,11 +88,11 @@ describe('AlertListRow', () => {
   });
 });
 
-// ── AlertFilterBar ─────────────────────────────────────────────────────────────
+// â”€â”€ AlertFilterBar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('AlertFilterBar', () => {
   it('calls onFilterChange when status dropdown changes', () => {
-    const onFilterChange = jest.fn();
+    const onFilterChange = vi.fn();
     render(
       <AlertFilterBar filters={{}} onFilterChange={onFilterChange} />
     );
@@ -104,7 +104,7 @@ describe('AlertFilterBar', () => {
   });
 
   it('calls onFilterChange when action signal dropdown changes', () => {
-    const onFilterChange = jest.fn();
+    const onFilterChange = vi.fn();
     render(
       <AlertFilterBar filters={{}} onFilterChange={onFilterChange} />
     );
@@ -116,7 +116,7 @@ describe('AlertFilterBar', () => {
   });
 });
 
-// ── AlertsListPanel ────────────────────────────────────────────────────────────
+// â”€â”€ AlertsListPanel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('AlertsListPanel', () => {
   it('shows loading skeleton while useAlerts is loading', () => {

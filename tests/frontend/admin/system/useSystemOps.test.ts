@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach , type Mock } from 'vitest';
 /**
  * Tests for useSystemOps TanStack Query hooks.
  *
@@ -5,13 +6,13 @@
  */
 
 // Mock @tanstack/react-query before any import
-jest.mock("@tanstack/react-query", () => {
-  const actual = jest.requireActual("@tanstack/react-query");
+vi.mock("@tanstack/react-query", () => {
+  const actual = await vi.importActual("@tanstack/react-query");
   return {
     ...actual,
-    useQuery: jest.fn(),
-    useMutation: jest.fn(),
-    useQueryClient: jest.fn(),
+    useQuery: vi.fn(),
+    useMutation: vi.fn(),
+    useQueryClient: vi.fn(),
   };
 });
 
@@ -21,22 +22,22 @@ import {
   useTriggerJob,
   useCostSummary,
   useUpdateThreshold,
-} from "../../../../frontend/src/pages/admin/system/hooks/useSystemOps";
+} from "@/pages/admin/system/hooks/useSystemOps";
 
-const mockUseQuery = useQuery as jest.Mock;
-const mockUseMutation = useMutation as jest.Mock;
-const mockUseQueryClient = useQueryClient as jest.Mock;
+const mockUseQuery = useQuery as Mock;
+const mockUseMutation = useMutation as Mock;
+const mockUseQueryClient = useQueryClient as Mock;
 
-const mockInvalidateQueries = jest.fn();
+const mockInvalidateQueries = vi.fn();
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
   mockUseQueryClient.mockReturnValue({
     invalidateQueries: mockInvalidateQueries,
   });
   mockUseQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false });
   mockUseMutation.mockImplementation(({ onSuccess }) => ({
-    mutateAsync: jest.fn().mockResolvedValue({}),
+    mutateAsync: vi.fn().mockResolvedValue({}),
     isPending: false,
     _onSuccess: onSuccess,
   }));

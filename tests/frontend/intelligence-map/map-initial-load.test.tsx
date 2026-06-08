@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, afterEach } from 'vitest';
 /**
- * map-initial-load.test.tsx — Integration tests: initial map load.
+ * map-initial-load.test.tsx â€” Integration tests: initial map load.
  *
  * Verifies:
  *  - Map container is present in the DOM after render at route "/".
@@ -15,40 +16,40 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { IntelligenceMap } from '../../../src/frontend/features/intelligence-map/IntelligenceMap';
 
-// ── Global mocks ──────────────────────────────────────────────────────────────
+// â”€â”€ Global mocks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-jest.mock('maplibre-gl', () => {
-  const MockMap = jest.fn().mockImplementation(() => ({
-    on: jest.fn((event: string, cb: (...args: unknown[]) => void) => {
+vi.mock('maplibre-gl', () => {
+  const MockMap = vi.fn().mockImplementation(() => ({
+    on: vi.fn((event: string, cb: (...args: unknown[]) => void) => {
       if (event === 'load') setTimeout(() => cb(), 0);
     }),
-    off: jest.fn(),
-    getZoom: jest.fn(() => 2),
-    getBounds: jest.fn(() => ({ toArray: () => [[-180, -85], [180, 85]] })),
-    flyTo: jest.fn(),
-    addLayer: jest.fn(),
-    removeLayer: jest.fn(),
-    getLayer: jest.fn(() => undefined),
-    addSource: jest.fn(),
-    removeSource: jest.fn(),
-    getSource: jest.fn(() => undefined),
-    remove: jest.fn(),
+    off: vi.fn(),
+    getZoom: vi.fn(() => 2),
+    getBounds: vi.fn(() => ({ toArray: () => [[-180, -85], [180, 85]] })),
+    flyTo: vi.fn(),
+    addLayer: vi.fn(),
+    removeLayer: vi.fn(),
+    getLayer: vi.fn(() => undefined),
+    addSource: vi.fn(),
+    removeSource: vi.fn(),
+    getSource: vi.fn(() => undefined),
+    remove: vi.fn(),
   }));
   return { default: { Map: MockMap }, Map: MockMap };
 });
 
-global.Worker = jest.fn().mockImplementation(() => ({
-  postMessage: jest.fn(),
-  terminate: jest.fn(),
+global.Worker = vi.fn().mockImplementation(() => ({
+  postMessage: vi.fn(),
+  terminate: vi.fn(),
   onmessage: null,
 })) as unknown as typeof Worker;
 
-global.WebSocket = jest.fn().mockImplementation(() => ({
-  addEventListener: jest.fn(),
-  close: jest.fn(),
+global.WebSocket = vi.fn().mockImplementation(() => ({
+  addEventListener: vi.fn(),
+  close: vi.fn(),
 })) as unknown as typeof WebSocket;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildEvent(i: number) {
   return {
@@ -77,7 +78,7 @@ function renderAtRoot() {
   );
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('map-initial-load integration', () => {
   const originalFetch = global.fetch;
@@ -85,7 +86,7 @@ describe('map-initial-load integration', () => {
 
   it('map container is present in the DOM at route "/"', async () => {
     const events = Array.from({ length: 10 }, (_, i) => buildEvent(i));
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: events }),
     } as unknown as Response);
@@ -94,8 +95,8 @@ describe('map-initial-load integration', () => {
     expect(screen.getByTestId('map-container')).toBeTruthy();
   });
 
-  it('no redirect occurred — IntelligenceMap is the first rendered element', () => {
-    global.fetch = jest.fn().mockResolvedValue({
+  it('no redirect occurred â€” IntelligenceMap is the first rendered element', () => {
+    global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: [] }),
     } as unknown as Response);
@@ -106,7 +107,7 @@ describe('map-initial-load integration', () => {
 
   it('EmptyState is absent when 10 events are loaded', async () => {
     const events = Array.from({ length: 10 }, (_, i) => buildEvent(i));
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: events }),
     } as unknown as Response);
@@ -117,7 +118,7 @@ describe('map-initial-load integration', () => {
   });
 
   it('GET /api/v1/events is called exactly once on mount', async () => {
-    const fetchMock = jest.fn().mockResolvedValue({
+    const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: [] }),
     } as unknown as Response);

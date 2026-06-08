@@ -1,7 +1,8 @@
+﻿import { describe, it, expect, vi } from 'vitest';
 /**
- * ClusterLayer.test.tsx — TDD tests for ClusterLayer component.
+ * ClusterLayer.test.tsx â€” TDD tests for ClusterLayer component.
  *
- * MapLibre is mocked — we test prop/callback behavior, not canvas rendering.
+ * MapLibre is mocked â€” we test prop/callback behavior, not canvas rendering.
  *
  * PLAN-F-019 TASK-005
  */
@@ -10,7 +11,7 @@ import React from 'react';
 import { render, screen, act } from '@testing-library/react';
 import { ClusterLayer, getDominantCategory } from './ClusterLayer';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeEmptyFC() {
   return { type: 'FeatureCollection' as const, features: [] };
@@ -42,28 +43,28 @@ function makeMockMap() {
   const layers: Record<string, unknown> = {};
 
   return {
-    getSource: jest.fn((id: string) => sources[id]),
-    addSource: jest.fn((id: string, spec: { data: unknown }) => {
-      sources[id] = { data: spec.data, setData: jest.fn() };
+    getSource: vi.fn((id: string) => sources[id]),
+    addSource: vi.fn((id: string, spec: { data: unknown }) => {
+      sources[id] = { data: spec.data, setData: vi.fn() };
     }),
-    getLayer: jest.fn((id: string) => layers[id]),
-    addLayer: jest.fn((spec: { id: string }) => {
+    getLayer: vi.fn((id: string) => layers[id]),
+    addLayer: vi.fn((spec: { id: string }) => {
       layers[spec.id] = spec;
     }),
-    removeLayer: jest.fn((id: string) => { delete layers[id]; }),
-    removeSource: jest.fn((id: string) => { delete sources[id]; }),
-    on: jest.fn((event: string, _layer: string, cb: (e: unknown) => void) => {
+    removeLayer: vi.fn((id: string) => { delete layers[id]; }),
+    removeSource: vi.fn((id: string) => { delete sources[id]; }),
+    on: vi.fn((event: string, _layer: string, cb: (e: unknown) => void) => {
       if (!listeners[event]) listeners[event] = [];
       listeners[event].push(cb);
     }),
-    off: jest.fn(),
+    off: vi.fn(),
     _trigger: (event: string, e: unknown) => {
       (listeners[event] ?? []).forEach((cb) => cb(e));
     },
   };
 }
 
-// ── getDominantCategory unit tests ────────────────────────────────────────────
+// â”€â”€ getDominantCategory unit tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('getDominantCategory', () => {
   it('returns the category with the highest count', () => {
@@ -79,7 +80,7 @@ describe('getDominantCategory', () => {
   });
 });
 
-// ── ClusterLayer component tests ──────────────────────────────────────────────
+// â”€â”€ ClusterLayer component tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('ClusterLayer', () => {
   it('renders without crashing with an empty FeatureCollection', () => {
@@ -93,7 +94,7 @@ describe('ClusterLayer', () => {
 
   it('calls onClusterClick with the cluster feature when click event fires', () => {
     const map = makeMockMap();
-    const mockFn = jest.fn();
+    const mockFn = vi.fn();
     const fc = makeOneClusterFC();
 
     render(<ClusterLayer map={map} clusters={fc} onClusterClick={mockFn} />);
@@ -108,7 +109,7 @@ describe('ClusterLayer', () => {
 
   it('does not call onClusterClick when features array is empty', () => {
     const map = makeMockMap();
-    const mockFn = jest.fn();
+    const mockFn = vi.fn();
     const fc = makeOneClusterFC();
 
     render(<ClusterLayer map={map} clusters={fc} onClusterClick={mockFn} />);

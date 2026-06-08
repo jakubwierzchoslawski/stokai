@@ -1,5 +1,6 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
- * SidePanelSparkline.test.tsx — TDD tests for SidePanelSparkline component.
+ * SidePanelSparkline.test.tsx â€” TDD tests for SidePanelSparkline component.
  *
  * PLAN-F-020 TASK-008
  */

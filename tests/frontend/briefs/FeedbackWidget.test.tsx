@@ -1,26 +1,27 @@
+import { describe, it, expect, vi , type Mock } from 'vitest';
 /**
  * Tests for FeedbackWidget and useFeedback hook (PLAN-F-026 TASK-007).
  *
- * TDD — written before implementation.
+ * TDD â€” written before implementation.
  * Covers AC-002 (thumbs-down fires feedback) and AC-003 (edit correction).
  */
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
-// ── Mock useFeedback hook ─────────────────────────────────────────────────────
-jest.mock('../../../src/frontend/features/briefs/hooks/useFeedback', () => ({
-  useFeedback: jest.fn(),
+// â”€â”€ Mock useFeedback hook â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+vi.mock('../../../src/frontend/features/briefs/hooks/useFeedback', () => ({
+  useFeedback: vi.fn(),
 }));
 
 import { useFeedback } from '../../../src/frontend/features/briefs/hooks/useFeedback';
 import { FeedbackWidget } from '../../../src/frontend/features/briefs/FeedbackWidget';
 
-const mockUseFeedback = useFeedback as jest.Mock;
+const mockUseFeedback = useFeedback as Mock;
 
 const BRIEF_ID = 'test-brief-id-456';
 
 function makeMockMutation(overrides: Record<string, unknown> = {}) {
-  const mutateFn = jest.fn();
+  const mutateFn = vi.fn();
   return {
     mutate: mutateFn,
     isSuccess: false,

@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 /**
- * AddSourceModal tests — PLAN-F-028 TASK-008
+ * AddSourceModal tests â€” PLAN-F-028 TASK-008
  *
  * Tests cover:
  *   - Invalid credentials_ref rejected with validation message.
@@ -11,9 +12,9 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// ── Mocks ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Mocks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-function renderModal(isOpen = true, onClose = jest.fn()) {
+function renderModal(isOpen = true, onClose = vi.fn()) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
@@ -36,12 +37,12 @@ function fillValidForm() {
   });
 }
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe("AddSourceModal", () => {
   beforeEach(() => {
-    jest.resetModules();
-    jest.resetAllMocks();
+    vi.resetModules();
+    vi.resetAllMocks();
   });
 
   it("rejects invalid credentials_ref format", () => {
@@ -88,8 +89,8 @@ describe("AddSourceModal", () => {
   });
 
   it("submits valid form and closes modal on success", async () => {
-    const onClose = jest.fn();
-    (global as any).fetch = jest.fn().mockResolvedValue({
+    const onClose = vi.fn();
+    (global as any).fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
       json: async () => ({

@@ -13,9 +13,9 @@
  * PLAN-N-014 TASK-007
  */
 import React, { useState } from 'react';
-import { AlertsListPanel } from '../components/alerts/AlertsListPanel';
-import { AlertRulesPanel } from '../components/alerts/AlertRulesPanel';
-import { AntiFatigueSettingsPanel } from '../components/alerts/AntiFatigueSettingsPanel';
+import { AlertsListPanel } from '../features/alerts/AlertsListPanel';
+import { AlertRulesPanel } from '../features/alerts/AlertRulesPanel';
+import { AntiFatigueSettingsPanel } from '../features/alerts/AntiFatigueSettingsPanel';
 
 type Tab = 'alerts' | 'rules';
 

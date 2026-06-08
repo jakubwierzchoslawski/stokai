@@ -1,3 +1,4 @@
+﻿import { describe, test, expect, vi, beforeEach } from 'vitest';
 /**
  * tests/frontend/portfolio/OnboardingFlow.test.tsx
  *
@@ -13,7 +14,7 @@ import { OnboardingFlow } from '../../../src/frontend/features/onboarding/Onboar
 import { ProtectedRoute } from '../../../src/frontend/app/routes';
 
 // Mock fetch globally
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 function wrapper({ children }: { children: React.ReactNode }) {
@@ -29,7 +30,7 @@ beforeEach(() => {
   mockFetch.mockReset();
 });
 
-// ── OnboardingFlow tests ───────────────────────────────────────────────────────
+// â”€â”€ OnboardingFlow tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('OnboardingFlow', () => {
   test('test_onboarding_step1_next_disabled_until_profile_selected', () => {
@@ -54,7 +55,7 @@ describe('OnboardingFlow', () => {
     const nextBtn = screen.getByTestId('step1-next');
     expect(nextBtn).not.toBeDisabled();
 
-    // Click next → should advance to step 2
+    // Click next â†’ should advance to step 2
     // Mock the onboarding/state fetch for step 2
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -69,9 +70,9 @@ describe('OnboardingFlow', () => {
   });
 
   test('test_onboarding_step2_skip_navigates_to_map', async () => {
-    const onComplete = jest.fn();
+    const onComplete = vi.fn();
 
-    // Mock profile select (step 1 → 2)
+    // Mock profile select (step 1 â†’ 2)
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
@@ -113,7 +114,7 @@ describe('OnboardingFlow', () => {
         ok: true,
         json: async () => ({ data: {} }),
       })
-      // Mock state fetch — no holding
+      // Mock state fetch â€” no holding
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ data: { has_holding: false } }),
@@ -132,7 +133,7 @@ describe('OnboardingFlow', () => {
   });
 });
 
-// ── Route guard tests ──────────────────────────────────────────────────────────
+// â”€â”€ Route guard tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('ProtectedRoute', () => {
   test('test_route_guard_redirects_to_onboarding', async () => {
@@ -159,7 +160,7 @@ describe('ProtectedRoute', () => {
   });
 
   test('test_route_guard_allows_map_when_complete', async () => {
-    // is_complete = true → no redirect
+    // is_complete = true â†’ no redirect
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({

@@ -1,5 +1,6 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
- * useMapFilters.test.ts — TDD tests for the useMapFilters hook and reducer.
+ * useMapFilters.test.ts â€” TDD tests for the useMapFilters hook and reducer.
  *
  * PLAN-F-019 TASK-007
  */
@@ -13,9 +14,9 @@ import {
 } from './useMapFilters';
 import { KNOWN_CATEGORIES } from '../lib/cluster-properties';
 
-// ── Reducer unit tests ────────────────────────────────────────────────────────
+// â”€â”€ Reducer unit tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-describe('mapFiltersReducer — initial state', () => {
+describe('mapFiltersReducer â€” initial state', () => {
   it('initial state has all 6 categories enabled', () => {
     expect(INITIAL_FILTERS.categories).toHaveLength(KNOWN_CATEGORIES.length);
     for (const cat of KNOWN_CATEGORIES) {
@@ -28,7 +29,7 @@ describe('mapFiltersReducer — initial state', () => {
   });
 });
 
-describe('mapFiltersReducer — TOGGLE_CATEGORY', () => {
+describe('mapFiltersReducer â€” TOGGLE_CATEGORY', () => {
   it('removes a category when 2 categories are active', () => {
     const twoCategories = { ...INITIAL_FILTERS, categories: ['CONFLICT', 'ECONOMIC'] };
     const next = mapFiltersReducer(twoCategories, { type: 'TOGGLE_CATEGORY', category: 'CONFLICT' });
@@ -50,7 +51,7 @@ describe('mapFiltersReducer — TOGGLE_CATEGORY', () => {
   });
 });
 
-describe('mapFiltersReducer — TOGGLE_INTENSITY', () => {
+describe('mapFiltersReducer â€” TOGGLE_INTENSITY', () => {
   it('removes an intensity when more than one is active', () => {
     const next = mapFiltersReducer(INITIAL_FILTERS, { type: 'TOGGLE_INTENSITY', level: 3 });
     expect(next.intensities).not.toContain(3);
@@ -69,7 +70,7 @@ describe('mapFiltersReducer — TOGGLE_INTENSITY', () => {
   });
 });
 
-// ── useMapFilters hook tests ──────────────────────────────────────────────────
+// â”€â”€ useMapFilters hook tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('useMapFilters hook', () => {
   it('starts with all categories and intensities enabled', () => {

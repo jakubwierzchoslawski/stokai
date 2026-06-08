@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 /**
- * useHilQueue tests — PLAN-F-013 TASK-008
+ * useHilQueue tests â€” PLAN-F-013 TASK-008
  *
  * Covers:
  *   - executeAction calls the correct API endpoint
@@ -15,12 +16,12 @@ class MockWebSocket {
   readyState = MockWebSocket.OPEN;
   onmessage: ((e: MessageEvent) => void) | null = null;
   onerror: ((e: Event) => void) | null = null;
-  close = jest.fn();
+  close = vi.fn();
 }
 (global as unknown as { WebSocket: typeof MockWebSocket }).WebSocket = MockWebSocket;
 
 // Mock fetch globally
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 (global as unknown as { fetch: typeof mockFetch }).fetch = mockFetch;
 
 import { useHilQueue, HIL_ITEMS_QUERY_KEY, HIL_COUNT_QUERY_KEY } from "./useHilQueue";
@@ -121,7 +122,7 @@ describe("useHilQueue", () => {
     });
 
     const { Wrapper, queryClient } = createWrapper();
-    const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
     const { result } = renderHook(() => useHilQueue(), { wrapper: Wrapper });
 

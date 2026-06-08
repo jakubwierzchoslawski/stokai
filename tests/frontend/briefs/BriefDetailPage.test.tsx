@@ -1,25 +1,26 @@
+import { describe, it, expect, vi , type Mock } from 'vitest';
 /**
  * Tests for BriefDetailPage and SafeHtmlRenderer (PLAN-F-026 TASK-006).
  *
- * TDD — written before implementation.
+ * TDD â€” written before implementation.
  * Covers AC-001 (confidence in header, not tooltip) and AC-004 (low_sample disclaimer).
  */
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 
-// ── Mock react-router-dom ─────────────────────────────────────────────────────
-jest.mock('react-router-dom', () => ({
+// â”€â”€ Mock react-router-dom â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+vi.mock('react-router-dom', () => ({
   useParams: () => ({ brief_id: 'test-brief-id-123' }),
-  useNavigate: () => jest.fn(),
+  useNavigate: () => vi.fn(),
 }));
 
-// ── Mock useBriefDetail ───────────────────────────────────────────────────────
-jest.mock('../../../src/frontend/features/briefs/hooks/useBriefDetail', () => ({
-  useBriefDetail: jest.fn(),
+// â”€â”€ Mock useBriefDetail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+vi.mock('../../../src/frontend/features/briefs/hooks/useBriefDetail', () => ({
+  useBriefDetail: vi.fn(),
 }));
 
-// ── Mock FeedbackWidget ───────────────────────────────────────────────────────
-jest.mock('../../../src/frontend/features/briefs/FeedbackWidget', () => ({
+// â”€â”€ Mock FeedbackWidget â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+vi.mock('../../../src/frontend/features/briefs/FeedbackWidget', () => ({
   FeedbackWidget: () => <div data-testid="feedback-widget-mock" />,
 }));
 
@@ -27,7 +28,7 @@ import { useBriefDetail } from '../../../src/frontend/features/briefs/hooks/useB
 import { BriefDetailPage } from '../../../src/frontend/features/briefs/BriefDetailPage';
 import { SafeHtmlRenderer } from '../../../src/frontend/features/briefs/SafeHtmlRenderer';
 
-const mockUseBriefDetail = useBriefDetail as jest.Mock;
+const mockUseBriefDetail = useBriefDetail as Mock;
 
 function makeMockBrief(overrides: Record<string, unknown> = {}) {
   return {
@@ -44,7 +45,7 @@ function makeMockBrief(overrides: Record<string, unknown> = {}) {
   };
 }
 
-// ── BriefDetailPage tests ─────────────────────────────────────────────────────
+// â”€â”€ BriefDetailPage tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('BriefDetailPage', () => {
   it('test_confidence_rendered_in_header_not_tooltip', () => {
@@ -108,7 +109,7 @@ describe('BriefDetailPage', () => {
   });
 });
 
-// ── SafeHtmlRenderer tests ────────────────────────────────────────────────────
+// â”€â”€ SafeHtmlRenderer tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 describe('SafeHtmlRenderer', () => {
   it('test_safe_html_renderer_strips_script_tags', () => {

@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi } from 'vitest';
 /**
- * HilActionButtons tests — PLAN-F-013 TASK-008
+ * HilActionButtons tests â€” PLAN-F-013 TASK-008
  *
  * Covers:
  *   - Approve button calls onAction with action='approve'
@@ -31,7 +32,7 @@ function makeItem(): HILQueueItem {
 
 describe("HilActionButtons", () => {
   it("calls onAction with action='approve' when Approve button clicked", async () => {
-    const mockAction = jest.fn().mockResolvedValue(undefined);
+    const mockAction = vi.fn().mockResolvedValue(undefined);
     render(<HilActionButtons item={makeItem()} onAction={mockAction} />);
 
     fireEvent.click(screen.getByTestId("btn-approve"));
@@ -43,7 +44,7 @@ describe("HilActionButtons", () => {
 
   it("reveals textarea when Edit & Approve button clicked", () => {
     render(
-      <HilActionButtons item={makeItem()} onAction={jest.fn().mockResolvedValue(undefined)} />,
+      <HilActionButtons item={makeItem()} onAction={vi.fn().mockResolvedValue(undefined)} />,
     );
 
     expect(screen.queryByTestId("edit-approve-panel")).toBeNull();
@@ -54,7 +55,7 @@ describe("HilActionButtons", () => {
 
   it("pre-fills edit textarea with report content", () => {
     render(
-      <HilActionButtons item={makeItem()} onAction={jest.fn().mockResolvedValue(undefined)} />,
+      <HilActionButtons item={makeItem()} onAction={vi.fn().mockResolvedValue(undefined)} />,
     );
 
     fireEvent.click(screen.getByTestId("btn-edit-approve"));
@@ -64,7 +65,7 @@ describe("HilActionButtons", () => {
 
   it("reveals feedback input when Reject with feedback clicked", () => {
     render(
-      <HilActionButtons item={makeItem()} onAction={jest.fn().mockResolvedValue(undefined)} />,
+      <HilActionButtons item={makeItem()} onAction={vi.fn().mockResolvedValue(undefined)} />,
     );
 
     expect(screen.queryByTestId("reject-feedback-panel")).toBeNull();

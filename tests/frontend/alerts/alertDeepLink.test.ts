@@ -1,3 +1,4 @@
+﻿import { describe, it, expect } from 'vitest';
 /**
  * Tests for alertDeepLink utility and MapPage deep-link behaviour.
  *

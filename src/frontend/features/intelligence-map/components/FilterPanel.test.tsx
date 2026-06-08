@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi } from 'vitest';
 /**
- * FilterPanel.test.tsx — TDD tests for FilterPanel component.
+ * FilterPanel.test.tsx â€” TDD tests for FilterPanel component.
  *
  * PLAN-F-019 TASK-007
  */
@@ -12,8 +13,8 @@ import { KNOWN_CATEGORIES } from '../lib/cluster-properties';
 
 describe('FilterPanel', () => {
   it('renders a checkbox for every known category', () => {
-    const toggleCat = jest.fn();
-    const toggleInt = jest.fn();
+    const toggleCat = vi.fn();
+    const toggleInt = vi.fn();
     render(
       <FilterPanel
         filters={INITIAL_FILTERS}
@@ -30,8 +31,8 @@ describe('FilterPanel', () => {
     render(
       <FilterPanel
         filters={INITIAL_FILTERS}
-        onToggleCategory={jest.fn()}
-        onToggleIntensity={jest.fn()}
+        onToggleCategory={vi.fn()}
+        onToggleIntensity={vi.fn()}
       />,
     );
     for (let i = 1; i <= 5; i++) {
@@ -40,12 +41,12 @@ describe('FilterPanel', () => {
   });
 
   it('calls onToggleCategory with the correct category string when checkbox is clicked', () => {
-    const toggleCat = jest.fn();
+    const toggleCat = vi.fn();
     render(
       <FilterPanel
         filters={INITIAL_FILTERS}
         onToggleCategory={toggleCat}
-        onToggleIntensity={jest.fn()}
+        onToggleIntensity={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByTestId('checkbox-category-CONFLICT'));
@@ -54,11 +55,11 @@ describe('FilterPanel', () => {
   });
 
   it('calls onToggleIntensity with the correct level when intensity checkbox is clicked', () => {
-    const toggleInt = jest.fn();
+    const toggleInt = vi.fn();
     render(
       <FilterPanel
         filters={INITIAL_FILTERS}
-        onToggleCategory={jest.fn()}
+        onToggleCategory={vi.fn()}
         onToggleIntensity={toggleInt}
       />,
     );
@@ -72,8 +73,8 @@ describe('FilterPanel', () => {
     render(
       <FilterPanel
         filters={filters}
-        onToggleCategory={jest.fn()}
-        onToggleIntensity={jest.fn()}
+        onToggleCategory={vi.fn()}
+        onToggleIntensity={vi.fn()}
       />,
     );
     const conflictCheckbox = screen.getByTestId('checkbox-category-CONFLICT') as HTMLInputElement;
@@ -84,8 +85,8 @@ describe('FilterPanel', () => {
     render(
       <FilterPanel
         filters={INITIAL_FILTERS}
-        onToggleCategory={jest.fn()}
-        onToggleIntensity={jest.fn()}
+        onToggleCategory={vi.fn()}
+        onToggleIntensity={vi.fn()}
       />,
     );
     const conflictCheckbox = screen.getByTestId('checkbox-category-CONFLICT') as HTMLInputElement;

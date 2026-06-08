@@ -1,5 +1,6 @@
+﻿import { describe, it, expect, vi } from 'vitest';
 /**
- * PlaybackControls.test.tsx — TDD tests for PlaybackControls.
+ * PlaybackControls.test.tsx â€” TDD tests for PlaybackControls.
  *
  * PLAN-F-021 TASK-008
  */
@@ -9,7 +10,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import PlaybackControls from '../../../src/frontend/features/intelligence-map/components/PlaybackControls';
 
 describe('PlaybackControls', () => {
-  it('isPlaying=false, isComplete=false → Play present, Pause absent', () => {
+  it('isPlaying=false, isComplete=false â†’ Play present, Pause absent', () => {
     render(
       <PlaybackControls
         isPlaying={false}
@@ -17,17 +18,17 @@ describe('PlaybackControls', () => {
         speed="1x"
         visibleCount={0}
         totalCount={10}
-        onPlay={jest.fn()}
-        onPause={jest.fn()}
-        onReset={jest.fn()}
-        onSetSpeed={jest.fn()}
+        onPlay={vi.fn()}
+        onPause={vi.fn()}
+        onReset={vi.fn()}
+        onSetSpeed={vi.fn()}
       />,
     );
     expect(screen.getByTestId('playback-btn-play')).toBeTruthy();
     expect(screen.queryByTestId('playback-btn-pause')).toBeNull();
   });
 
-  it('isPlaying=true → Pause present, Play absent', () => {
+  it('isPlaying=true â†’ Pause present, Play absent', () => {
     render(
       <PlaybackControls
         isPlaying={true}
@@ -35,17 +36,17 @@ describe('PlaybackControls', () => {
         speed="1x"
         visibleCount={3}
         totalCount={10}
-        onPlay={jest.fn()}
-        onPause={jest.fn()}
-        onReset={jest.fn()}
-        onSetSpeed={jest.fn()}
+        onPlay={vi.fn()}
+        onPause={vi.fn()}
+        onReset={vi.fn()}
+        onSetSpeed={vi.fn()}
       />,
     );
     expect(screen.getByTestId('playback-btn-pause')).toBeTruthy();
     expect(screen.queryByTestId('playback-btn-play')).toBeNull();
   });
 
-  it('isComplete=true → no Play or Pause; "Complete" label visible', () => {
+  it('isComplete=true â†’ no Play or Pause; "Complete" label visible', () => {
     render(
       <PlaybackControls
         isPlaying={false}
@@ -53,10 +54,10 @@ describe('PlaybackControls', () => {
         speed="1x"
         visibleCount={10}
         totalCount={10}
-        onPlay={jest.fn()}
-        onPause={jest.fn()}
-        onReset={jest.fn()}
-        onSetSpeed={jest.fn()}
+        onPlay={vi.fn()}
+        onPause={vi.fn()}
+        onReset={vi.fn()}
+        onSetSpeed={vi.fn()}
       />,
     );
     expect(screen.queryByTestId('playback-btn-play')).toBeNull();
@@ -65,7 +66,7 @@ describe('PlaybackControls', () => {
   });
 
   it('clicking Play fires onPlay', () => {
-    const onPlay = jest.fn();
+    const onPlay = vi.fn();
     render(
       <PlaybackControls
         isPlaying={false}
@@ -74,9 +75,9 @@ describe('PlaybackControls', () => {
         visibleCount={0}
         totalCount={10}
         onPlay={onPlay}
-        onPause={jest.fn()}
-        onReset={jest.fn()}
-        onSetSpeed={jest.fn()}
+        onPause={vi.fn()}
+        onReset={vi.fn()}
+        onSetSpeed={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByTestId('playback-btn-play'));
@@ -84,7 +85,7 @@ describe('PlaybackControls', () => {
   });
 
   it('clicking Pause fires onPause', () => {
-    const onPause = jest.fn();
+    const onPause = vi.fn();
     render(
       <PlaybackControls
         isPlaying={true}
@@ -92,10 +93,10 @@ describe('PlaybackControls', () => {
         speed="1x"
         visibleCount={2}
         totalCount={10}
-        onPlay={jest.fn()}
+        onPlay={vi.fn()}
         onPause={onPause}
-        onReset={jest.fn()}
-        onSetSpeed={jest.fn()}
+        onReset={vi.fn()}
+        onSetSpeed={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByTestId('playback-btn-pause'));
@@ -103,7 +104,7 @@ describe('PlaybackControls', () => {
   });
 
   it('clicking Reset fires onReset', () => {
-    const onReset = jest.fn();
+    const onReset = vi.fn();
     render(
       <PlaybackControls
         isPlaying={false}
@@ -111,10 +112,10 @@ describe('PlaybackControls', () => {
         speed="1x"
         visibleCount={0}
         totalCount={10}
-        onPlay={jest.fn()}
-        onPause={jest.fn()}
+        onPlay={vi.fn()}
+        onPause={vi.fn()}
         onReset={onReset}
-        onSetSpeed={jest.fn()}
+        onSetSpeed={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByTestId('playback-btn-reset'));
@@ -122,7 +123,7 @@ describe('PlaybackControls', () => {
   });
 
   it('selecting "16x" fires onSetSpeed("16x")', () => {
-    const onSetSpeed = jest.fn();
+    const onSetSpeed = vi.fn();
     render(
       <PlaybackControls
         isPlaying={false}
@@ -130,9 +131,9 @@ describe('PlaybackControls', () => {
         speed="1x"
         visibleCount={0}
         totalCount={10}
-        onPlay={jest.fn()}
-        onPause={jest.fn()}
-        onReset={jest.fn()}
+        onPlay={vi.fn()}
+        onPause={vi.fn()}
+        onReset={vi.fn()}
         onSetSpeed={onSetSpeed}
       />,
     );
@@ -140,7 +141,7 @@ describe('PlaybackControls', () => {
     expect(onSetSpeed).toHaveBeenCalledWith('16x');
   });
 
-  it('visibleCount=3, totalCount=10 → progress bar aria-valuenow ~30', () => {
+  it('visibleCount=3, totalCount=10 â†’ progress bar aria-valuenow ~30', () => {
     render(
       <PlaybackControls
         isPlaying={true}
@@ -148,10 +149,10 @@ describe('PlaybackControls', () => {
         speed="1x"
         visibleCount={3}
         totalCount={10}
-        onPlay={jest.fn()}
-        onPause={jest.fn()}
-        onReset={jest.fn()}
-        onSetSpeed={jest.fn()}
+        onPlay={vi.fn()}
+        onPause={vi.fn()}
+        onReset={vi.fn()}
+        onSetSpeed={vi.fn()}
       />,
     );
     const progressBar = screen.getByTestId('playback-progress');
@@ -167,10 +168,10 @@ describe('PlaybackControls', () => {
         speed="4x"
         visibleCount={5}
         totalCount={10}
-        onPlay={jest.fn()}
-        onPause={jest.fn()}
-        onReset={jest.fn()}
-        onSetSpeed={jest.fn()}
+        onPlay={vi.fn()}
+        onPause={vi.fn()}
+        onReset={vi.fn()}
+        onSetSpeed={vi.fn()}
       />,
     );
     expect(screen.getByTestId('playback-btn-reset')).toBeTruthy();

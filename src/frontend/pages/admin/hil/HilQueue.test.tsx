@@ -1,5 +1,6 @@
+import { describe, it, expect, vi, beforeEach , type Mock } from 'vitest';
 /**
- * HilQueue page tests — PLAN-F-013 TASK-008
+ * HilQueue page tests â€” PLAN-F-013 TASK-008
  *
  * Covers:
  *   - Non-admin/operator users are redirected to /
@@ -9,32 +10,32 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 // Mock useCurrentUser
-jest.mock("../../hooks/useCurrentUser", () => ({
-  useCurrentUser: jest.fn(),
+vi.mock("@/app/providers/AuthProvider", () => ({
+  useCurrentUser: vi.fn(),
 }));
 
 // Mock useHilQueue
-jest.mock("../../components/admin/hil/useHilQueue", () => ({
-  useHilQueue: jest.fn(),
+vi.mock("./useHilQueue", () => ({
+  useHilQueue: vi.fn(),
 }));
 
 // Mock child components to avoid dependency cascade
-jest.mock("../../components/admin/hil/HilQueueTable", () => ({
+vi.mock("./HilQueueTable", () => ({
   HilQueueTable: () => React.createElement("div", { "data-testid": "hil-table" }),
 }));
-jest.mock("../../components/admin/hil/HilItemDetail", () => ({
+vi.mock("./HilItemDetail", () => ({
   HilItemDetail: () => React.createElement("div", { "data-testid": "hil-detail" }),
 }));
-jest.mock("../../components/admin/hil/HilActionButtons", () => ({
+vi.mock("./HilActionButtons", () => ({
   HilActionButtons: () => React.createElement("div", { "data-testid": "hil-actions" }),
 }));
 
-import { useCurrentUser } from "../../hooks/useCurrentUser";
-import { useHilQueue } from "../../components/admin/hil/useHilQueue";
+import { useCurrentUser } from "@/app/providers/AuthProvider";
+import { useHilQueue } from "./useHilQueue";
 import { HilQueue } from "./HilQueue";
 
-const mockUseCurrentUser = useCurrentUser as jest.Mock;
-const mockUseHilQueue = useHilQueue as jest.Mock;
+const mockUseCurrentUser = useCurrentUser as Mock;
+const mockUseHilQueue = useHilQueue as Mock;
 
 function renderWithRouter(component: React.ReactElement) {
   return render(
@@ -51,7 +52,7 @@ describe("HilQueue page", () => {
     mockUseHilQueue.mockReturnValue({
       items: [],
       isLoading: false,
-      executeAction: jest.fn(),
+      executeAction: vi.fn(),
     });
   });
 

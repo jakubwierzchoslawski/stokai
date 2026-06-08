@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tests for useDecisionLog hook.
  *
  * PLAN-F-029 TASK-007
@@ -46,7 +46,7 @@ describe('useDecisionLog', () => {
       json: async () => ({ data: [MOCK_ROW], next_cursor: null, error: null }),
     } as Response);
 
-    const { useDecisionLog } = await import('../../../admin/ai-audit/hooks/useDecisionLog');
+    const { useDecisionLog } = await import('../../../pages/admin/ai-audit/hooks/useDecisionLog');
     const { result } = renderHook(() => useDecisionLog({}), {
       wrapper: makeWrapper(),
     });
@@ -68,7 +68,7 @@ describe('useDecisionLog', () => {
         json: async () => ({ data: [], next_cursor: null, error: null }),
       } as Response);
 
-    const { useDecisionLog } = await import('../../../admin/ai-audit/hooks/useDecisionLog');
+    const { useDecisionLog } = await import('../../../pages/admin/ai-audit/hooks/useDecisionLog');
     const { result } = renderHook(() => useDecisionLog({}), {
       wrapper: makeWrapper(),
     });
@@ -92,7 +92,7 @@ describe('useDecisionLog', () => {
       json: async () => ({ data: [], next_cursor: null, error: null }),
     } as Response);
 
-    const { useDecisionLog } = await import('../../../admin/ai-audit/hooks/useDecisionLog');
+    const { useDecisionLog } = await import('../../../pages/admin/ai-audit/hooks/useDecisionLog');
     const { result } = renderHook(() => useDecisionLog({ confidence_min: 0.7 }), {
       wrapper: makeWrapper(),
     });

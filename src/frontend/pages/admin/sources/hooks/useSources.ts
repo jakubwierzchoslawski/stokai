@@ -7,6 +7,7 @@
  * PLAN-F-028 TASK-007
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api/client";
 
 export interface HealthStats {
   calls_today: number;
@@ -26,40 +27,15 @@ export interface SourceConfig {
   health: HealthStats | null;
 }
 
-interface ApiEnvelope<T> {
-  data: T;
-  error: { code: string; message: string } | null;
-}
-
 async function fetchSources(): Promise<SourceConfig[]> {
-  const response = await fetch("/api/v1/admin/sources", {
-    credentials: "include",
-  });
-  if (!response.ok) {
-    throw new Error(`Failed to fetch sources: ${response.status}`);
-  }
-  const envelope: ApiEnvelope<SourceConfig[]> = await response.json();
-  if (envelope.error) {
-    throw new Error(envelope.error.message);
-  }
-  return envelope.data;
+  return api<SourceConfig[]>("/v1/admin/sources");
 }
 
 async function patchEnabled(sourceId: string, enabled: boolean): Promise<SourceConfig> {
-  const response = await fetch(`/api/v1/admin/sources/${sourceId}/enable`, {
+  return api<SourceConfig>(`/v1/admin/sources/${sourceId}/enable`, {
     method: "PATCH",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ enabled }),
   });
-  if (!response.ok) {
-    throw new Error(`Failed to toggle source: ${response.status}`);
-  }
-  const envelope: ApiEnvelope<SourceConfig> = await response.json();
-  if (envelope.error) {
-    throw new Error(envelope.error.message);
-  }
-  return envelope.data;
 }
 
 /** React Query key for sources list. */

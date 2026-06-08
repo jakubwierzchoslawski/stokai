@@ -9,6 +9,7 @@
  * PLAN-F-028 TASK-010
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api/client";
 
 export interface Binding {
   market_id: string;
@@ -17,27 +18,12 @@ export interface Binding {
   role: string;
 }
 
-interface ApiEnvelope<T> {
-  data: T;
-  error: { code: string; message: string } | null;
-}
-
 export const BINDINGS_QUERY_KEY = ["admin", "bindings"] as const;
 
 // ── Fetch ─────────────────────────────────────────────────────────────────────
 
 async function fetchBindings(): Promise<Binding[]> {
-  const response = await fetch("/api/v1/admin/bindings", {
-    credentials: "include",
-  });
-  if (!response.ok) {
-    throw new Error(`Failed to fetch bindings: ${response.status}`);
-  }
-  const envelope: ApiEnvelope<Binding[]> = await response.json();
-  if (envelope.error) {
-    throw new Error(envelope.error.message);
-  }
-  return envelope.data;
+  return api<Binding[]>("/v1/admin/bindings");
 }
 
 export function useBindings() {
@@ -58,21 +44,10 @@ export interface UpsertBindingVars {
 }
 
 async function upsertBinding(vars: UpsertBindingVars): Promise<Binding> {
-  const response = await fetch("/api/v1/admin/bindings", {
+  return api<Binding>("/v1/admin/bindings", {
     method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(vars),
   });
-  if (!response.ok) {
-    const envelope = await response.json().catch(() => null);
-    throw new Error(envelope?.error?.message ?? `HTTP ${response.status}`);
-  }
-  const envelope: ApiEnvelope<Binding> = await response.json();
-  if (envelope.error) {
-    throw new Error(envelope.error.message);
-  }
-  return envelope.data;
 }
 
 export function useUpsertBinding() {
@@ -94,15 +69,10 @@ export interface DeleteBindingVars {
 }
 
 async function deleteBinding(vars: DeleteBindingVars): Promise<void> {
-  const response = await fetch("/api/v1/admin/bindings", {
+  await api<void>("/v1/admin/bindings", {
     method: "DELETE",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(vars),
   });
-  if (!response.ok && response.status !== 204) {
-    throw new Error(`Failed to delete binding: ${response.status}`);
-  }
 }
 
 export function useDeleteBinding() {

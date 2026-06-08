@@ -8,7 +8,7 @@
  */
 import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { useCurrentUser } from "../../../hooks/useCurrentUser";
+import { useCurrentUser } from "@/app/providers/AuthProvider";
 import { useSources } from "./hooks/useSources";
 import { SourceList } from "./SourceList";
 import { SocialSourcesPanel } from "./SocialSourcesPanel";
@@ -17,14 +17,11 @@ import { BindingsPanel } from "./BindingsPanel";
 type Tab = "all" | "social" | "bindings";
 
 export const SourcesPage: React.FC = () => {
-  const { user } = useCurrentUser();
+  const user = useCurrentUser();
   const [activeTab, setActiveTab] = useState<Tab>("all");
   const { data: sources, isLoading, error } = useSources();
 
   // Route guard: admin only
-  if (!user) {
-    return null; // still loading user
-  }
   if (user.role !== "admin") {
     return <Navigate to="/" replace />;
   }

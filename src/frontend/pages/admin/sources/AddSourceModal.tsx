@@ -12,6 +12,7 @@
  */
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api/client";
 import { SOURCES_QUERY_KEY } from "./hooks/useSources";
 
 const INTERFACE_TYPES = [
@@ -48,21 +49,10 @@ export interface AddSourceModalProps {
 }
 
 async function createSource(body: Record<string, unknown>): Promise<unknown> {
-  const response = await fetch("/api/v1/admin/sources", {
+  return api<unknown>("/v1/admin/sources", {
     method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!response.ok) {
-    const envelope = await response.json();
-    throw new Error(envelope?.error?.message ?? `HTTP ${response.status}`);
-  }
-  const envelope = await response.json();
-  if (envelope.error) {
-    throw new Error(envelope.error.message);
-  }
-  return envelope.data;
 }
 
 function validate(form: FormState): FormErrors {
@@ -94,10 +84,10 @@ export const AddSourceModal: React.FC<AddSourceModalProps> = ({ isOpen, onClose 
   const queryClient = useQueryClient();
   const [form, setForm] = useState<FormState>({
     display_name: "",
-    interface_type: INTERFACE_TYPES[0],
+    interface_type: INTERFACE_TYPES[0]!,
     credentials_ref: "",
     config: "{}",
-    cost_tier: COST_TIERS[0],
+    cost_tier: COST_TIERS[0]!,
     priority: 0,
   });
   const [errors, setErrors] = useState<FormErrors>({});

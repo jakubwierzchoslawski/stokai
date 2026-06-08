@@ -1,17 +1,26 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { LoginPage } from "@/features/auth/LoginPage";
+import { RegisterPage } from "@/features/auth/RegisterPage";
+import { RequireAuth } from "./guards/RequireAuth";
+import { AppShell } from "@/layout/AppShell";
+import { ROUTES } from "./routes";
 
 export function AppRouter() {
   return (
     <Routes>
+      <Route path={ROUTES.login} element={<LoginPage />} />
+      <Route path={ROUTES.register} element={<RegisterPage />} />
       <Route
-        path="*"
         element={
-          <div className="flex min-h-screen items-center justify-center bg-surface-0 text-text">
-            <div className="text-lg">Shell OK</div>
-          </div>
+          <RequireAuth>
+            <AppShell />
+          </RequireAuth>
         }
-      />
+      >
+        <Route path={ROUTES.home} element={<div className="p-6">App home (interim)</div>} />
+      </Route>
+      <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
     </Routes>
   );
 }

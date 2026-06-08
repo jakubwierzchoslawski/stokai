@@ -20,6 +20,26 @@
  */
 import React, { useEffect, useState } from 'react';
 
+// ── Centralised route map ─────────────────────────────────────────────────────
+
+export const ROUTES = {
+  home: "/",
+  login: "/login",
+  register: "/register",
+  briefs: "/briefs",
+  briefDetail: "/briefs/:brief_id",
+  screener: "/screener",
+  portfolio: "/portfolio",
+  watchlist: "/watchlist",
+  alerts: "/alerts",
+  qa: "/qa",
+  onboarding: "/onboarding",
+  adminHil: "/admin/hil",
+  adminSources: "/admin/sources",
+  adminSystem: "/admin/system",
+  adminAudit: "/admin/ai-audit",
+} as const;
+
 // ── Root route path ───────────────────────────────────────────────────────────
 
 /**

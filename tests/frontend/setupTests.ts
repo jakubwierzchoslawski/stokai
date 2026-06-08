@@ -1,14 +1,25 @@
-/**
- * Jest setup file — extends expect with @testing-library/jest-dom matchers.
- * Imported by jest.config.js setupFilesAfterEnv.
- */
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
+import { afterEach, vi } from "vitest";
+import { cleanup } from "@testing-library/react";
 
-// Polyfill ResizeObserver for jsdom — required by Recharts ResponsiveContainer
-if (typeof ResizeObserver === "undefined") {
-  global.ResizeObserver = class ResizeObserver {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-  };
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
+
+// jsdom does not implement matchMedia — required by next-themes
+if (typeof window !== "undefined" && !window.matchMedia) {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }),
+  });
 }

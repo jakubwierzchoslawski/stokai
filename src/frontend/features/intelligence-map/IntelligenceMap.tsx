@@ -92,7 +92,6 @@ export const IntelligenceMap: React.FC<IntelligenceMapProps> = ({
   // Responsive breakpoint — drives panel layout strategy (PLAN-N-014 TASK-005)
   const breakpoint = useBreakpoint();
   const isMobile = breakpoint === 'sm'; // < 768px — panel goes into drawer
-  const panelWidth = breakpoint === 'lg' || breakpoint === 'xl' ? '360px' : '280px';
 
   const { mode, sector, setMode, setSector } = useMapMode();
   const { filters, toggleCategory, toggleIntensity } = useMapFilters();
@@ -354,7 +353,7 @@ export const IntelligenceMap: React.FC<IntelligenceMapProps> = ({
       data-testid="map-side-panel"
       role="complementary"
       aria-label="Map side panel"
-      style={{ display: 'flex', flexDirection: 'column', gap: 0, height: '100%', overflowY: 'auto' }}
+      className="flex h-full flex-col overflow-y-auto"
     >
       <FilterPanel
         filters={filters}
@@ -367,21 +366,14 @@ export const IntelligenceMap: React.FC<IntelligenceMapProps> = ({
   return (
     <div
       data-testid="intelligence-map-root"
-      style={{
-        position: 'relative',
-        width: '100%',
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'row',
-        overflow: 'hidden', // prevent any child from causing horizontal scroll
-      }}
+      className="relative flex h-[calc(100vh-3rem)] w-full flex-row overflow-hidden"
     >
       {/* MapLibre canvas container — flex-1 min-w-0 so it fills remaining space
           and never overflows its flex parent at any breakpoint (PLAN-N-014 risk note) */}
       <div
         ref={containerRef}
         data-testid="map-container"
-        style={{ flex: 1, minWidth: 0, height: '100%', position: 'relative' }}
+        className="relative h-full min-w-0 flex-1"
       >
         {/* Overlays — rendered once map is ready */}
         {mapReady && mapRef.current && (
@@ -442,20 +434,9 @@ export const IntelligenceMap: React.FC<IntelligenceMapProps> = ({
         {combinedLoading && (
           <div
             data-testid="map-loading"
-            style={{
-              position: 'absolute',
-              top: 10,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: 'rgba(20,20,30,0.8)',
-              color: '#fff',
-              padding: '4px 16px',
-              borderRadius: 6,
-              fontSize: 12,
-              zIndex: 1000,
-            }}
+            className="absolute left-1/2 top-2.5 z-[1000] -translate-x-1/2 rounded-md bg-surface-2/80 px-4 py-1 text-xs text-text"
           >
-            Loading events...
+            Loading events…
           </div>
         )}
 
@@ -465,21 +446,7 @@ export const IntelligenceMap: React.FC<IntelligenceMapProps> = ({
             data-testid="drawer-toggle-button"
             onClick={() => setDrawerOpen(true)}
             aria-label="Open map panels"
-            style={{
-              position: 'fixed',
-              bottom: 16,
-              right: 16,
-              zIndex: 900,
-              background: 'rgba(20,20,30,0.9)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 24,
-              padding: '10px 18px',
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-              minHeight: 44,
-            }}
+            className="fixed bottom-4 right-4 z-[900] min-h-11 rounded-3xl bg-surface-2/90 px-4 py-2.5 text-sm font-semibold text-text hover:bg-surface-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ring)]"
           >
             Filters
           </button>
@@ -489,14 +456,10 @@ export const IntelligenceMap: React.FC<IntelligenceMapProps> = ({
       {/* Side panel — inline at md/lg/xl, hidden from flex row at sm */}
       {!isMobile && (
         <div
-          style={{
-            width: panelWidth,
-            flexShrink: 0,
-            height: '100%',
-            overflowY: 'auto',
-            background: 'rgba(10,10,20,0.9)',
-            borderLeft: '1px solid rgba(255,255,255,0.08)',
-          }}
+          className={[
+            "h-full shrink-0 overflow-y-auto border-l border-subtle bg-surface-1",
+            breakpoint === "lg" || breakpoint === "xl" ? "w-[360px]" : "w-[280px]",
+          ].join(" ")}
         >
           {sidePanelContent}
         </div>

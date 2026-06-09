@@ -15,64 +15,13 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import { apiSocket } from '@/lib/api/ws';
 import type { ScoreMarker, EventPulse } from '../types/map.types';
-
-// ── WebSocket subscription ────────────────────────────────────────────────────
-
-export interface WsScoreSubscription {
-  unsubscribe: () => void;
-}
-
-export type OnScoreUpdateCallback = (payload: GeoModifierPayload) => void;
 
 /** Shape of the GeoModifierPayload broadcast by PLAN-F-018 */
 export interface GeoModifierPayload {
   affected_companies: Record<string, number>; // company_id → new_geo_adjusted
   [key: string]: unknown;
-}
-
-export function subscribeToScoreChannel(
-  onUpdate: OnScoreUpdateCallback,
-): WsScoreSubscription {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const wsUrl = `${protocol}//${window.location.host}/ws/scores`;
-
-  let socket: WebSocket | null = null;
-  let closed = false;
-
-  function connect() {
-    if (closed) return;
-    socket = new WebSocket(wsUrl);
-
-    socket.addEventListener('message', (msg) => {
-      try {
-        const parsed: unknown = JSON.parse(msg.data as string);
-        if (
-          parsed !== null &&
-          typeof parsed === 'object' &&
-          'affected_companies' in (parsed as Record<string, unknown>)
-        ) {
-          onUpdate(parsed as GeoModifierPayload);
-        }
-      } catch {
-        // Malformed messages silently dropped.
-      }
-    });
-
-    socket.addEventListener('error', () => {
-      // Errors swallowed; reconnection is a future concern.
-    });
-  }
-
-  connect();
-
-  return {
-    unsubscribe() {
-      closed = true;
-      socket?.close();
-      socket = null;
-    },
-  };
 }
 
 // ── Color ramp ────────────────────────────────────────────────────────────────
@@ -100,61 +49,57 @@ export function useScoreOverlay(
   events: EventPulse[] = [],
 ): UseScoreOverlayResult {
   const [markerMap, setMarkerMap] = useState<Map<string, ScoreMarker>>(new Map());
-  const subscriptionRef = useRef<WsScoreSubscription | null>(null);
   const eventsRef = useRef<EventPulse[]>(events);
   eventsRef.current = events;
 
   useEffect(() => {
     if (!profileActive) {
-      // Clean up if profile was previously active.
-      subscriptionRef.current?.unsubscribe();
-      subscriptionRef.current = null;
       setMarkerMap(new Map());
       return;
     }
 
-    const sub = subscribeToScoreChannel((payload: GeoModifierPayload) => {
-      setMarkerMap((prev) => {
-        const next = new Map(prev);
-        for (const [companyId, newGeoAdjusted] of Object.entries(
-          payload.affected_companies,
-        )) {
-          // Resolve lat/lon from the current events list (in-memory join).
-          let lat = 0;
-          let lon = 0;
-          let ticker = companyId;
-          outer: for (const ev of eventsRef.current) {
-            for (const ac of ev.affected_companies) {
-              if (ac.company_id === companyId) {
-                lat = ev.lat;
-                lon = ev.lon;
-                ticker = ac.ticker;
-                break outer;
+    const handle = apiSocket('/ws/scores', {
+      onMessage: (msg) => {
+        const payload = msg as unknown as GeoModifierPayload;
+        if (!payload || typeof payload.affected_companies !== 'object') return;
+        setMarkerMap((prev) => {
+          const next = new Map(prev);
+          for (const [companyId, newGeoAdjusted] of Object.entries(
+            payload.affected_companies,
+          )) {
+            let lat = 0;
+            let lon = 0;
+            let ticker = companyId;
+            outer: for (const ev of eventsRef.current) {
+              for (const ac of ev.affected_companies) {
+                if (ac.company_id === companyId) {
+                  lat = ev.lat;
+                  lon = ev.lon;
+                  ticker = ac.ticker;
+                  break outer;
+                }
               }
             }
+            const previous = prev.get(companyId);
+            const previousScore = previous?.geo_adjusted ?? newGeoAdjusted;
+            next.set(companyId, {
+              company_id: companyId,
+              ticker,
+              lat,
+              lon,
+              geo_adjusted: newGeoAdjusted,
+              score_delta: newGeoAdjusted - previousScore,
+            });
           }
-
-          const previous = prev.get(companyId);
-          const previousScore = previous?.geo_adjusted ?? newGeoAdjusted;
-
-          next.set(companyId, {
-            company_id: companyId,
-            ticker,
-            lat,
-            lon,
-            geo_adjusted: newGeoAdjusted,
-            score_delta: newGeoAdjusted - previousScore,
-          });
-        }
-        return next;
-      });
+          return next;
+        });
+      },
+      onClose: () => {
+        // apiSocket handles auth; normal close on unmount.
+      },
     });
-    subscriptionRef.current = sub;
 
-    return () => {
-      sub.unsubscribe();
-      subscriptionRef.current = null;
-    };
+    return () => handle.close();
   }, [profileActive]);
 
   const scoreMarkers: ScoreMarker[] = profileActive

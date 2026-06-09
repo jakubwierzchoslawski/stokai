@@ -53,40 +53,20 @@ export const MapContextSwitcher: React.FC<MapContextSwitcherProps> = ({
   return (
     <div
       data-testid="map-context-switcher"
-      style={{
-        position: 'absolute',
-        top: 10,
-        left: 10,
-        zIndex: 900,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 6,
-      }}
+      className="absolute left-2.5 top-2.5 z-[900] flex flex-col gap-1.5"
     >
-      <div
-        style={{
-          display: 'flex',
-          background: 'rgba(20, 20, 30, 0.85)',
-          borderRadius: 6,
-          overflow: 'hidden',
-          backdropFilter: 'blur(4px)',
-        }}
-      >
+      <div className="flex overflow-hidden rounded-md bg-surface-1/85 backdrop-blur">
         {MODES.map((m) => (
           <button
             key={m}
             onClick={() => onSetMode(m)}
             data-testid={`mode-button-${m}`}
-            style={{
-              padding: '6px 14px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: mode === m ? 700 : 400,
-              background: mode === m ? '#0072B2' : 'transparent',
-              color: '#ffffff',
-              fontSize: 13,
-              transition: 'background 0.15s',
-            }}
+            className={[
+              "border-0 px-3.5 py-1.5 text-[13px] text-text transition-colors",
+              mode === m
+                ? "bg-signal font-bold"
+                : "bg-transparent font-normal hover:bg-surface-2/60",
+            ].join(" ")}
             aria-pressed={mode === m}
           >
             {MODE_LABELS[m]}
@@ -99,15 +79,7 @@ export const MapContextSwitcher: React.FC<MapContextSwitcherProps> = ({
           data-testid="sector-select"
           value={sector ?? ''}
           onChange={(e) => onSetSector?.(e.target.value)}
-          style={{
-            background: 'rgba(20, 20, 30, 0.85)',
-            color: '#ffffff',
-            border: '1px solid rgba(255,255,255,0.2)',
-            borderRadius: 6,
-            padding: '4px 8px',
-            fontSize: 13,
-            backdropFilter: 'blur(4px)',
-          }}
+          className="rounded-md border border-subtle bg-surface-1/85 px-2 py-1 text-[13px] text-text backdrop-blur"
         >
           <option value="" disabled>
             Select sector

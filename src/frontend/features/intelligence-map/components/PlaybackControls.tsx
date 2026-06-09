@@ -53,72 +53,46 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   return (
     <div
       data-testid="playback-controls"
-      style={{
-        position: 'absolute',
-        bottom: 32,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 900,
-        background: 'rgba(20, 20, 30, 0.9)',
-        borderRadius: 8,
-        padding: '10px 16px',
-        backdropFilter: 'blur(6px)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-        minWidth: 280,
-      }}
+      className="absolute bottom-8 left-1/2 z-[900] flex min-w-[280px] -translate-x-1/2 flex-col gap-2 rounded-lg bg-surface-1/90 px-4 py-2.5 backdrop-blur"
     >
       {/* Controls row */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        {/* Play button — visible when not playing and not complete */}
+      <div className="flex items-center gap-2">
         {!isPlaying && !isComplete && (
           <button
             data-testid="playback-btn-play"
             onClick={onPlay}
-            style={btnStyle('#16a34a')}
+            className="rounded border-0 bg-[var(--positive)] px-2.5 py-1 text-xs font-semibold text-white"
             aria-label="Play"
           >
             ▶ Play
           </button>
         )}
 
-        {/* Pause button — visible when playing */}
         {isPlaying && (
           <button
             data-testid="playback-btn-pause"
             onClick={onPause}
-            style={btnStyle('#ca8a04')}
+            className="rounded border-0 bg-[var(--warning)] px-2.5 py-1 text-xs font-semibold text-white"
             aria-label="Pause"
           >
             ⏸ Pause
           </button>
         )}
 
-        {/* Reset button — always visible */}
         <button
           data-testid="playback-btn-reset"
           onClick={onReset}
-          style={btnStyle('#6b7280')}
+          className="rounded border-0 bg-surface-3 px-2.5 py-1 text-xs font-semibold text-text"
           aria-label="Reset"
         >
           ↺ Reset
         </button>
 
-        {/* Speed selector */}
         <select
           data-testid="playback-speed-select"
           value={speed}
           onChange={(e) => onSetSpeed(e.target.value as PlaybackSpeed)}
-          style={{
-            background: 'rgba(40,40,60,0.9)',
-            color: '#fff',
-            border: '1px solid #555',
-            borderRadius: 4,
-            padding: '2px 6px',
-            fontSize: 12,
-            cursor: 'pointer',
-          }}
+          className="rounded-sm border border-subtle bg-surface-2/90 px-1.5 py-0.5 text-xs text-text"
           aria-label="Playback speed"
         >
           {SPEED_OPTIONS.map((opt) => (
@@ -130,42 +104,26 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       </div>
 
       {/* Progress bar */}
-      <div style={{ position: 'relative' }}>
-        <div
-          style={{
-            background: 'rgba(80,80,100,0.5)',
-            borderRadius: 4,
-            height: 6,
-            overflow: 'hidden',
-          }}
-        >
+      <div className="relative">
+        <div className="h-1.5 overflow-hidden rounded-sm bg-surface-3/50">
           <div
             data-testid="playback-progress"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={progressPct}
-            style={{
-              background: isComplete ? '#16a34a' : '#2563eb',
-              width: `${progressPct}%`,
-              height: '100%',
-              transition: 'width 0.1s ease',
-            }}
+            className={[
+              "h-full transition-[width] duration-100 ease-linear",
+              isComplete ? "bg-[var(--positive)]" : "bg-signal",
+            ].join(" ")}
+            style={{ width: `${progressPct}%` }}
           />
         </div>
 
-        {/* Complete label */}
         {isComplete && (
           <span
             data-testid="playback-complete-label"
-            style={{
-              position: 'absolute',
-              right: 0,
-              top: -18,
-              color: '#16a34a',
-              fontSize: 11,
-              fontWeight: 600,
-            }}
+            className="absolute -top-[18px] right-0 text-[11px] font-semibold text-[var(--positive)]"
           >
             Complete
           </span>
@@ -174,20 +132,5 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     </div>
   );
 };
-
-// ── Style helper ──────────────────────────────────────────────────────────────
-
-function btnStyle(bg: string): React.CSSProperties {
-  return {
-    background: bg,
-    color: '#fff',
-    border: 'none',
-    borderRadius: 5,
-    padding: '4px 10px',
-    fontSize: 12,
-    cursor: 'pointer',
-    fontWeight: 600,
-  };
-}
 
 export default PlaybackControls;

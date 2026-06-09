@@ -67,9 +67,12 @@ const DateRangeSlider: React.FC<DateRangeSliderProps> = ({
   }
 
   return (
-    <div data-testid="date-range-slider" style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <label htmlFor="date-range-from" style={{ color: '#ccc', fontSize: 11 }}>
+    <div
+      data-testid="date-range-slider"
+      className="mt-2 flex flex-col gap-1.5"
+    >
+      <div className="flex items-center gap-2">
+        <label htmlFor="date-range-from" className="text-[11px] text-muted">
           From
         </label>
         <input
@@ -78,16 +81,9 @@ const DateRangeSlider: React.FC<DateRangeSliderProps> = ({
           type="date"
           value={localFrom}
           onChange={(e) => setLocalFrom(e.target.value)}
-          style={{
-            background: 'rgba(20,20,30,0.9)',
-            color: '#fff',
-            border: '1px solid #555',
-            borderRadius: 4,
-            padding: '2px 6px',
-            fontSize: 11,
-          }}
+          className="rounded-sm border border-subtle bg-surface-1/90 px-1.5 py-0.5 text-[11px] text-text"
         />
-        <label htmlFor="date-range-to" style={{ color: '#ccc', fontSize: 11 }}>
+        <label htmlFor="date-range-to" className="text-[11px] text-muted">
           To
         </label>
         <input
@@ -96,21 +92,14 @@ const DateRangeSlider: React.FC<DateRangeSliderProps> = ({
           type="date"
           value={localTo}
           onChange={(e) => setLocalTo(e.target.value)}
-          style={{
-            background: 'rgba(20,20,30,0.9)',
-            color: '#fff',
-            border: '1px solid #555',
-            borderRadius: 4,
-            padding: '2px 6px',
-            fontSize: 11,
-          }}
+          className="rounded-sm border border-subtle bg-surface-1/90 px-1.5 py-0.5 text-[11px] text-text"
         />
       </div>
 
       {validationError && (
         <span
           data-testid="date-range-error"
-          style={{ color: '#f66', fontSize: 11 }}
+          className="text-[11px] text-[var(--negative)]"
           role="alert"
         >
           {validationError}
@@ -121,16 +110,12 @@ const DateRangeSlider: React.FC<DateRangeSliderProps> = ({
         data-testid="date-range-load"
         onClick={handleLoad}
         disabled={!isLoadEnabled}
-        style={{
-          background: isLoadEnabled ? '#2563eb' : '#555',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 4,
-          padding: '4px 12px',
-          fontSize: 11,
-          cursor: isLoadEnabled ? 'pointer' : 'not-allowed',
-          alignSelf: 'flex-start',
-        }}
+        className={[
+          "self-start rounded-sm border-0 px-3 py-1 text-[11px] text-white",
+          isLoadEnabled
+            ? "cursor-pointer bg-signal"
+            : "cursor-not-allowed bg-surface-3",
+        ].join(" ")}
         aria-disabled={!isLoadEnabled}
       >
         Load

@@ -23,25 +23,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ message }) => {
       data-testid="empty-state"
       role="status"
       aria-live="polite"
-      style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        background: 'rgba(20, 20, 30, 0.82)',
-        color: '#e0e0e0',
-        borderRadius: 12,
-        padding: '24px 32px',
-        maxWidth: 380,
-        textAlign: 'center',
-        zIndex: 1000,
-        backdropFilter: 'blur(6px)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
-        border: '1px solid rgba(255,255,255,0.08)',
-      }}
+      className="absolute left-1/2 top-1/2 z-[1000] max-w-[380px] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-subtle bg-surface-1/85 px-8 py-6 text-center text-text shadow-2xl backdrop-blur"
     >
       <p
-        style={{ margin: 0, fontSize: 15, lineHeight: 1.5, fontWeight: 400 }}
+        className="m-0 text-[15px] leading-relaxed"
         data-testid="empty-state-message"
       >
         {message}

@@ -44,43 +44,22 @@ const TimeModeToolbar: React.FC<TimeModeToolbarProps> = ({
   return (
     <div
       data-testid="time-mode-toolbar"
-      style={{
-        position: 'absolute',
-        top: 12,
-        right: 12,
-        zIndex: 900,
-        background: 'rgba(20, 20, 30, 0.85)',
-        borderRadius: 8,
-        padding: '8px 12px',
-        backdropFilter: 'blur(6px)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 4,
-        minWidth: 220,
-      }}
+      className="absolute right-3 top-3 z-[900] flex min-w-[220px] flex-col gap-1 rounded-lg bg-surface-1/85 px-3 py-2 backdrop-blur"
     >
       {/* Mode toggle group */}
-      <div
-        role="group"
-        aria-label="Time mode"
-        style={{ display: 'flex', gap: 4 }}
-      >
+      <div role="group" aria-label="Time mode" className="flex gap-1">
         {MODES.map(({ value, label }) => (
           <button
             key={value}
             data-testid={`time-mode-btn-${value}`}
             onClick={() => onSetTimeMode(value)}
             aria-pressed={timeMode === value}
-            style={{
-              background: timeMode === value ? '#2563eb' : 'rgba(80,80,100,0.6)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 6,
-              padding: '4px 10px',
-              fontSize: 12,
-              cursor: 'pointer',
-              fontWeight: timeMode === value ? 700 : 400,
-            }}
+            className={[
+              "rounded-md border-0 px-2.5 py-1 text-xs text-text",
+              timeMode === value
+                ? "bg-signal font-bold"
+                : "bg-surface-2/60 font-normal hover:bg-surface-3/60",
+            ].join(" ")}
           >
             {label}
           </button>

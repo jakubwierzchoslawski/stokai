@@ -54,27 +54,23 @@ export function usePlayback(
   isCompleteRef.current = isComplete;
 
   useEffect(() => {
-    const eventsChanged = events !== eventsRef.current;
-    const speedChanged = speed !== speedRef.current;
-
-    if (eventsChanged || speedChanged) {
-      eventsRef.current = events;
-      speedRef.current = speed;
-      // Cancel any active RAF loop.
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current);
-        rafIdRef.current = null;
-      }
-      engineRef.current = new PlaybackEngine(events, speed);
-      engineRef.current.reset();
-      pausedElapsedRef.current = 0;
-      startTimeRef.current = null;
-      setIsPlaying(false);
-      setVisibleEvents([]);
-      setVirtualNow(null);
-      setIsComplete(false);
+    eventsRef.current = events;
+    speedRef.current = speed;
+    // Cancel any active RAF loop.
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
     }
-  });
+    engineRef.current = new PlaybackEngine(events, speed);
+    engineRef.current.reset();
+    pausedElapsedRef.current = 0;
+    startTimeRef.current = null;
+    setIsPlaying(false);
+    setVisibleEvents((prev) => (prev.length === 0 ? prev : []));
+    setVirtualNow(null);
+    setIsComplete(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events, speed]);
 
   const cancelLoop = useCallback(() => {
     if (rafIdRef.current !== null) {

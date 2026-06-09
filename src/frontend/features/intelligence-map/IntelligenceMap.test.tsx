@@ -44,7 +44,7 @@ vi.mock('maplibre-gl', () => {
 
 // â”€â”€ Mock supercluster worker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-vi.mock('./workers/supercluster.worker.ts', () => ({}), { virtual: true });
+vi.mock('./workers/supercluster.worker.ts', () => ({}));
 
 // Worker constructor mock â€” returns a no-op worker.
 const mockWorkerPostMessage = vi.fn();

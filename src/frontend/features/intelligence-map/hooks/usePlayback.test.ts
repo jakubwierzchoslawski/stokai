@@ -33,6 +33,10 @@ const EVENT_T0 = makeEvent('e1', 0);
 const EVENT_T30 = makeEvent('e2', 1_800_000);
 const EVENT_T60 = makeEvent('e3', 3_600_000);
 
+// Stable reference — passing inline `[...]` inside renderHook creates a new array
+// on every render, which the hook treats as an events change and resets playback.
+const TEST_EVENTS = [EVENT_T0, EVENT_T30, EVENT_T60];
+
 // ── Mock requestAnimationFrame ────────────────────────────────────────────────
 
 let rafCallbacks: Map<number, FrameRequestCallback> = new Map();
@@ -66,19 +70,17 @@ function flushRaf(nowMs: number) {
 describe('usePlayback', () => {
   beforeEach(() => {
     setupFakeRaf();
-    vi.useFakeTimers();
-    // performance.now starts at 0 in fake timer mode
     vi.spyOn(performance, 'now').mockReturnValue(0);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
-    vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('initial state: isPlaying=false, visibleEvents=[], virtualNow=null, isComplete=false', () => {
     const { result } = renderHook(() =>
-      usePlayback([EVENT_T0, EVENT_T30, EVENT_T60], '1x'),
+      usePlayback(TEST_EVENTS, '1x'),
     );
     expect(result.current.isPlaying).toBe(false);
     expect(result.current.visibleEvents).toHaveLength(0);
@@ -92,7 +94,7 @@ describe('usePlayback', () => {
       .mockReturnValueOnce(0); // first tick elapsed calculation
 
     const { result } = renderHook(() =>
-      usePlayback([EVENT_T0, EVENT_T30, EVENT_T60], '1x'),
+      usePlayback(TEST_EVENTS, '1x'),
     );
 
     act(() => {
@@ -114,7 +116,7 @@ describe('usePlayback', () => {
     vi.spyOn(performance, 'now').mockReturnValue(0);
 
     const { result } = renderHook(() =>
-      usePlayback([EVENT_T0, EVENT_T30, EVENT_T60], '1x'),
+      usePlayback(TEST_EVENTS, '1x'),
     );
 
     act(() => {
@@ -145,7 +147,7 @@ describe('usePlayback', () => {
     vi.spyOn(performance, 'now').mockReturnValue(0);
 
     const { result } = renderHook(() =>
-      usePlayback([EVENT_T0, EVENT_T30, EVENT_T60], '1x'),
+      usePlayback(TEST_EVENTS, '1x'),
     );
 
     act(() => {
@@ -170,7 +172,7 @@ describe('usePlayback', () => {
     vi.spyOn(performance, 'now').mockReturnValue(0);
 
     const { result } = renderHook(() =>
-      usePlayback([EVENT_T0, EVENT_T30, EVENT_T60], '1x'),
+      usePlayback(TEST_EVENTS, '1x'),
     );
 
     act(() => {
@@ -189,20 +191,18 @@ describe('usePlayback', () => {
   });
 
   it('playback reaching isComplete=true → isComplete flag is true after full window', () => {
-    vi.spyOn(performance, 'now')
-      .mockReturnValueOnce(0)          // startTime captured on play()
-      .mockReturnValue(3_600_001);      // elapsed on every tick call
-
     const { result } = renderHook(() =>
-      usePlayback([EVENT_T0, EVENT_T30, EVENT_T60], '1x'),
+      usePlayback(TEST_EVENTS, '1x'),
     );
 
+    // play() captures startTime = 0 (from beforeEach mock)
     act(() => {
       result.current.play();
     });
 
-    // Flush RAF with elapsed > full window → should complete.
+    // Advance mock past the full 3600s virtual window, then flush the RAF.
     act(() => {
+      vi.spyOn(performance, 'now').mockReturnValue(3_600_001);
       flushRaf(3_600_001);
     });
 

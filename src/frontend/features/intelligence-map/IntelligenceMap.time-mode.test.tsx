@@ -11,6 +11,7 @@ import React from 'react';
 import { render, screen, waitFor, act, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { IntelligenceMap } from './IntelligenceMap';
@@ -104,7 +105,11 @@ afterAll(() => server.close());
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(QueryClientProvider, { client: qc }, children);
+    React.createElement(
+      MemoryRouter,
+      { initialEntries: ['/'] },
+      React.createElement(QueryClientProvider, { client: qc }, children),
+    );
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────

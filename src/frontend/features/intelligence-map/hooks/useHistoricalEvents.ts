@@ -4,6 +4,8 @@ import { fetchEvents } from "../api/events.api";
 import type { EventPulse } from "../types/map.types";
 import type { DateRange } from "../types/time-mode.types";
 
+const EMPTY: EventPulse[] = [];
+
 export interface HistoricalEventsParams {
   dateRange: DateRange;
   enabled: boolean;
@@ -36,10 +38,10 @@ export function useHistoricalEvents(
     staleTime: 5 * 60 * 1000,
   });
 
-  if (!enabled) return { events: [], isLoading: false, isError: false };
+  if (!enabled) return { events: EMPTY, isLoading: false, isError: false };
 
   return {
-    events: q.data ?? [],
+    events: q.data ?? EMPTY,
     isLoading: q.isLoading,
     isError: q.isError,
   };

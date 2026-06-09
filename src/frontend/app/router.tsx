@@ -10,8 +10,8 @@ import { ComingSoon } from "@/ui/ComingSoon";
 import { NotFound } from "@/ui/NotFound";
 import { ROUTES } from "./routes";
 
-const IntelligenceMap = lazy(() =>
-  import("@/features/intelligence-map/IntelligenceMap").then((m) => ({ default: m.IntelligenceMap }))
+const IntelligenceMapPage = lazy(() =>
+  import("@/features/intelligence-map/IntelligenceMapPage").then((m) => ({ default: m.IntelligenceMapPage }))
 );
 const BriefsPage = lazy(() =>
   import("@/features/briefs/BriefsPage").then((m) => ({ default: m.BriefsPage }))
@@ -82,7 +82,7 @@ export function AppRouter() {
       {/* Protected: RequireAuth → OnboardingGate (outlet) → AppShell (outlet) → pages */}
       <Route element={<RequireAuth><OnboardingGate /></RequireAuth>}>
         <Route element={<AppShell />}>
-          <Route path={ROUTES.home} element={<S><IntelligenceMap /></S>} />
+          <Route path={ROUTES.home} element={<S><IntelligenceMapPage /></S>} />
           <Route path={ROUTES.briefs} element={<S><BriefsPage /></S>} />
           <Route path={ROUTES.brief} element={<S><BriefDetailPage /></S>} />
           <Route path={ROUTES.screener} element={<S><ScreenerPage /></S>} />

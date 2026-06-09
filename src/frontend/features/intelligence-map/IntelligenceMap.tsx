@@ -24,6 +24,9 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { useNavigate } from 'react-router-dom';
+import { env } from '@/lib/env';
 import { useEventFeed } from './hooks/useEventFeed';
 import { useMapFilters } from './hooks/useMapFilters';
 import { useMapMode } from './hooks/useMapMode';
@@ -35,6 +38,7 @@ import { generateEmptyStateMessage } from './lib/empty-state-message';
 import { generateTimeModeEmptyStateMessage } from './lib/time-mode-empty-state';
 import PulseLayer from './components/PulseLayer';
 import ClusterLayer from './components/ClusterLayer';
+import { EventPopup } from './components/EventPopup';
 import FilterPanel from './components/FilterPanel';
 import MapContextSwitcher from './components/MapContextSwitcher';
 import EmptyState from './components/EmptyState';
@@ -58,20 +62,6 @@ interface MapLibreMap {
   addPopup?: (popup: unknown) => void;
 }
 
-// ── Environment variable: tile style URL ─────────────────────────────────────
-
-function getMapStyleUrl(): string {
-  try {
-    // Vite injects import.meta.env at build time.
-    // This pattern is safe in both browser and test environments.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const env = (import.meta as any).env as Record<string, string> | undefined;
-    return env?.VITE_MAP_STYLE_URL ?? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
-  } catch {
-    return 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
-  }
-}
-
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 export interface IntelligenceMapProps {
@@ -90,6 +80,9 @@ export const IntelligenceMap: React.FC<IntelligenceMapProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const workerRef = useRef<Worker | null>(null);
+  const popupRef = useRef<{ remove: () => void } | null>(null);
+  const popupRootRef = useRef<Root | null>(null);
+  const navigate = useNavigate();
 
   const [mapReady, setMapReady] = useState(false);
   const [zoom, setZoom] = useState(2);
@@ -216,7 +209,7 @@ export const IntelligenceMap: React.FC<IntelligenceMapProps> = ({
 
         mapInstance = new Map({
           container: containerRef.current!,
-          style: getMapStyleUrl(),
+          style: env.mapStyleUrl,
           zoom: 2,
           center: [0, 20],
           attributionControl: false,
@@ -248,6 +241,10 @@ export const IntelligenceMap: React.FC<IntelligenceMapProps> = ({
     void initMap();
 
     return () => {
+      popupRef.current?.remove();
+      popupRootRef.current?.unmount();
+      popupRef.current = null;
+      popupRootRef.current = null;
       mapInstance?.remove();
       mapRef.current = null;
     };
@@ -270,12 +267,61 @@ export const IntelligenceMap: React.FC<IntelligenceMapProps> = ({
   // ── Pulse click handler ─────────────────────────────────────────────────────
 
   const handlePulseClick = useCallback(
-    (event: EventPulse) => {
-      // Stub popup — PLAN-F-020 injects the real side-panel via onExpandEvent prop.
-      console.log('[IntelligenceMap] Pulse clicked:', event.event_id, event.headline);
+    async (event: EventPulse) => {
+      // Phase 2b subscribers (Progressive Disclosure) receive the event too.
       onExpandEvent?.(event);
+
+      const map = mapRef.current;
+      if (!map) return;
+
+      // Tear down any prior popup before opening a new one.
+      popupRef.current?.remove();
+      popupRootRef.current?.unmount();
+      popupRef.current = null;
+      popupRootRef.current = null;
+
+      let maplibre: typeof import('maplibre-gl');
+      try {
+        maplibre = await import('maplibre-gl');
+      } catch {
+        return; // jsdom / no-maplibre environment — skip popup, navigation still wired via tests
+      }
+      const container = document.createElement('div');
+      container.className = 'stokai-event-popup-root';
+
+      const root = createRoot(container);
+      root.render(
+        <EventPopup
+          event={event}
+          onViewDetails={(id) => {
+            popupRef.current?.remove();
+            popupRootRef.current?.unmount();
+            popupRef.current = null;
+            popupRootRef.current = null;
+            navigate(`/events/${id}/deep-dive`);
+          }}
+        />,
+      );
+
+      const maplibreAny = maplibre as unknown as {
+        default?: { Popup: new (opts: unknown) => { setLngLat: (c: [number, number]) => unknown; setDOMContent: (n: HTMLElement) => unknown; addTo: (m: unknown) => unknown; remove: () => void } };
+        Popup: new (opts: unknown) => { setLngLat: (c: [number, number]) => unknown; setDOMContent: (n: HTMLElement) => unknown; addTo: (m: unknown) => unknown; remove: () => void };
+      };
+      const PopupCtor = maplibreAny.default?.Popup ?? maplibreAny.Popup;
+      const popup = new PopupCtor({
+        closeButton: true,
+        closeOnClick: true,
+        maxWidth: 'none',
+        className: 'stokai-event-popup',
+      }) as { setLngLat: (c: [number, number]) => unknown; setDOMContent: (n: HTMLElement) => unknown; addTo: (m: unknown) => unknown; remove: () => void };
+      popup.setLngLat([event.lon, event.lat]);
+      popup.setDOMContent(container);
+      popup.addTo(map);
+
+      popupRef.current = popup;
+      popupRootRef.current = root;
     },
-    [onExpandEvent],
+    [onExpandEvent, navigate],
   );
 
   // ── Derived state ───────────────────────────────────────────────────────────

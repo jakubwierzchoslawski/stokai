@@ -31,7 +31,6 @@ import { useScoreOverlay } from './hooks/useScoreOverlay';
 import { useTimeModeState } from './hooks/useTimeModeState';
 import { useHistoricalEvents } from './hooks/useHistoricalEvents';
 import { usePlayback } from './hooks/usePlayback';
-import { useScoreAtTime } from './hooks/useScoreAtTime';
 import { generateEmptyStateMessage } from './lib/empty-state-message';
 import { generateTimeModeEmptyStateMessage } from './lib/time-mode-empty-state';
 import PulseLayer from './components/PulseLayer';
@@ -142,24 +141,6 @@ export const IntelligenceMap: React.FC<IntelligenceMapProps> = ({
       : timeMode === 'playback'
         ? playback.visibleEvents
         : historicalEvents;
-
-  // Derive company IDs from visible events for score-at-time lookup.
-  const derivedCompanyIds = Array.from(
-    new Set(
-      activeEvents.flatMap((e) =>
-        e.affected_companies.map((c) => c.company_id),
-      ),
-    ),
-  );
-
-  // Score-at-time — only active in Historical mode.
-  const { scores: scoreAtTimeData } = useScoreAtTime({
-    companyIds: derivedCompanyIds,
-    at:
-      playback.virtualNow?.toISOString() ??
-      (dateRange ? dateRange.to_date + 'T23:59:59Z' : new Date().toISOString()),
-    enabled: timeMode === 'historical',
-  });
 
   // When transitioning to live mode, reconnect WebSocket.
   const prevTimeModeRef = useRef(timeMode);

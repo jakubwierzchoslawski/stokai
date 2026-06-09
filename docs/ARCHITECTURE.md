@@ -691,6 +691,18 @@ Implemented as the same React app under an `/admin` route, guarded by `role === 
 
 Feature flags are environment-level toggles managed from the Admin panel: real-time mode, specific Mode B workflows, social sources. No code deployment required to toggle.
 
+### Intelligence Map (Phase 2a)
+
+- Route: `/` → `IntelligenceMapPage` (`src/frontend/features/intelligence-map/`).
+- Data: `GET /api/v1/events` (live + historical) via `lib/api/client.ts`;
+  `WSS /api/v1/events/feed` via `lib/api/ws.ts` (`apiSocket`).
+- Shared primitives introduced: `useIntegrations()` (`lib/api/integrations.ts`)
+  and `<StubModeBadge>` (`lib/ui/StubModeBadge.tsx`) — used by the map and the
+  admin/system page.
+- Pulse click opens a MapLibre Popup with `EventPopup`; "View details →"
+  navigates to `/events/:eventId/deep-dive` (Phase 2b consumer).
+- Score overlay (`useScoreOverlay`) subscribes to `WSS /ws/scores` via `apiSocket`.
+
 ---
 
 ## 12. Cross-Cutting Concerns

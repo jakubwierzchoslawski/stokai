@@ -1,73 +1,17 @@
-/**
- * useEventFeed.ts — TanStack Query hook for event data + WebSocket merge.
- *
- * Fetches the initial event list via GET /api/v1/events on mount. Maintains
- * a local EventPulse[] state that is extended by WebSocket pushes on the
- * ws/events channel. Unsubscribes on unmount.
- *
- * PLAN-F-019 TASK-002
- */
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
-import { fetchEvents, type EventsQueryParams } from '../api/events.api';
-import type { EventPulse } from '../types/map.types';
+import { apiSocket } from "@/lib/api/ws";
 
-// ── WebSocket subscription manager ───────────────────────────────────────────
-// Lightweight inline manager that connects to ws/events and dispatches messages.
-// Replaced by the shared WebSocketManager utility when that module is available.
-
-export interface WsSubscription {
-  unsubscribe: () => void;
-}
-
-export type OnEventCallback = (event: EventPulse) => void;
-
-/** Subscribe to the ws/events channel. Returns an unsubscribe handle. */
-export function subscribeToEventChannel(
-  onEvent: OnEventCallback,
-): WsSubscription {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const wsUrl = `${protocol}//${window.location.host}/ws/events`;
-
-  let socket: WebSocket | null = null;
-  let closed = false;
-
-  function connect() {
-    if (closed) return;
-    socket = new WebSocket(wsUrl);
-
-    socket.addEventListener('message', (msg) => {
-      try {
-        const parsed: unknown = JSON.parse(msg.data as string);
-        onEvent(parsed as EventPulse);
-      } catch {
-        // Malformed messages are silently dropped — they must not crash the component.
-      }
-    });
-
-    socket.addEventListener('error', () => {
-      // Errors are swallowed; reconnection can be added in a future iteration.
-    });
-  }
-
-  connect();
-
-  return {
-    unsubscribe() {
-      closed = true;
-      socket?.close();
-      socket = null;
-    },
-  };
-}
-
-// ── Hook ──────────────────────────────────────────────────────────────────────
+import { fetchEvents, type EventsQueryParams } from "../api/events.api";
+import { EventPulseSchema } from "../api/events.schema";
+import type { EventPulse } from "../types/map.types";
 
 export interface UseEventFeedParams {
-  context?: 'global' | 'portfolio' | 'sector';
+  context?: "global" | "portfolio" | "sector";
   zoom?: number;
   bbox?: string;
+  sector?: string;
 }
 
 export interface UseEventFeedResult {
@@ -77,56 +21,59 @@ export interface UseEventFeedResult {
   error: Error | null;
 }
 
+interface WsFrame {
+  type: string;
+  event?: unknown;
+}
+
 export function useEventFeed(
   params: UseEventFeedParams = {},
 ): UseEventFeedResult {
-  const { context = 'global', zoom, bbox } = params;
+  const { context = "global", zoom, bbox, sector } = params;
 
-  // TanStack Query — initial fetch.  Key changes trigger a re-fetch.
-  const queryResult = useQuery<EventPulse[], Error>({
-    queryKey: ['events', { context, zoom, bbox }],
+  const q = useQuery<EventPulse[], Error>({
+    queryKey: ["events", { context, zoom, bbox, sector }],
     queryFn: () =>
-      fetchEvents({ context, zoom, bbox } as EventsQueryParams),
+      fetchEvents({ context, zoom, bbox, sector } as EventsQueryParams),
   });
 
-  // Local state merges query data + WebSocket pushes.
   const [wsEvents, setWsEvents] = useState<EventPulse[]>([]);
-  const subscriptionRef = useRef<WsSubscription | null>(null);
 
-  // Reset WebSocket-accumulated events when the query key changes so stale
-  // pushes from a previous context/bbox do not pollute the new view.
-  const prevContextRef = useRef<string>('');
-  const currentKey = `${context}|${zoom}|${bbox}`;
-  if (prevContextRef.current !== currentKey) {
-    prevContextRef.current = currentKey;
-    setWsEvents([]);
+  // Reset WS accumulator when the query key shifts so stale pushes from a
+  // previous context/bbox do not pollute the new view.
+  const prevKeyRef = useRef("");
+  const currentKey = `${context}|${zoom}|${bbox}|${sector ?? ""}`;
+  if (prevKeyRef.current !== currentKey) {
+    prevKeyRef.current = currentKey;
+    if (wsEvents.length > 0) setWsEvents([]);
   }
 
   useEffect(() => {
-    const sub = subscribeToEventChannel((incoming: EventPulse) => {
-      // Validate the minimum required fields before accepting the push.
-      if (
-        typeof incoming?.event_id === 'string' &&
-        typeof incoming?.lat === 'number' &&
-        typeof incoming?.lon === 'number'
-      ) {
-        setWsEvents((prev) => [...prev, incoming]);
-      }
+    const handle = apiSocket("/api/v1/events/feed", {
+      onMessage: (msg) => {
+        const frame = msg as WsFrame;
+        if (
+          frame?.type !== "event.created" &&
+          frame?.type !== "event.updated"
+        ) {
+          return;
+        }
+        const parsed = EventPulseSchema.safeParse(frame.event);
+        if (!parsed.success) return;
+        setWsEvents((prev) => [...prev, parsed.data as EventPulse]);
+      },
+      onClose: () => {
+        // apiSocket handles 4401 → refresh → reconnect internally.
+      },
     });
-    subscriptionRef.current = sub;
-    return () => {
-      sub.unsubscribe();
-      subscriptionRef.current = null;
-    };
-  }, [context, zoom, bbox]);
+    return () => handle.close();
+  }, [context, zoom, bbox, sector]);
 
-  const baseEvents = queryResult.data ?? [];
-  const events = [...baseEvents, ...wsEvents];
-
+  const baseEvents = q.data ?? [];
   return {
-    events,
-    isLoading: queryResult.isLoading,
-    isError: queryResult.isError,
-    error: queryResult.error,
+    events: [...baseEvents, ...wsEvents],
+    isLoading: q.isLoading,
+    isError: q.isError,
+    error: q.error,
   };
 }

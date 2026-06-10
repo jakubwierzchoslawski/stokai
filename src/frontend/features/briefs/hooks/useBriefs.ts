@@ -7,6 +7,7 @@
  */
 import { useInfiniteQuery } from '@tanstack/react-query';
 import type { BriefListResponse, BriefType } from '../briefs.types';
+import { api } from '@/lib/api/client';
 
 interface UseBriefsOptions {
   briefType?: BriefType | null;
@@ -20,14 +21,7 @@ async function fetchBriefs(
   if (briefType) params.set('type', briefType);
   if (cursor) params.set('cursor', cursor);
   params.set('limit', '20');
-
-  const resp = await fetch(`/api/v1/briefs?${params.toString()}`, {
-    credentials: 'include',
-  });
-  if (!resp.ok) {
-    throw new Error(`Failed to fetch briefs: ${resp.status}`);
-  }
-  return resp.json() as Promise<BriefListResponse>;
+  return api<BriefListResponse>('/briefs?' + params.toString());
 }
 
 export function useBriefs({ briefType }: UseBriefsOptions = {}) {

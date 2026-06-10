@@ -7,15 +7,10 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import type { BriefDetailResponse } from '../briefs.types';
+import { api } from '@/lib/api/client';
 
 async function fetchBriefDetail(briefId: string): Promise<BriefDetailResponse> {
-  const resp = await fetch(`/api/v1/briefs/${briefId}`, {
-    credentials: 'include',
-  });
-  if (!resp.ok) {
-    throw new Error(`Failed to fetch brief ${briefId}: ${resp.status}`);
-  }
-  return resp.json() as Promise<BriefDetailResponse>;
+  return api<BriefDetailResponse>('/briefs/' + briefId);
 }
 
 export function useBriefDetail(briefId: string) {

@@ -1,12 +1,13 @@
-﻿/**
- * qaApi â€” typed API client for Q&A chat endpoints.
+/**
+ * qaApi - typed API client for Q&A chat endpoints.
  *
  * PLAN-F-027 TASK-006
  *
  * Endpoints:
- *   POST /api/v1/qa/sessions              â€” create a new Q&A session
- *   POST /api/v1/qa/sessions/{id}/messages â€” submit question (SSE stream)
+ *   POST /api/v1/qa/sessions              - create a new Q&A session
+ *   POST /api/v1/qa/sessions/{id}/messages - submit question (SSE stream)
  */
+import { api, getAccessToken } from "@/lib/api/client";
 
 export interface QASource {
   type: string;
@@ -49,18 +50,7 @@ export type SSEEvent = SSEChunkEvent | SSEDoneEvent | SSECostLimitedEvent;
  * @returns Promise<CreateSessionResponse> with session_id
  */
 export async function createQASession(): Promise<CreateSessionResponse> {
-  const response = await fetch("/api/v1/qa/sessions", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(
-      `Failed to create Q&A session: ${response.status} ${error?.detail || response.statusText}`,
-    );
-  }
-  return response.json();
+  return api<CreateSessionResponse>('/qa/sessions', { method: 'POST' });
 }
 
 /**
@@ -93,10 +83,14 @@ export async function submitQuestionFetch(
   sessionId: string,
   question: string,
 ): Promise<Response> {
+  const token = getAccessToken();
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
   return fetch(`/api/v1/qa/sessions/${sessionId}/messages`, {
     method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ question }),
   });
 }

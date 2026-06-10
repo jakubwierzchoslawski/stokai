@@ -96,7 +96,7 @@ describe('SidePanel', () => {
     );
 
     const panel = screen.getByTestId('side-panel');
-    expect(panel.style.transform).toContain('translateX(100%)');
+    expect(panel.className).toContain('translate-x-full');
     // useSidePanelData should be called but with enabled=false (no data fetch)
     expect(spy).toHaveBeenCalled();
     // No content sections rendered

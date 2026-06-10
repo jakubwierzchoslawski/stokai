@@ -9,6 +9,7 @@ import { AppShell } from "@/layout/AppShell";
 import { ComingSoon } from "@/ui/ComingSoon";
 import { NotFound } from "@/ui/NotFound";
 import { ROUTES } from "./routes";
+import { ProgressiveDisclosureProvider } from "@/features/progressive-disclosure/ProgressiveDisclosureProvider";
 
 const IntelligenceMapPage = lazy(() =>
   import("@/features/intelligence-map/IntelligenceMapPage").then((m) => ({ default: m.IntelligenceMapPage }))
@@ -49,6 +50,9 @@ const AiAuditConsolePage = lazy(() =>
 const IngestionJobsTab = lazy(() =>
   import("@/pages/admin/system/IngestionJobsTab").then((m) => ({ default: m.IngestionJobsTab }))
 );
+const DeepDivePage = lazy(() =>
+  import("@/features/progressive-disclosure/components/DeepDivePage").then((m) => ({ default: m.DeepDivePage }))
+);
 
 function Loader() {
   return (
@@ -82,7 +86,16 @@ export function AppRouter() {
       {/* Protected: RequireAuth → OnboardingGate (outlet) → AppShell (outlet) → pages */}
       <Route element={<RequireAuth><OnboardingGate /></RequireAuth>}>
         <Route element={<AppShell />}>
-          <Route path={ROUTES.home} element={<S><IntelligenceMapPage /></S>} />
+          <Route
+            path={ROUTES.home}
+            element={
+              <S>
+                <ProgressiveDisclosureProvider>
+                  <IntelligenceMapPage />
+                </ProgressiveDisclosureProvider>
+              </S>
+            }
+          />
           <Route path={ROUTES.briefs} element={<S><BriefsPage /></S>} />
           <Route path={ROUTES.brief} element={<S><BriefDetailPage /></S>} />
           <Route path={ROUTES.screener} element={<S><ScreenerPage /></S>} />
@@ -91,7 +104,7 @@ export function AppRouter() {
           <Route path={ROUTES.watchlist} element={<ComingSoon feature="Watchlist" />} />
           <Route path={ROUTES.alerts} element={<S><AlertsCenterPage /></S>} />
           <Route path={ROUTES.qa} element={<S><QAChatPanel /></S>} />
-          <Route path={ROUTES.events} element={<ComingSoon feature="Event Deep-Dive" />} />
+          <Route path={ROUTES.events} element={<S><DeepDivePage /></S>} />
 
           {/* Admin — additional RequireAdmin guard */}
           <Route element={<RequireAdmin><AdminLayout /></RequireAdmin>}>

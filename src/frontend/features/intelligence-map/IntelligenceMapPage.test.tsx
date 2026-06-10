@@ -6,6 +6,7 @@ import { http, HttpResponse } from "msw";
 import React from "react";
 
 import { server } from "../../../../tests/frontend/msw/server";
+import { ProgressiveDisclosureProvider } from "@/features/progressive-disclosure/ProgressiveDisclosureProvider";
 
 // ── Mock IntelligenceMap — avoids maplibre-gl / WebGL hang in jsdom threads pool.
 // IntelligenceMapPage only wires onExpandEvent and renders StubModeBadge on top;
@@ -17,6 +18,9 @@ vi.mock("./IntelligenceMap", () => ({
       onClick: () => onExpandEvent?.({ event_id: "test-evt", lat: 0, lon: 0 }),
     }),
 }));
+vi.mock("@/features/progressive-disclosure/components/EventPopup", () => ({ EventPopup: () => null }));
+vi.mock("@/features/progressive-disclosure/components/SidePanel", () => ({ SidePanel: () => null }));
+vi.mock("@/features/progressive-disclosure/components/AuditTrailView", () => ({ AuditTrailView: () => null }));
 
 import { IntelligenceMapPage } from "@/features/intelligence-map/IntelligenceMapPage";
 
@@ -28,7 +32,14 @@ function Wrap({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={["/"]}>
         <Routes>
-          <Route path="/" element={children} />
+          <Route
+            path="/"
+            element={
+              <ProgressiveDisclosureProvider>
+                {children}
+              </ProgressiveDisclosureProvider>
+            }
+          />
           <Route
             path="/events/:eventId/deep-dive"
             element={<div data-testid="deep-dive" />}

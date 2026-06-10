@@ -13,16 +13,8 @@ import {
   useRerunWorkflow,
   type WorkflowRunSummary,
 } from './hooks/useWorkflowHistory';
+import { useWorkflowDetail } from './hooks/useWorkflowDetail';
 import { WorkflowDetailDrawer } from './WorkflowDetailDrawer';
-
-type WorkflowDetailFull = import('./hooks/useWorkflowHistory').WorkflowRunDetail;
-
-async function fetchWorkflowDetail(workflowId: string): Promise<WorkflowDetailFull> {
-  const res = await fetch(`/api/v1/admin/audit/workflows/${workflowId}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-  return json.data;
-}
 
 function StatusBadge({ status }: { status: string }) {
   const colorMap: Record<string, string> = {
@@ -50,19 +42,19 @@ export function WorkflowHistoryPanel() {
     useWorkflowHistory();
   const rerunMutation = useRerunWorkflow();
 
-  const [selectedDetail, setSelectedDetail] = useState<WorkflowDetailFull | null>(null);
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [rerunConfirm, setRerunConfirm] = useState<string | null>(null); // workflow_id
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const handleRowClick = useCallback(async (run: WorkflowRunSummary) => {
-    try {
-      const detail = await fetchWorkflowDetail(run.workflow_id);
-      setSelectedDetail(detail);
-      setDrawerOpen(true);
-    } catch {
-      // ignore
-    }
+  const { data: selectedDetail } = useWorkflowDetail(
+    selectedWorkflowId ?? '',
+    !!selectedWorkflowId,
+  );
+
+  const handleRowClick = useCallback((run: WorkflowRunSummary) => {
+    setSelectedWorkflowId(run.workflow_id);
+    setDrawerOpen(true);
   }, []);
 
   const handleRerunClick = useCallback(
@@ -212,7 +204,7 @@ export function WorkflowHistoryPanel() {
       )}
 
       <WorkflowDetailDrawer
-        detail={selectedDetail}
+        detail={selectedDetail ?? null}
         isOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}
       />

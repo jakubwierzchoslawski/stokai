@@ -1,15 +1,13 @@
-﻿/**
+/**
  * Tests for useDecisionLog hook.
  *
  * PLAN-F-029 TASK-007
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
-
-const mockFetch = vi.fn();
-globalThis.fetch = mockFetch;
+import * as client from '@/lib/api/client';
 
 // Wrapper with QueryClient
 function makeWrapper() {
@@ -36,15 +34,11 @@ const MOCK_ROW = {
 };
 
 describe('useDecisionLog', () => {
-  beforeEach(() => {
-    mockFetch.mockClear();
-  });
+  afterEach(() => vi.restoreAllMocks());
 
   it('initial load returns first page rows', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ data: [MOCK_ROW], next_cursor: null, error: null }),
-    } as Response);
+    const mockPage = { data: [MOCK_ROW], next_cursor: null, error: null };
+    vi.spyOn(client, 'api').mockResolvedValue(mockPage);
 
     const { useDecisionLog } = await import('../../../pages/admin/ai-audit/hooks/useDecisionLog');
     const { result } = renderHook(() => useDecisionLog({}), {
@@ -58,15 +52,9 @@ describe('useDecisionLog', () => {
   });
 
   it('cursor navigation passes returned cursor to next request', async () => {
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: [MOCK_ROW], next_cursor: 'cursor_page2', error: null }),
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: [], next_cursor: null, error: null }),
-      } as Response);
+    const spy = vi.spyOn(client, 'api')
+      .mockResolvedValueOnce({ data: [MOCK_ROW], next_cursor: 'cursor_page2', error: null })
+      .mockResolvedValueOnce({ data: [], next_cursor: null, error: null });
 
     const { useDecisionLog } = await import('../../../pages/admin/ai-audit/hooks/useDecisionLog');
     const { result } = renderHook(() => useDecisionLog({}), {
@@ -81,16 +69,13 @@ describe('useDecisionLog', () => {
     });
 
     await waitFor(() => {
-      const url = mockFetch.mock.calls[1]?.[0] as string;
+      const url = spy.mock.calls[1]?.[0] as string;
       expect(url).toContain('cursor=cursor_page2');
     });
   });
 
   it('confidence_min filter is sent in API request', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ data: [], next_cursor: null, error: null }),
-    } as Response);
+    const spy = vi.spyOn(client, 'api').mockResolvedValue({ data: [], next_cursor: null, error: null });
 
     const { useDecisionLog } = await import('../../../pages/admin/ai-audit/hooks/useDecisionLog');
     const { result } = renderHook(() => useDecisionLog({ confidence_min: 0.7 }), {
@@ -99,7 +84,7 @@ describe('useDecisionLog', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    const url = mockFetch.mock.calls[0][0] as string;
+    const url = spy.mock.calls[0][0] as string;
     expect(url).toContain('confidence_min=0.7');
   });
 });

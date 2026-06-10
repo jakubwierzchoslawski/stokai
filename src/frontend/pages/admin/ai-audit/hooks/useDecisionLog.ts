@@ -6,8 +6,9 @@
  *
  * PLAN-F-029 TASK-007
  */
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useState, useCallback } from 'react';
+import { api } from '@/lib/api/client';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -64,9 +65,7 @@ async function fetchDecisions(
   if (filters.limit) params.set('limit', String(filters.limit));
   if (cursor) params.set('cursor', cursor);
 
-  const res = await fetch(`/api/v1/admin/audit/decisions?${params.toString()}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  return api<DecisionLogPage>('/admin/audit/decisions?' + params.toString());
 }
 
 // ── Hook ───────────────────────────────────────────────────────────────────────

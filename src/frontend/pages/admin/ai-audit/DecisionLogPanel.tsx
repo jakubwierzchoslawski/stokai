@@ -9,6 +9,7 @@
  */
 import React, { useState, useCallback } from 'react';
 import { useDecisionLog, type DecisionLogFilters, type AIDecisionRow } from './hooks/useDecisionLog';
+import { useDecisionDetail } from './hooks/useDecisionDetail';
 import { DecisionLogFilter } from './DecisionLogFilter';
 import { DecisionDetailDrawer, type AIDecisionDetail } from './DecisionDetailDrawer';
 import { OverrideModal } from './OverrideModal';
@@ -30,26 +31,22 @@ function ConfidenceBadge({ value }: { value: number }) {
   );
 }
 
-// ── Fetch detail ───────────────────────────────────────────────────────────────
-
-async function fetchDecisionDetail(decisionId: string): Promise<AIDecisionDetail> {
-  const res = await fetch(`/api/v1/admin/audit/decisions/${decisionId}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-  return json.data;
-}
-
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export function DecisionLogPanel() {
   const [filters, setFilters] = useState<DecisionLogFilters>({});
-  const [selectedDetail, setSelectedDetail] = useState<AIDecisionDetail | null>(null);
+  const [selectedDecisionId, setSelectedDecisionId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [overrideDecision, setOverrideDecision] = useState<AIDecisionDetail | null>(null);
   const [overrideOpen, setOverrideOpen] = useState(false);
 
   const { rows, nextCursor, isLoading, isError, loadNextPage, resetCursor, refetch } =
     useDecisionLog(filters);
+
+  const { data: selectedDetail } = useDecisionDetail(
+    selectedDecisionId ?? '',
+    !!selectedDecisionId,
+  );
 
   const handleApplyFilters = useCallback(
     (newFilters: DecisionLogFilters) => {
@@ -64,31 +61,9 @@ export function DecisionLogPanel() {
     setFilters({});
   }, [resetCursor]);
 
-  const handleRowClick = useCallback(async (row: AIDecisionRow) => {
-    try {
-      const detail = await fetchDecisionDetail(row.decision_id);
-      setSelectedDetail(detail);
-      setDrawerOpen(true);
-    } catch {
-      // Fallback: open drawer with minimal data
-      setSelectedDetail({
-        decision_id: row.decision_id,
-        agent_role: row.agent_role,
-        model: row.model,
-        prompt_version: row.prompt_version,
-        confidence: row.confidence,
-        inputs_summary: row.inputs_summary,
-        inputs_full: '',
-        retrieved_analogs: [],
-        action_signal: row.action_signal,
-        company_ticker: row.company_ticker,
-        output_text: row.output_text_truncated,
-        langfuse_trace_url: row.langfuse_trace_url,
-        workflow_run_id: row.workflow_run_id,
-        created_at: row.created_at,
-      });
-      setDrawerOpen(true);
-    }
+  const handleRowClick = useCallback((row: AIDecisionRow) => {
+    setSelectedDecisionId(row.decision_id);
+    setDrawerOpen(true);
   }, []);
 
   const handleOverride = useCallback((decision: AIDecisionDetail) => {
@@ -194,7 +169,7 @@ export function DecisionLogPanel() {
       )}
 
       <DecisionDetailDrawer
-        decision={selectedDetail}
+        decision={selectedDetail ?? null}
         isOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         onOverride={handleOverride}

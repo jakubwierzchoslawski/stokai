@@ -1,15 +1,13 @@
-﻿/**
+/**
  * Tests for DecisionLogPanel and DecisionDetailDrawer components.
  *
  * PLAN-F-029 TASK-007
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
-const mockFetch = vi.fn();
-globalThis.fetch = mockFetch;
+import * as client from '@/lib/api/client';
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -33,16 +31,11 @@ const MOCK_ROW = {
 };
 
 describe('DecisionLogPanel', () => {
-  beforeEach(() => {
-    mockFetch.mockClear();
-  });
+  afterEach(() => vi.restoreAllMocks());
 
   it('renders a table row for each returned decision', async () => {
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: [MOCK_ROW], next_cursor: null, error: null }),
-      } as Response);
+    const mockPage = { data: [MOCK_ROW], next_cursor: null, error: null };
+    vi.spyOn(client, 'api').mockResolvedValue(mockPage);
 
     const { DecisionLogPanel } = await import('../../../pages/admin/ai-audit/DecisionLogPanel');
     const Wrapper = makeWrapper();
@@ -61,15 +54,9 @@ describe('DecisionLogPanel', () => {
       output_text: 'Full output',
     };
 
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: [MOCK_ROW], next_cursor: null, error: null }),
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: DETAIL, error: null }),
-      } as Response);
+    vi.spyOn(client, 'api')
+      .mockResolvedValueOnce({ data: [MOCK_ROW], next_cursor: null, error: null })
+      .mockResolvedValueOnce(DETAIL);
 
     const { DecisionLogPanel } = await import('../../../pages/admin/ai-audit/DecisionLogPanel');
     const Wrapper = makeWrapper();

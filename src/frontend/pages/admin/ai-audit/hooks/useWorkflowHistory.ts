@@ -7,6 +7,7 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, useCallback } from 'react';
+import { api } from '@/lib/api/client';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -60,18 +61,14 @@ async function fetchWorkflows(
 ): Promise<{ data: WorkflowRunSummary[]; next_cursor: string | null }> {
   const params = new URLSearchParams({ limit: String(limit) });
   if (cursor) params.set('cursor', cursor);
-  const res = await fetch(`/api/v1/admin/audit/workflows?${params.toString()}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  return api('/admin/audit/workflows?' + params.toString());
 }
 
 async function postRerun(workflowId: string): Promise<RerunResponse> {
-  const res = await fetch(`/api/v1/admin/audit/workflows/${workflowId}/rerun`, {
-    method: 'POST',
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-  return json.data;
+  return api<RerunResponse>(
+    '/admin/audit/workflows/' + workflowId + '/rerun',
+    { method: 'POST' },
+  );
 }
 
 // ── useWorkflowHistory hook ────────────────────────────────────────────────────

@@ -1,15 +1,13 @@
-﻿/**
+/**
  * Tests for WorkflowHistoryPanel and WorkflowDetailDrawer.
  *
  * PLAN-F-029 TASK-011
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
-const mockFetch = vi.fn();
-globalThis.fetch = mockFetch;
+import * as client from '@/lib/api/client';
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -59,15 +57,11 @@ const MOCK_DETAIL = {
 };
 
 describe('WorkflowHistoryPanel', () => {
-  beforeEach(() => {
-    mockFetch.mockClear();
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ data: [MOCK_RUN], next_cursor: null, error: null }),
-    } as Response);
-  });
+  afterEach(() => vi.restoreAllMocks());
 
   it('renders one table row per WorkflowRunSummary', async () => {
+    vi.spyOn(client, 'api').mockResolvedValue({ data: [MOCK_RUN], next_cursor: null, error: null });
+
     const { WorkflowHistoryPanel } = await import(
       '../../../pages/admin/ai-audit/WorkflowHistoryPanel'
     );
@@ -80,10 +74,9 @@ describe('WorkflowHistoryPanel', () => {
   });
 
   it('clicking a row opens WorkflowDetailDrawer with correct workflow_id', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ data: MOCK_DETAIL, error: null }),
-    } as Response);
+    vi.spyOn(client, 'api')
+      .mockResolvedValueOnce({ data: [MOCK_RUN], next_cursor: null, error: null })
+      .mockResolvedValueOnce(MOCK_DETAIL);
 
     const { WorkflowHistoryPanel } = await import(
       '../../../pages/admin/ai-audit/WorkflowHistoryPanel'
@@ -100,6 +93,8 @@ describe('WorkflowHistoryPanel', () => {
   });
 
   it('Re-run button shows confirmation popover before mutation', async () => {
+    const spy = vi.spyOn(client, 'api').mockResolvedValue({ data: [MOCK_RUN], next_cursor: null, error: null });
+
     const { WorkflowHistoryPanel } = await import(
       '../../../pages/admin/ai-audit/WorkflowHistoryPanel'
     );
@@ -110,23 +105,19 @@ describe('WorkflowHistoryPanel', () => {
     fireEvent.click(screen.getByTestId(`rerun-btn-${WORKFLOW_ID}`));
 
     expect(screen.getByTestId('rerun-confirm-popover')).toBeDefined();
-    // Fetch should NOT have been called yet (just the initial list load)
-    expect(mockFetch).toHaveBeenCalledOnce();
+    // api() should have been called exactly once (the initial list load)
+    expect(spy).toHaveBeenCalledOnce();
   });
 
   it('Re-run success shows new workflow_id in toast', async () => {
     const NEW_WF_ID = 'new-wf-999';
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        data: {
-          new_workflow_id: NEW_WF_ID,
-          workflow_type: 'mode_b_analysis',
-          dispatched_at: '2026-06-04T10:05:00Z',
-        },
-        error: null,
-      }),
-    } as Response);
+    vi.spyOn(client, 'api')
+      .mockResolvedValueOnce({ data: [MOCK_RUN], next_cursor: null, error: null })
+      .mockResolvedValueOnce({
+        new_workflow_id: NEW_WF_ID,
+        workflow_type: 'mode_b_analysis',
+        dispatched_at: '2026-06-04T10:05:00Z',
+      });
 
     const { WorkflowHistoryPanel } = await import(
       '../../../pages/admin/ai-audit/WorkflowHistoryPanel'

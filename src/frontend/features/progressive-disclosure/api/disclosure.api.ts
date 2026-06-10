@@ -1,17 +1,9 @@
 /**
  * disclosure.api.ts — Typed fetch wrappers for the four Progressive Disclosure endpoints.
  *
- * PLAN-F-020 TASK-001
+ * PLAN-F-020 TASK-001 / Phase 2b migration
  *
- * Endpoints:
- *   GET /api/v1/events/{id}/popup        → PopupData
- *   GET /api/v1/events/{id}/side-panel   → SidePanelData
- *   GET /api/v1/events/{id}/audit-trail  → AuditTrailData
- *   GET /api/v1/events/{id}/deep-dive    → DeepDiveData | DeepDivePending (202)
- *
- * Each function validates the response shape at runtime. Zod is not assumed to be
- * installed; lightweight inline validators are used instead (matching the pattern in
- * events.api.ts). They can be replaced by Zod schemas when the dep is available.
+ * Uses lib/api/client.ts:api<T>() — no ad-hoc auth headers or fetch calls.
  */
 
 import type {
@@ -29,133 +21,42 @@ import type {
   ScenarioNode,
 } from '../types/disclosure.types';
 
-// ── Typed error ───────────────────────────────────────────────────────────────
-
-export type DisclosureErrorCode =
-  | 'UNAUTHORIZED'
-  | 'NOT_FOUND'
-  | 'SERVER_ERROR'
-  | 'NETWORK_ERROR'
-  | 'SCHEMA_VIOLATION';
-
-export class DisclosureFetchError extends Error {
-  public readonly code: DisclosureErrorCode;
-  public readonly status?: number;
-
-  constructor(code: DisclosureErrorCode, message: string, status?: number) {
-    super(message);
-    this.name = 'DisclosureFetchError';
-    this.code = code;
-    this.status = status;
-  }
-}
-
-// ── Auth token ────────────────────────────────────────────────────────────────
-
-function getAuthToken(): string {
-  try {
-    return (
-      localStorage.getItem('auth_token') ??
-      localStorage.getItem('access_token') ??
-      ''
-    );
-  } catch {
-    return '';
-  }
-}
-
-function authHeaders(): Record<string, string> {
-  const token = getAuthToken();
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  return headers;
-}
-
-// ── Generic fetch helper ──────────────────────────────────────────────────────
-
-async function disclosureFetch(url: string): Promise<{ body: unknown; status: number }> {
-  let response: Response;
-  try {
-    response = await fetch(url, {
-      headers: authHeaders(),
-      credentials: 'include',
-    });
-  } catch (networkErr) {
-    throw new DisclosureFetchError(
-      'NETWORK_ERROR',
-      `Network request failed: ${String(networkErr)}`,
-    );
-  }
-
-  if (!response.ok && response.status !== 202) {
-    const code: DisclosureErrorCode =
-      response.status === 401
-        ? 'UNAUTHORIZED'
-        : response.status === 404
-          ? 'NOT_FOUND'
-          : 'SERVER_ERROR';
-    throw new DisclosureFetchError(
-      code,
-      `Request to ${url} returned HTTP ${response.status}`,
-      response.status,
-    );
-  }
-
-  let body: unknown;
-  try {
-    body = await response.json();
-  } catch {
-    throw new DisclosureFetchError('SCHEMA_VIOLATION', 'Response body is not valid JSON');
-  }
-
-  // Unwrap standard success envelope: { data: ..., meta: ..., error: null }
-  const unwrapped =
-    body !== null &&
-    typeof body === 'object' &&
-    'data' in (body as Record<string, unknown>)
-      ? (body as Record<string, unknown>)['data']
-      : body;
-
-  return { body: unwrapped, status: response.status };
-}
+import { api } from '@/lib/api/client';
+import { ApiError } from '@/lib/api/errors';
 
 // ── Runtime validators ────────────────────────────────────────────────────────
 
 function assertString(v: unknown, field: string): string {
   if (typeof v !== 'string') {
-    throw new DisclosureFetchError('SCHEMA_VIOLATION', `Field "${field}" must be a string`);
+    throw new ApiError(0, 'SCHEMA_VIOLATION', `Field "${field}" must be a string`);
   }
   return v;
 }
 
 function assertNumber(v: unknown, field: string): number {
   if (typeof v !== 'number') {
-    throw new DisclosureFetchError('SCHEMA_VIOLATION', `Field "${field}" must be a number`);
+    throw new ApiError(0, 'SCHEMA_VIOLATION', `Field "${field}" must be a number`);
   }
   return v;
 }
 
 function assertBoolean(v: unknown, field: string): boolean {
   if (typeof v !== 'boolean') {
-    throw new DisclosureFetchError('SCHEMA_VIOLATION', `Field "${field}" must be a boolean`);
+    throw new ApiError(0, 'SCHEMA_VIOLATION', `Field "${field}" must be a boolean`);
   }
   return v;
 }
 
 function assertArray(v: unknown, field: string): unknown[] {
   if (!Array.isArray(v)) {
-    throw new DisclosureFetchError('SCHEMA_VIOLATION', `Field "${field}" must be an array`);
+    throw new ApiError(0, 'SCHEMA_VIOLATION', `Field "${field}" must be an array`);
   }
   return v;
 }
 
 function assertRecord(v: unknown, field: string): Record<string, unknown> {
   if (typeof v !== 'object' || v === null || Array.isArray(v)) {
-    throw new DisclosureFetchError('SCHEMA_VIOLATION', `Field "${field}" must be an object`);
+    throw new ApiError(0, 'SCHEMA_VIOLATION', `Field "${field}" must be an object`);
   }
   return v as Record<string, unknown>;
 }
@@ -323,49 +224,27 @@ function validateDeepDiveData(body: unknown): DeepDiveData {
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
-/**
- * Fetch popup-level data for a map event.
- * Renders within 300ms for cached events (TanStack Query staleTime: 30_000).
- */
 export async function fetchPopupData(eventId: string): Promise<PopupData> {
-  const { body } = await disclosureFetch(
-    `/api/v1/events/${encodeURIComponent(eventId)}/popup`,
-  );
-  return validatePopupData(body);
+  const raw = await api<unknown>(`/events/${encodeURIComponent(eventId)}/popup`);
+  return validatePopupData(raw);
 }
 
-/**
- * Fetch full side-panel data including sparklines, analogies, and rationale.
- * Should only be called when the side panel is opened (lazy).
- */
 export async function fetchSidePanelData(eventId: string): Promise<SidePanelData> {
-  const { body } = await disclosureFetch(
-    `/api/v1/events/${encodeURIComponent(eventId)}/side-panel`,
-  );
-  return validateSidePanelData(body);
+  const raw = await api<unknown>(`/events/${encodeURIComponent(eventId)}/side-panel`);
+  return validateSidePanelData(raw);
 }
 
-/**
- * Fetch the audit trail (reasoning chain + prompt SHA + Langfuse link).
- * Only called when the user opens "Why this read?".
- */
 export async function fetchAuditTrail(eventId: string): Promise<AuditTrailData> {
-  const { body } = await disclosureFetch(
-    `/api/v1/events/${encodeURIComponent(eventId)}/audit-trail`,
-  );
-  return validateAuditTrailData(body);
+  const raw = await api<unknown>(`/events/${encodeURIComponent(eventId)}/audit-trail`);
+  return validateAuditTrailData(raw);
 }
 
-/**
- * Fetch deep-dive analysis. May return a 202 "pending" response while the
- * deep-dive workflow is running. Callers should poll until DeepDiveData is received.
- */
 export async function fetchDeepDive(eventId: string): Promise<DeepDiveResult> {
-  const { body, status } = await disclosureFetch(
-    `/api/v1/events/${encodeURIComponent(eventId)}/deep-dive`,
-  );
-  if (status === 202) {
+  // 202 Accepted returns {"status":"pending"} (not enveloped); api<T> returns undefined.
+  // 200 OK returns the standard envelope; api<T> unwraps to DeepDiveData.
+  const raw = await api<unknown>(`/events/${encodeURIComponent(eventId)}/deep-dive`);
+  if (raw === undefined) {
     return { status: 'pending' };
   }
-  return validateDeepDiveData(body);
+  return validateDeepDiveData(raw);
 }

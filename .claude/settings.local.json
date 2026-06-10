@@ -125,7 +125,9 @@
       "Bash(sed -i 's|\"../../components/admin/hil/HilItemDetail\"|\"./HilItemDetail\"|g' B:/development/python_space/stokai/src/frontend/pages/admin/hil/HilQueue.test.tsx)",
       "Bash(sed -i 's|\"../../components/admin/hil/HilActionButtons\"|\"./HilActionButtons\"|g' B:/development/python_space/stokai/src/frontend/pages/admin/hil/HilQueue.test.tsx)",
       "Bash(npx vite *)",
-      "Bash(docker compose *)"
+      "Bash(docker compose *)",
+      "Bash(cat vitest.config.ts)",
+      "Bash(cat vitest.config.js)"
     ]
   }
 }

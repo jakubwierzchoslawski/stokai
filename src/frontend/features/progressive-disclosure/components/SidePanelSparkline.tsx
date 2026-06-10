@@ -1,15 +1,3 @@
-/**
- * SidePanelSparkline.tsx — T±7d close-price sparkline for one ticker.
- *
- * PLAN-F-020 TASK-008
- *
- * Uses Recharts LineChart in sparkline style (no axes).
- * Final-point dot is green if last.close >= first.close, red otherwise.
- * Width: 160px, Height: 48px (compact sparkline).
- *
- * AC-002
- */
-
 import React, { useMemo } from 'react';
 import {
   LineChart,
@@ -32,24 +20,14 @@ export function SidePanelSparkline({ ticker, ohlcv_7d }: SidePanelSparklineProps
     return ohlcv_7d[ohlcv_7d.length - 1]!.close >= ohlcv_7d[0]!.close;
   }, [ohlcv_7d]);
 
-  const dotColor = isPositive ? '#16a34a' : '#dc2626';
-  const lineColor = isPositive ? '#16a34a' : '#dc2626';
+  const dotColor = isPositive ? 'var(--positive)' : 'var(--negative)';
+  const lineColor = isPositive ? 'var(--positive)' : 'var(--negative)';
 
   if (ohlcv_7d.length === 0) {
     return (
       <div
         data-testid={`sparkline-${ticker}`}
-        style={{
-          width: '160px',
-          height: '48px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '11px',
-          color: '#9ca3af',
-          border: '1px dashed #e5e7eb',
-          borderRadius: '4px',
-        }}
+        className="flex h-12 w-[160px] items-center justify-center rounded border border-dashed border-border text-[11px] text-muted"
       >
         No price data
       </div>
@@ -61,13 +39,11 @@ export function SidePanelSparkline({ ticker, ohlcv_7d }: SidePanelSparklineProps
   return (
     <div
       data-testid={`sparkline-${ticker}`}
-      style={{ width: '160px' }}
+      className="w-[160px]"
       role="img"
       aria-label={`${ticker} price sparkline`}
     >
-      <div style={{ fontSize: '11px', fontWeight: 600, color: '#374151', marginBottom: '2px' }}>
-        {ticker}
-      </div>
+      <div className="mb-0.5 text-[11px] font-semibold text-text">{ticker}</div>
       <ResponsiveContainer width={160} height={48}>
         <LineChart data={ohlcv_7d} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
           <Line

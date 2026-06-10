@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http, HttpResponse } from "msw";
@@ -92,7 +92,8 @@ describe("IntelligenceMapPage", () => {
         <IntelligenceMapPage />
       </Wrap>,
     );
-    await new Promise((r) => setTimeout(r, 50));
-    expect(screen.queryByTestId("stub-mode-badge")).toBeNull();
+    await waitFor(() => {
+      expect(screen.queryByTestId("stub-mode-badge")).toBeNull();
+    });
   });
 });

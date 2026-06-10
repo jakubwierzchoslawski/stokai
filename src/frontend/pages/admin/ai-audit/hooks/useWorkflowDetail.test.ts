@@ -25,4 +25,15 @@ describe('useWorkflowDetail', () => {
     expect(spy).toHaveBeenCalledWith('/admin/audit/workflows/w-1');
     expect(result.current.data).toEqual(mockDetail);
   });
+
+  it('does not fire when enabled=false', async () => {
+    const spy = vi.spyOn(client, 'api').mockResolvedValue({});
+    const { useWorkflowDetail } = await import('./useWorkflowDetail');
+    const { result } = renderHook(
+      () => useWorkflowDetail('w-1', false),
+      { wrapper: makeWrapper() },
+    );
+    expect(result.current.isLoading).toBe(false);
+    expect(spy).not.toHaveBeenCalled();
+  });
 });

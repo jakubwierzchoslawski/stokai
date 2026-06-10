@@ -106,7 +106,7 @@ describe('EventPopup', () => {
     expect(aaplTicker).toHaveTextContent('+2.5');
   });
 
-  it('renders negative delta with "â’" prefix', () => {
+  it('renders negative delta with "−" prefix', () => {
     mockUsePopupData({ data: buildPopupData() });
 
     render(
@@ -115,7 +115,7 @@ describe('EventPopup', () => {
     );
 
     const msftTicker = screen.getByTestId('ticker-MSFT');
-    expect(msftTicker).toHaveTextContent('â’1.0');
+    expect(msftTicker).toHaveTextContent('−1.0');
   });
 
   it('shows LowSampleDisclaimer when low_sample=true', () => {

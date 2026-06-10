@@ -1,15 +1,3 @@
-/**
- * LowSampleDisclaimer.tsx — Inline disclaimer for low-sample recommendations.
- *
- * PLAN-F-020 TASK-007
- *
- * Rendered when PopupData.low_sample=true or SidePanelData.low_sample=true.
- * The frontend does NOT compute the threshold — it renders this component
- * when the backend sets low_sample=true (sample_size < 5).
- *
- * AC-005
- */
-
 import React from 'react';
 
 const DISCLAIMER_TEXT =
@@ -20,22 +8,9 @@ export function LowSampleDisclaimer() {
     <div
       data-testid="low-sample-disclaimer"
       role="alert"
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '8px',
-        backgroundColor: '#fffbeb',
-        border: '1px solid #fde68a',
-        borderLeft: '4px solid #f59e0b',
-        borderRadius: '4px',
-        padding: '8px 10px',
-        marginBottom: '8px',
-        fontSize: '12px',
-        color: '#92400e',
-        lineHeight: 1.5,
-      }}
+      className="mb-2 flex items-start gap-2 rounded border border-warning/30 border-l-4 border-l-warning bg-warning/10 px-2.5 py-2 text-xs leading-[1.5] text-warning"
     >
-      <span aria-hidden="true" style={{ fontSize: '14px' }}>⚠</span>
+      <span aria-hidden="true" className="text-sm shrink-0">⚠</span>
       <span>{DISCLAIMER_TEXT}</span>
     </div>
   );

@@ -1,19 +1,6 @@
-/**
- * ContrarianCallout.tsx — Highlighted "history says" callout block.
- *
- * PLAN-F-020 TASK-007
- *
- * Rendered as the first visible content block in the side panel when
- * SidePanelData.is_contrarian=true. Uses a distinctive left-border color
- * (blue, distinct from the warning amber of LowSampleDisclaimer).
- *
- * AC-004
- */
-
 import React from 'react';
 
 export interface ContrarianCalloutProps {
-  /** Contrarian callout text from the AI recommendation */
   text: string;
 }
 
@@ -22,36 +9,14 @@ export function ContrarianCallout({ text }: ContrarianCalloutProps) {
     <div
       data-testid="contrarian-callout"
       role="note"
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '10px',
-        backgroundColor: '#eff6ff',
-        border: '1px solid #bfdbfe',
-        borderLeft: '4px solid #2563eb',
-        borderRadius: '4px',
-        padding: '12px 14px',
-        marginBottom: '14px',
-        fontSize: '13px',
-        color: '#1e3a8a',
-        lineHeight: 1.5,
-        zIndex: 1,
-        position: 'relative',
-      }}
+      className="relative mb-3.5 flex items-start gap-2.5 rounded border border-signal/30 border-l-4 border-l-signal bg-signal/10 px-3.5 py-3 text-[13px] leading-[1.5] text-text"
     >
-      <span
-        aria-hidden="true"
-        style={{ fontSize: '16px', flexShrink: 0 }}
-      >
-        📜
-      </span>
+      <span aria-hidden="true" className="shrink-0 text-base">📜</span>
       <div>
-        <p
-          style={{ margin: '0 0 4px 0', fontWeight: 700, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
-        >
+        <p className="mb-1 text-xs font-bold uppercase tracking-[0.05em] text-text">
           History says
         </p>
-        <p style={{ margin: 0 }}>{text}</p>
+        <p className="m-0">{text}</p>
       </div>
     </div>
   );

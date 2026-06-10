@@ -30,7 +30,7 @@ describe('ContrarianCallout', () => {
   it('is visually distinct from low-sample disclaimer (blue border, not amber)', () => {
     const { container } = render(<ContrarianCallout text="Callout" />);
     const element = container.firstChild as HTMLElement;
-    // Verify blue left-border via inline style
-    expect(element.style.borderLeft).toContain('#2563eb');
+    // Verify blue left-border via Tailwind class (border-l-signal = blue)
+    expect(element.className).toContain('border-l-signal');
   });
 });

@@ -1,6 +1,12 @@
 /**
  * disclosure.api.ts — Typed fetch wrappers for the four Progressive Disclosure endpoints.
  *
+ * Endpoints:
+ *   GET /api/v1/events/{event_id}/popup
+ *   GET /api/v1/events/{event_id}/side-panel
+ *   GET /api/v1/events/{event_id}/audit-trail
+ *   GET /api/v1/events/{event_id}/deep-dive   (202 = pending, see fetchDeepDive)
+ *
  * PLAN-F-020 TASK-001 / Phase 2b migration
  *
  * Uses lib/api/client.ts:api<T>() — no ad-hoc auth headers or fetch calls.
@@ -28,6 +34,7 @@ import { ApiError } from '@/lib/api/errors';
 
 function assertString(v: unknown, field: string): string {
   if (typeof v !== 'string') {
+    // status 0 = local validation failure (not a network error; ApiError has no "local" status code)
     throw new ApiError(0, 'SCHEMA_VIOLATION', `Field "${field}" must be a string`);
   }
   return v;
@@ -239,8 +246,16 @@ export async function fetchAuditTrail(eventId: string): Promise<AuditTrailData> 
   return validateAuditTrailData(raw);
 }
 
+/**
+ * Fetches deep-dive analysis for an event.
+ *
+ * CONTRACT (PLAN-F-020 §4.1.3): The server returns a bare {"status":"pending"} body
+ * (not wrapped in the standard {"data": ...} envelope) for 202 Accepted.
+ * api<T>() unwraps body?.data, which is undefined for this 202 response shape.
+ * Therefore raw===undefined is the 202/pending sentinel — this is load-bearing.
+ * If the server ever wraps the 202 in a standard envelope, update this check.
+ */
 export async function fetchDeepDive(eventId: string): Promise<DeepDiveResult> {
-  // 202 Accepted returns {"status":"pending"} (not enveloped); api<T> returns undefined.
   // 200 OK returns the standard envelope; api<T> unwraps to DeepDiveData.
   const raw = await api<unknown>(`/events/${encodeURIComponent(eventId)}/deep-dive`);
   if (raw === undefined) {

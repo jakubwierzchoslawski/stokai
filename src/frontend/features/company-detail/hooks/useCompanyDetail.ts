@@ -8,6 +8,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import type { CompanyDetailResponse } from '../types';
+import { api } from '@/lib/api/client';
 
 const COMPANY_DETAIL_STALE_MS = 60_000;
 
@@ -19,15 +20,10 @@ async function fetchCompanyDetail(
   if (profileId) {
     params.set('profile_id', profileId);
   }
-
-  const url = `/api/v1/companies/${companyId}/detail${params.toString() ? `?${params.toString()}` : ''}`;
-  const resp = await fetch(url, { credentials: 'include' });
-
-  if (!resp.ok) {
-    throw new Error(`Failed to fetch company detail: ${resp.status}`);
-  }
-
-  return resp.json() as Promise<CompanyDetailResponse>;
+  const qs = params.toString();
+  return api<CompanyDetailResponse>(
+    '/companies/' + companyId + '/detail' + (qs ? '?' + qs : ''),
+  );
 }
 
 export function companyDetailQueryKey(companyId: string, profileId?: string) {

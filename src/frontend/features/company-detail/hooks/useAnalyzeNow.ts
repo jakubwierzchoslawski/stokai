@@ -2,16 +2,23 @@
  * useAnalyzeNow — hook for triggering on-demand AI analysis.
  *
  * Flow:
- *   1. POST /api/v1/companies/{companyId}/analysis → {data: {run_id}}
+ *   1. POST /companies/{companyId}/analysis → {run_id, company_id, status}
  *   2. Store run_id
- *   3. Open WebSocket ws[s]://host/ws/analysis/{run_id}
+ *   3. Open WebSocket via apiSocket('/ws/analysis/{run_id}')
  *   4. On {type: "COMPLETED"} message → call onReportReady(run_id), isLoading=false
  *   5. 409 → set error without entering loading state
- *   6. Cleanup WebSocket on unmount
+ *   6. 5-minute safety timeout: backend WebSocket handler not yet wired (Phase 4)
+ *   7. Cleanup on unmount
  *
  * PLAN-F-023 TASK-006
  */
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { api } from '@/lib/api/client';
+import { ApiError } from '@/lib/api/errors';
+import { apiSocket } from '@/lib/api/ws';
+import type { SocketHandle } from '@/lib/api/ws';
+
+const ANALYSIS_TIMEOUT_MS = 5 * 60 * 1000;
 
 export interface UseAnalyzeNowOptions {
   companyId: string;
@@ -25,19 +32,10 @@ export interface UseAnalyzeNowResult {
   error: string | null;
 }
 
-interface AnalysisResponse {
-  data: {
-    run_id: string;
-    company_id: string;
-    status: string;
-  };
-  meta: Record<string, unknown>;
-  error: string | null;
-}
-
-function buildWsUrl(runId: string): string {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${protocol}//${window.location.host}/ws/analysis/${runId}`;
+interface AnalysisRunResponse {
+  run_id: string;
+  company_id: string;
+  status: string;
 }
 
 export function useAnalyzeNow({
@@ -48,79 +46,73 @@ export function useAnalyzeNow({
   const [runId, setRunId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const wsRef = useRef<WebSocket | null>(null);
+  const socketRef = useRef<SocketHandle | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Cleanup WebSocket on unmount
-  useEffect(() => {
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-    };
+  const cleanup = useCallback(() => {
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    socketRef.current?.close();
+    socketRef.current = null;
   }, []);
+
+  useEffect(() => cleanup, [cleanup]);
 
   const subscribeToWebSocket = useCallback(
     (newRunId: string) => {
-      // Close existing socket if any
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
+      cleanup();
 
-      const ws = new WebSocket(buildWsUrl(newRunId));
-      wsRef.current = ws;
-
-      ws.onmessage = (event: MessageEvent) => {
-        try {
-          const msg = JSON.parse(event.data as string) as { type?: string };
-          if (msg.type === 'COMPLETED') {
+      socketRef.current = apiSocket('/ws/analysis/' + newRunId, {
+        onMessage: (msg: unknown) => {
+          const typed = msg as { type?: string };
+          if (typed.type === 'COMPLETED') {
             setIsLoading(false);
-            if (onReportReady) {
-              onReportReady(newRunId);
-            }
-            ws.close();
-            wsRef.current = null;
+            onReportReady?.(newRunId);
+            cleanup();
           }
-        } catch {
-          // Ignore parse errors
-        }
-      };
+        },
+        onClose: () => {},
+        onError: () => {
+          setError('WebSocket error during analysis.');
+          setIsLoading(false);
+          cleanup();
+        },
+      });
 
-      ws.onerror = () => {
-        setError('WebSocket error during analysis.');
+      // Safety timeout: backend producer for /ws/analysis/{run_id} is not yet
+      // wired (Phase 4). Without this, the spinner would hang indefinitely.
+      timeoutRef.current = setTimeout(() => {
+        setError(
+          'Analysis timed out. The analysis backend is not yet available; ' +
+            'please try again later.',
+        );
         setIsLoading(false);
-      };
+        cleanup();
+      }, ANALYSIS_TIMEOUT_MS);
     },
-    [onReportReady],
+    [onReportReady, cleanup],
   );
 
   const trigger = useCallback(async (): Promise<void> => {
     setError(null);
-
-    const resp = await fetch(`/api/v1/companies/${companyId}/analysis`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    if (resp.status === 409) {
-      setError('Analysis already in progress for this company.');
-      // Do not set isLoading=true on 409
-      return;
+    try {
+      const run = await api<AnalysisRunResponse>(
+        '/companies/' + companyId + '/analysis',
+        { method: 'POST' },
+      );
+      setIsLoading(true);
+      setRunId(run.run_id);
+      subscribeToWebSocket(run.run_id);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setError('Analysis already in progress for this company.');
+        return;
+      }
+      const msg = err instanceof Error ? err.message : String(err);
+      setError('Failed to trigger analysis: ' + msg);
     }
-
-    if (!resp.ok) {
-      setError(`Failed to trigger analysis: ${resp.status}`);
-      return;
-    }
-
-    setIsLoading(true);
-
-    const body = (await resp.json()) as AnalysisResponse;
-    const newRunId = body.data.run_id;
-    setRunId(newRunId);
-
-    subscribeToWebSocket(newRunId);
   }, [companyId, subscribeToWebSocket]);
 
   return { trigger, isLoading, runId, error };

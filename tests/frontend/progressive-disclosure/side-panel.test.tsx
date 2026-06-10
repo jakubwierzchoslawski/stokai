@@ -83,7 +83,7 @@ describe('SidePanel', () => {
     );
 
     const panel = screen.getByTestId('side-panel');
-    expect(panel.style.transform).toContain('translateX(100%)');
+    expect(panel.className).toContain('translate-x-full');
     expect(screen.queryByTestId('side-panel-summary')).not.toBeInTheDocument();
   });
 

@@ -24,6 +24,10 @@ from src.alerts.api.anti_fatigue_router import anti_fatigue_router
 from src.api.routers.qa_router import qa_router
 from src.compliance.compliance_router import compliance_router
 from src.config.settings import get_settings
+from src.api.v1 import api_v1_router
+from src.api.v1.events import router as events_v1_router
+from src.api.progressive_disclosure.router import router as disclosure_router
+from src.api.admin.audit.audit_router import audit_router
 
 _settings = get_settings()
 
@@ -62,6 +66,10 @@ app.include_router(alert_rules_router, prefix="/api/v1")  # PLAN-F-025: Alert Ru
 app.include_router(anti_fatigue_router, prefix="/api/v1") # PLAN-F-025: Anti-fatigue settings
 app.include_router(qa_router, prefix="/api/v1")           # PLAN-F-027: Q&A Chat Interface
 app.include_router(compliance_router, prefix="/api/v1")   # PLAN-N-012: Compliance track record
+app.include_router(api_v1_router)                                  # PLAN-F-026/023: briefs, company-detail, screener, scoring
+app.include_router(events_v1_router, prefix="/api/v1")             # PLAN-F-019/021: GET /api/v1/events
+app.include_router(disclosure_router, prefix="/api/v1")            # PLAN-F-020: progressive disclosure
+app.include_router(audit_router, prefix="/api/v1/admin")           # PLAN-F-029: AI audit console
 
 
 @app.get("/health")
